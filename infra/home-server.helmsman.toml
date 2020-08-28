@@ -1,0 +1,63 @@
+# version: v3.0.0
+
+context= "home-server-infra"
+
+[metadata]
+  org = "bronneberg.org"
+  maintainer = "Patrick (patrick@bronneberg.org)"
+  description = "Basic infrastructure to be installed on home kubernetes cluster"
+  notes = "This requires the bare cluster to be provisioned and the kubecontext to be defined as a prerequisite"
+
+[settings]
+  kubeContext = "default"
+  globalMaxHistory= 5
+
+[namespaces]
+  [namespaces.infra]
+    protected = true
+    [[namespaces.infra.limits]]
+      type = "Container"
+      [namespaces.infra.limits.default]
+        cpu = "300m"
+        memory = "200Mi"
+      [namespaces.infra.limits.defaultRequest]
+        cpu = "100m"
+        memory = "50Mi"
+    [[namespaces.infra.limits]]
+      type = "Pod"
+      [namespaces.infra.limits.max]
+        memory = "300Mi"      
+  [namespaces.websites]
+    protected = false
+    [namespaces.websites.labels]
+      env = "production"
+
+[helmRepos]
+  ingress-nginx = "https://kubernetes.github.io/ingress-nginx"
+  jetstack = "https://charts.jetstack.io"
+  # stable = "https://kubernetes-charts.storage.googleapis.com"
+
+[apps]
+  [apps.ingress-nginx]
+    namespace = "infra"
+    enabled = true 
+    chart = "ingress-nginx/ingress-nginx"
+    version = "2.12.1" # 
+    priority= -3
+    noHooks= false
+    wait = true
+    timeout= 300
+
+  [apps.cert-manager]
+    namespace = "infra" 
+    enabled = true 
+    chart = "jetstack/cert-manager"
+    version = "v0.16.1"
+    protected = true
+    priority= -2
+    wait = true
+    timeout= 300
+    [apps.cert-manager.hooks]
+    postInstall="cert-manager.issuers.yaml"
+    [apps.cert-manager.set]
+    "installCRDs"= true
