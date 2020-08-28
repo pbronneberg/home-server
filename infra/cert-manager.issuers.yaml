@@ -14,7 +14,7 @@ spec:
     - selector: {}
       http01:
         ingress:
-          class: addon-http-application-routing
+          class: traefik
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer

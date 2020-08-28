@@ -27,6 +27,12 @@ Note that this installation automatically routes all port `80` and `443` traffic
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
 
+## Installing Helm-Diff
+
+```bash
+helm plugin install https://github.com/databus23/helm-diff
+```
+
 ## Installing Helmsman
 
 ```bash
