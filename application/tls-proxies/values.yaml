@@ -1,0 +1,23 @@
+domoticz:
+  service:
+    targetPort: 5005
+  endpoint:
+    ip: "192.168.254.121"
+  ingress:
+    hostname: "vendelier.bronneberg.org"
+
+diskstation:
+  service:
+    targetPort: 5000
+  endpoint:
+    ip: "192.168.254.254"
+  ingress:
+    hostname: "nas.bronneberg.org"
+
+photostation:
+  service:
+    targetPort: 80
+  endpoint:
+    ip: "192.168.254.254"
+  ingress:
+    hostname: "photo.bronneberg.org"
