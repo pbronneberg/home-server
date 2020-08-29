@@ -4,7 +4,8 @@ domoticz:
   endpoint:
     ip: "192.0.2.121"
   ingress:
-    hostname: "vendelier.bronneberg.org"
+    hostnames:
+      - "vendelier.bronneberg.org"
 
 diskstation:
   service:
@@ -12,7 +13,8 @@ diskstation:
   endpoint:
     ip: "192.0.2.254"
   ingress:
-    hostname: "nas.bronneberg.org"
+    hostnames: 
+      - "nas.bronneberg.org"
 
 photostation:
   service:
@@ -20,4 +22,19 @@ photostation:
   endpoint:
     ip: "192.0.2.254"
   ingress:
-    hostname: "photo.bronneberg.org"
+    hostnames:
+      - "photo.bronneberg.org"
+
+apache:
+  service:
+    targetPort: 8088
+  endpoint:
+    ip: "192.0.2.121"
+  ingress:
+    hostnames:
+      - "www.myenglishplayground.nl"
+      - "myenglishplayground.nl"
+      - "www.itsmyparty.nl"
+      - "itsmyparty.nl"
+      - "www.hhdx.nl"
+      - "hhdx.nl"
