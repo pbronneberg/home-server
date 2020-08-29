@@ -1,0 +1,13 @@
+{{- $fullName := include "tls-proxy.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+spec:
+  ports:
+  - name: app
+    port: 80
+    protocol: TCP
+    targetPort: {{ .Values.service.targetPort }}
+  clusterIP: None
+  type: ClusterIP
