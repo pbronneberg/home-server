@@ -12,13 +12,17 @@ metadata:
 spec:
   tls:
     - hosts:
-        - {{ .Values.ingress.hostname }}
+    {{- range .Values.ingress.hostnames }}
+        - {{ . }}
+    {{- end }}
       secretName: {{ $fullName }}-tls
   rules:
-    - host: {{ .Values.ingress.hostname }}
+    {{- range .Values.ingress.hostnames }}
+    - host: {{ . }}
       http:
         paths:
           - path: /
             backend:
               serviceName: {{ $fullName }}
               servicePort: 80
+    {{- end }}
