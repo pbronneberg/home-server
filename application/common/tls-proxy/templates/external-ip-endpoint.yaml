@@ -1,0 +1,12 @@
+{{- $fullName := include "tls-proxy.fullname" . -}}
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ $fullName }}
+subsets:
+- addresses:
+  - ip: {{ .Values.endpoint.ip}}
+  ports:
+  - name: app
+    port: {{ .Values.service.targetPort }}
+    protocol: TCP
