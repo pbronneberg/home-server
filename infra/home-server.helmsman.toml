@@ -9,10 +9,12 @@ context= "home-server-infra"
   notes = "This requires the bare cluster to be provisioned and the kubecontext to be defined as a prerequisite"
 
 [settings]
-  kubeContext = "homeserver"
+  kubeContext = "deepthought"
   globalMaxHistory= 5
 
 [namespaces]
+  [namespaces.maesh]
+    protected = true
   [namespaces.cert-manager]
     protected = true
   [namespaces.websites]
@@ -22,7 +24,8 @@ context= "home-server-infra"
 
 [helmRepos]
   jetstack = "https://charts.jetstack.io"
-  # stable = "https://kubernetes-charts.storage.googleapis.com"
+  stable = "https://kubernetes-charts.storage.googleapis.com"
+  maesh = "https://containous.github.io/maesh/charts"
 
 [apps]
   [apps.cert-manager]
@@ -38,3 +41,25 @@ context= "home-server-infra"
     postInstall="cert-manager.issuers.yaml"
     [apps.cert-manager.set]
     "installCRDs"= "true"
+  
+  [apps.sealed-secrets]
+    namespace = "kube-system" 
+    enabled = true 
+    chart = "stable/sealed-secrets"
+    version = "1.10.3"
+    protected = true
+    priority= -1
+    wait = true
+    timeout= 300
+
+  [apps.maesh-service-mesh]
+    namespace = "maesh" 
+    enabled = true 
+    chart = "maesh/maesh"
+    version = "2.1.2"
+    protected = true
+    priority= -1
+    wait = true
+    timeout= 300
+    [apps.maesh-service-mesh.set]
+    "acl"= "false"
