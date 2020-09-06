@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "pi-hole.fullname" . }}
+  labels:
+    {{- include "pi-hole.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
+    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+    # traefik.ingress.kubernetes.io/whitelist-source-range: "127.0.0.1/32, 192.168.254.0/24"
+    ingress.kubernetes.io/auth-type: basic
+    ingress.kubernetes.io/auth-secret: basic-auth
+
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: prodg-nl-tls
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: pihole-admin
+              servicePort: 80
