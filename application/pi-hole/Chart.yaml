@@ -1,0 +1,9 @@
+apiVersion: v2
+name: pi-hole
+description: Pi-hole ad filtering for devices in the home LAN
+
+type: application
+
+version: 0.1.0
+
+appVersion: 5.1.2
