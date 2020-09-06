@@ -2,7 +2,7 @@ domoticz:
   service:
     targetPort: 5005
   endpoint:
-    ip: "192.0.2.121"
+    ip: "192.168.254.123"
   ingress:
     hostnames:
       - "vendelier.bronneberg.org"
@@ -29,7 +29,7 @@ apache:
   service:
     targetPort: 8088
   endpoint:
-    ip: "192.0.2.121"
+    ip: "192.168.254.123"
   ingress:
     hostnames:
       - "www.myenglishplayground.nl"
