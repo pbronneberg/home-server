@@ -8,17 +8,26 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: pihole
+      {{- include "pi-hole.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: pihole
-        name: pihole
+        {{- include "pi-hole.selectorLabels" . | nindent 8 }}
     spec:
       containers:
       - name: pihole
         image: pihole/pihole:v5.1.2
         imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: 80
+            protocol: TCP
+          - name: dnstcp
+            containerPort: 53
+            protocol: TCP
+          - name: dnsudp
+            containerPort: 53
+            protocol: UDP
         env:
         - name: TZ
           value: "Europe/Amsterdam"

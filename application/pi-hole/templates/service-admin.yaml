@@ -6,7 +6,7 @@ metadata:
     {{- include "pi-hole.labels" . | nindent 4 }}
 spec:
   selector:
-    app: pihole
+    {{- include "pi-hole.selectorLabels" . | nindent 4 }}
   ports:
   - port: 80
     targetPort: 80
