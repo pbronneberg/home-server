@@ -25,5 +25,5 @@ spec:
         paths:
           - path: /
             backend:
-              serviceName: pihole-admin
+              serviceName: {{ include "pi-hole.fullname" . }}-admin
               servicePort: 80
