@@ -9,7 +9,7 @@ context= "home-server-infra"
   notes = "This requires the bare cluster to be provisioned and the kubecontext to be defined as a prerequisite"
 
 [settings]
-  kubeContext = "deepthought"
+  kubeContext = "home-server"
   globalMaxHistory= 5
 
 [namespaces]
@@ -24,7 +24,7 @@ context= "home-server-infra"
 
 [helmRepos]
   jetstack = "https://charts.jetstack.io"
-  stable = "https://kubernetes-charts.storage.googleapis.com"
+  stable = "https://charts.helm.sh/stable"
   maesh = "https://containous.github.io/maesh/charts"
 
 [apps]
