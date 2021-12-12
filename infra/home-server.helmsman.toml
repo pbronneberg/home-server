@@ -17,6 +17,8 @@ context= "home-server-infra"
     protected = false
   [namespaces.cert-manager]
     protected = false
+  [namespaces.longhorn-system]
+    protected = false
   [namespaces.websites]
     protected = false
     [namespaces.websites.labels]
@@ -26,6 +28,7 @@ context= "home-server-infra"
   jetstack = "https://charts.jetstack.io"
   sealed-secrets = "https://bitnami-labs.github.io/sealed-secrets"
   traefik-mesh = "https://helm.traefik.io/mesh"
+  longhorn = "https://charts.longhorn.io"
   
 [apps]
   [apps.cert-manager]
@@ -61,3 +64,15 @@ context= "home-server-infra"
     priority= -1
     wait = true
     timeout= 300
+
+  [apps.longhorn]
+    namespace = "longhorn-system" 
+    enabled = true 
+    chart = "longhorn/longhorn"
+    version = "1.2.2"
+    protected = false
+    priority= -1
+    wait = true
+    timeout= 300
+    [apps.longhorn.hooks]
+    postInstall="longhorn/storageclass-longhorn.yaml"
