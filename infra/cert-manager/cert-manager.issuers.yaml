@@ -14,7 +14,10 @@ spec:
     - selector: {}
       http01:
         ingress:
-          class: traefik
+          ingressTemplate:
+            metadata:
+              annotations:
+                "traefik.ingress.kubernetes.io/frontend-entry-points": "http"
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
