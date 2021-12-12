@@ -38,7 +38,7 @@ context= "home-server-infra"
     wait = true
     timeout= 300
     [apps.cert-manager.hooks]
-    postInstall="cert-manager.issuers.yaml"
+    postInstall="cert-manager/cert-manager.issuers.yaml"
     [apps.cert-manager.set]
     "installCRDs"= "true"
   
