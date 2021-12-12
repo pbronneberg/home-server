@@ -57,7 +57,7 @@ context= "home-server-infra"
 
   [apps.service-mesh]
     namespace = "mesh" 
-    enabled = true 
+    enabled = false 
     chart = "traefik-mesh/traefik-mesh"
     version = "4.0.0"
     protected = false
