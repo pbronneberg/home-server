@@ -30,3 +30,8 @@ override.tf.json
 
 #Ignore helmsman temp files
 .helmsman-tmp/
+
+#Helm
+Chart.lock
+*.tgz
+
