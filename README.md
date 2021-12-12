@@ -48,6 +48,12 @@ rm -rf ./tmp
 helmsman -apply -f ./infra/home-server.helmsman.toml
 ```
 
+Create HTTPS forwarder middleware
+
+```bash
+kubectl apply -f infra/traefik-https.yaml
+```
+
 ## Installing Workloads
 
 ### TLS Proxies
