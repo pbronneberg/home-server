@@ -36,16 +36,14 @@ helm plugin install https://github.com/databus23/helm-diff
 ## Installing Helmsman
 
 ```bash
-curl -L https://github.com/Praqma/helmsman/releases/download/v3.4.2/helmsman_3.4.2_linux_amd64.tar.gz | tar zx
+mkdir tmp
+curl -L https://github.com/Praqma/helmsman/releases/download/v3.7.7/helmsman_3.7.7_linux_amd64.tar.gz | tar zx --directory tmp
+sudo mv ./tmp/helmsman /usr/local/bin/helmsman
+rm -rf ./tmp
 ```
 
-## Installing Longhorn distributed filesystem
+## Install infrastructure services in cluster
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
-```
-
-Create storageclass for longhorn
-```bash
-kubectl apply -f ./infra/longhorn/storageclass-longhorn.yaml
+helmsman -apply -f ./infra/home-server.helmsman.toml
 ```
