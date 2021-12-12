@@ -47,3 +47,22 @@ rm -rf ./tmp
 ```bash
 helmsman -apply -f ./infra/home-server.helmsman.toml
 ```
+
+Create HTTPS forwarder middleware
+
+```bash
+kubectl apply -f infra/traefik-https.yaml
+```
+
+## Installing Workloads
+
+### TLS Proxies
+```
+helm dep up ./application/tls-proxies
+helm install tls-proxies ./application/tls-proxies --namespace websites
+```
+
+### Longhorn admin
+```
+helm install longhorn-admin ./application/longhorn-admin --namespace longhorn-system
+```
