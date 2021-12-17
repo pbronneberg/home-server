@@ -4,6 +4,6 @@ description: Expose longhorn admin api
 
 type: application
 
-version: 0.1.0
+version: 0.2.0
 
-appVersion: 0.8.1
+appVersion: 1.2.2

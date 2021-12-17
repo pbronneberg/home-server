@@ -40,3 +40,12 @@ apache:
       - "hhdx.nl"
       - "www.bronneberg.org"
       - "bronneberg.org"
+
+opensprinkler:
+  service:
+    targetPort: 8080
+  endpoint:
+    ip: "192.168.254.130"
+  ingress:
+    hostnames:
+      - "sprinkler.bronneberg.org"
