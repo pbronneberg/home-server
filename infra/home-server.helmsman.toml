@@ -3,20 +3,22 @@
 context= "home-server-infra"
 
 [metadata]
-  org = "bronneberg.org"
+  org = "personal-cloud.nl"
   maintainer = "Patrick (patrick@bronneberg.org)"
   description = "Basic infrastructure to be installed on home kubernetes cluster"
   notes = "This requires the bare cluster to be provisioned and the kubecontext to be defined as a prerequisite"
 
 [settings]
-  kubeContext = "deepthought"
+  kubeContext = "home-server"
   globalMaxHistory= 5
 
 [namespaces]
-  [namespaces.maesh]
-    protected = true
+  [namespaces.mesh]
+    protected = false
   [namespaces.cert-manager]
-    protected = true
+    protected = false
+  [namespaces.longhorn-system]
+    protected = false
   [namespaces.websites]
     protected = false
     [namespaces.websites.labels]
@@ -24,42 +26,53 @@ context= "home-server-infra"
 
 [helmRepos]
   jetstack = "https://charts.jetstack.io"
-  stable = "https://kubernetes-charts.storage.googleapis.com"
-  maesh = "https://containous.github.io/maesh/charts"
-
+  sealed-secrets = "https://bitnami-labs.github.io/sealed-secrets"
+  traefik-mesh = "https://helm.traefik.io/mesh"
+  longhorn = "https://charts.longhorn.io"
+  
 [apps]
   [apps.cert-manager]
     namespace = "cert-manager" 
     enabled = true 
     chart = "jetstack/cert-manager"
-    version = "v0.16.1"
-    protected = true
+    version = "v1.6.1"
+    protected = false
     priority= -2
     wait = true
     timeout= 300
     [apps.cert-manager.hooks]
-    postInstall="cert-manager.issuers.yaml"
+    postInstall="cert-manager/cert-manager.issuers.yaml"
     [apps.cert-manager.set]
     "installCRDs"= "true"
   
   [apps.sealed-secrets]
     namespace = "kube-system" 
     enabled = true 
-    chart = "stable/sealed-secrets"
-    version = "1.10.3"
-    protected = true
+    chart = "sealed-secrets/sealed-secrets"
+    version = "1.16.1"
+    protected = false
     priority= -1
     wait = true
     timeout= 300
 
-  [apps.maesh-service-mesh]
-    namespace = "maesh" 
-    enabled = true 
-    chart = "maesh/maesh"
-    version = "2.1.2"
-    protected = true
+  [apps.service-mesh]
+    namespace = "mesh" 
+    enabled = false 
+    chart = "traefik-mesh/traefik-mesh"
+    version = "4.0.0"
+    protected = false
     priority= -1
     wait = true
     timeout= 300
-    [apps.maesh-service-mesh.set]
-    "acl"= "false"
+
+  [apps.longhorn]
+    namespace = "longhorn-system" 
+    enabled = true 
+    chart = "longhorn/longhorn"
+    version = "1.2.2"
+    protected = false
+    priority= -1
+    wait = true
+    timeout= 300
+    [apps.longhorn.hooks]
+    postInstall="longhorn/storageclass-longhorn.yaml"
