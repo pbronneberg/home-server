@@ -48,10 +48,11 @@ rm -rf ./tmp
 helmsman -apply -f ./infra/home-server.helmsman.toml
 ```
 
-Create HTTPS forwarder middleware
+Create Traefik proxy middlewares
 
 ```bash
 kubectl apply -f infra/traefik-https.yaml
+kubectl apply -f infra/traefik-basicauth.yaml
 ```
 
 ## Installing Workloads
