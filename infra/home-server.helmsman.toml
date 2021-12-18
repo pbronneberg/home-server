@@ -19,6 +19,8 @@ context= "home-server-infra"
     protected = false
   [namespaces.longhorn-system]
     protected = false
+  [namespaces.elasticsearch]
+    protected = false
   [namespaces.websites]
     protected = false
     [namespaces.websites.labels]
@@ -29,6 +31,7 @@ context= "home-server-infra"
   sealed-secrets = "https://bitnami-labs.github.io/sealed-secrets"
   traefik-mesh = "https://helm.traefik.io/mesh"
   longhorn = "https://charts.longhorn.io"
+  elastic = "https://helm.elastic.co"
   
 [apps]
   [apps.cert-manager]
@@ -37,7 +40,7 @@ context= "home-server-infra"
     chart = "jetstack/cert-manager"
     version = "v1.6.1"
     protected = false
-    priority= -2
+    priority= -5
     wait = true
     timeout= 300
     [apps.cert-manager.hooks]
@@ -51,7 +54,7 @@ context= "home-server-infra"
     chart = "sealed-secrets/sealed-secrets"
     version = "1.16.1"
     protected = false
-    priority= -1
+    priority= -4
     wait = true
     timeout= 300
 
@@ -61,7 +64,7 @@ context= "home-server-infra"
     chart = "traefik-mesh/traefik-mesh"
     version = "4.0.0"
     protected = false
-    priority= -1
+    priority= -4
     wait = true
     timeout= 300
 
@@ -71,8 +74,30 @@ context= "home-server-infra"
     chart = "longhorn/longhorn"
     version = "1.2.2"
     protected = false
-    priority= -1
+    priority= -4
     wait = true
     timeout= 300
     [apps.longhorn.hooks]
     postInstall="longhorn/storageclass-longhorn.yaml"
+  
+  [apps.elasticsearch]
+    namespace = "elasticsearch" 
+    enabled = true 
+    chart = "elastic/elasticsearch"
+    version = "7.16.1"
+    protected = false
+    priority= -3
+    valuesFile= "elasticsearch/values.yaml"
+    wait = true
+    timeout= 300
+
+  [apps.kibana]
+    namespace = "elasticsearch" 
+    enabled = true 
+    chart = "elastic/kibana"
+    version = "7.16.1"
+    protected = false
+    priority= -2
+    valuesFile= "kibana/values.yaml"
+    wait = true
+    timeout= 300
