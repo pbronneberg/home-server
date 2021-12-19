@@ -75,3 +75,9 @@ helm install tls-proxies ./application/tls-proxies --namespace websites
 ```
 helm install longhorn-admin ./application/longhorn-admin --namespace longhorn-system
 ```
+
+### Github Action runners
+```
+kubectl create namespace self-hosted-runners
+kubectl apply -f application/runners/runners.yaml --namespace self-hosted-runners
+```

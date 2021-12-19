@@ -1,0 +1,93 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: runner-home-server
+spec:
+  template:
+    spec:
+      repository: pbronneberg/home-server
+      labels:
+        - home-server
+        - k3s
+      tolerations:
+      - effect: NoSchedule
+        key: spoke
+        operator: Exists
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: runner-dotnet6-microservice
+spec:
+  template:
+    spec:
+      repository: pbronneberg/dotnet6-microservice
+      labels:
+        - home-server
+        - k3s
+      tolerations:
+      - effect: NoSchedule
+        key: spoke
+        operator: Exists
+
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: runner-someone-elses-computer
+spec:
+  template:
+    spec:
+      repository: pbronneberg/someone-elses-computer
+      labels:
+        - home-server
+        - k3s
+      tolerations:
+      - effect: NoSchedule
+        key: spoke
+        operator: Exists
+
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: runner-autoscaler-dn6us
+spec:
+  scaleTargetRef:
+    name: runner-dotnet6-microservice
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
+    repositoryNames:
+    -  pbronneberg/dotnet6-microservice
+
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: runner-autoscaler-sec
+spec:
+  scaleTargetRef:
+    name: runner-someone-elses-computer
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
+    repositoryNames:
+    -  pbronneberg/someone-elses-computer
+
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: runner-autoscaler-home-server
+spec:
+  scaleTargetRef:
+    name: runner-home-server
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
+    repositoryNames:
+    -  pbronneberg/home-server
