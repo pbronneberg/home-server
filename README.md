@@ -81,3 +81,8 @@ helm install longhorn-admin ./application/longhorn-admin --namespace longhorn-sy
 kubectl create namespace self-hosted-runners
 kubectl apply -f application/runners/runners.yaml --namespace self-hosted-runners
 ```
+
+To ensure scheduling is not done on remote/spoke nodes add taints to the given nodes
+```
+kubectl taint nodes <NODE> spoke=true:NoSchedule
+```
