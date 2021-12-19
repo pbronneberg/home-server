@@ -21,6 +21,8 @@ context= "home-server-infra"
     protected = false
   [namespaces.elasticsearch]
     protected = false
+  [namespaces.prometheus]
+    protected = false
   [namespaces.websites]
     protected = false
     [namespaces.websites.labels]
@@ -32,6 +34,7 @@ context= "home-server-infra"
   traefik-mesh = "https://helm.traefik.io/mesh"
   longhorn = "https://charts.longhorn.io"
   elastic = "https://helm.elastic.co"
+  prometheus-community = "https://prometheus-community.github.io/helm-charts"
   
 [apps]
   [apps.cert-manager]
@@ -99,5 +102,16 @@ context= "home-server-infra"
     protected = false
     priority= -2
     valuesFile= "kibana/values.yaml"
+    wait = true
+    timeout= 300
+  
+  [apps.prometheus-stack]
+    namespace = "prometheus" 
+    enabled = true 
+    chart = "prometheus-community/kube-prometheus-stack"
+    version = "24.0.1"
+    protected = false
+    priority= -2
+    valuesFile= "prometheus-stack/values.yaml"
     wait = true
     timeout= 300
