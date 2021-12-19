@@ -23,6 +23,8 @@ context= "home-server-infra"
     protected = false
   [namespaces.prometheus]
     protected = false
+  [namespaces.actions-runner-system]
+    protected = false
   [namespaces.websites]
     protected = false
     [namespaces.websites.labels]
@@ -35,6 +37,7 @@ context= "home-server-infra"
   longhorn = "https://charts.longhorn.io"
   elastic = "https://helm.elastic.co"
   prometheus-community = "https://prometheus-community.github.io/helm-charts"
+  actions-runner = "https://actions-runner-controller.github.io/actions-runner-controller"
   
 [apps]
   [apps.cert-manager]
@@ -113,5 +116,16 @@ context= "home-server-infra"
     protected = false
     priority= -2
     valuesFile= "prometheus-stack/values.yaml"
+    wait = true
+    timeout= 300
+  
+  [apps.actions-runner-controller]
+    namespace = "actions-runner-system" 
+    enabled = true 
+    chart = "actions-runner/actions-runner-controller"
+    version = "0.15.1"
+    protected = false
+    priority= -2
+    valuesFile= "actions-runner/values.secrets.yaml"
     wait = true
     timeout= 300
