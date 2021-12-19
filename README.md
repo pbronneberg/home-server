@@ -55,6 +55,14 @@ kubectl apply -f infra/traefik-https.yaml
 kubectl apply -f infra/traefik-basicauth.yaml
 ```
 
+For the [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller), a Github PAT is required.
+First [Create](https://github.com/settings/tokens) this PAT, then create a secret containing this token.
+
+```
+kubectl create namespace  actions-runner-system
+kubectl create secret generic controller-manager -n actions-runner-system --from-literal=github_token=<TOKEN>
+```
+
 ## Installing Workloads
 
 ### TLS Proxies
