@@ -63,6 +63,17 @@ kubectl create namespace  actions-runner-system
 kubectl create secret generic controller-manager -n actions-runner-system --from-literal=github_token=<TOKEN>
 ```
 
+### argo
+
+```
+kubectl create ns argo
+kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
+```
+
+```
+kubectl apply -n argo -f ./infra/argo/k8sapi-executor.yml
+```
+
 ## Installing Workloads
 
 ### TLS Proxies
