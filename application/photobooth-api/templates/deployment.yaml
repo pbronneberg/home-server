@@ -42,6 +42,13 @@ spec:
               value: "Development"
             - name: BasePath
               value: {{ .Values.basePath }}
+            - name: Logging__LogLevel__Microsoft__AspNetCore
+              value: {{ .Values.logLevel.aspnetcore }}
+            - name: Logging__LogLevel__Default
+              value: {{ .Values.logLevel.default }}
+          volumeMounts:
+            - name: photobooth-db-volume
+              mountPath: "/opt/app-root/data"              
           livenessProbe:
             httpGet:
               path: {{ .Values.basePath }}/health
@@ -64,3 +71,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: photobooth-db-volume
+        persistentVolumeClaim:
+          claimName: photobooth-db-claim
