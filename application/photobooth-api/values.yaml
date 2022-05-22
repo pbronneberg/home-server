@@ -6,13 +6,18 @@ replicaCount: 1
 
 image:
   repository: pbronneberg/photobooth-api
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+storageClassName: "longhorn"
+
+logLevel:
+  default: "Information"
+  aspnetcore: "Warning"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -25,16 +30,14 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+  allowPrivilegeEscalation: false
 
 service:
   type: ClusterIP
