@@ -19,6 +19,9 @@ logLevel:
   default: "Information"
   aspnetcore: "Warning"
 
+#environment: "Development"
+environment: "Release"
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -65,7 +68,13 @@ ingress:
      hosts:
        - photobooth.itsmyparty.nl
 
-resources: {}
+resources:
+  limits:
+    cpu: 3
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 autoscaling:
   enabled: false

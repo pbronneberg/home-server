@@ -39,7 +39,7 @@ spec:
               protocol: TCP
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: "Development"
+              value: {{ .Values.environment }}
             - name: BasePath
               value: {{ .Values.basePath }}
             - name: Logging__LogLevel__Microsoft__AspNetCore
