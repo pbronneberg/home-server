@@ -7,20 +7,22 @@ domoticz:
     hostnames:
       - "vendelier.bronneberg.org"
 
-diskstation:
+mail:
   service:
-    targetPort: 5000
+    targetPort: 21680
   endpoint:
-    ip: "192.0.2.254"
+    ip: "192.168.254.137"
   ingress:
     hostnames: 
-      - "nas.bronneberg.org"
+      - "mail.bronneberg.org"
+      - "mail.itsmyparty.nl"
+      - "mail.myenglishplayground.nl"
 
 photostation:
   service:
-    targetPort: 80
+    targetPort: 5080
   endpoint:
-    ip: "192.0.2.254"
+    ip: "192.168.254.137"
   ingress:
     hostnames:
       - "photo.bronneberg.org"
@@ -36,8 +38,6 @@ apache:
       - "myenglishplayground.nl"
       - "www.itsmyparty.nl"
       - "itsmyparty.nl"
-      - "www.hhdx.nl"
-      - "hhdx.nl"
       - "www.bronneberg.org"
       - "bronneberg.org"
 

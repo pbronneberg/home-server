@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name:  photobooth-db-claim
+spec:
+  storageClassName: {{ .Values.storageClassName | quote }}
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

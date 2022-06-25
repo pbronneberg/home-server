@@ -63,6 +63,13 @@ kubectl create namespace  actions-runner-system
 kubectl create secret generic controller-manager -n actions-runner-system --from-literal=github_token=<TOKEN>
 ```
 
+Install the [K3S system upgrader](https://rancher.com/docs/k3s/latest/en/upgrades/automated/) to automatically upgrade all nodes in the cluster to the newest K3S versions.
+
+```
+kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
+kubectl apply -f infra/system-upgrader/upgrade-plans.yml
+```
+
 ### argo
 
 ```
