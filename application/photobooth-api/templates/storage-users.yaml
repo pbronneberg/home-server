@@ -1,0 +1,12 @@
+{{- range .Values.s3.provisioning.users }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{  .secretName | default (printf "storage-user-%s" .username) }}
+  namespace: {{ .namespace }}
+data:
+  AWS_ACCESS_KEY_ID: {{ .username | b64enc }}
+  AWS_SECRET_ACCESS_KEY: {{ .password | b64enc }}
+type: Opaque
+---
+{{- end }}

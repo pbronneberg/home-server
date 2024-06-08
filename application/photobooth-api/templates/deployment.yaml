@@ -37,6 +37,9 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ .Values.api.s3.secretName }}
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.environment }}

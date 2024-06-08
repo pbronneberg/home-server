@@ -5,15 +5,71 @@
 replicaCount: 1
 
 image:
-  repository: pbronneberg/photobooth-api
+  repository: bronneberg/photobooth-api
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
 
+api:
+  s3:
+    secretName: storage-user-photobooth
+
+mongodb:
+  useStatefulSet: true
+  auth:
+    enabled: false
+  tls:
+    enabled: false
+
+s3:
+  createNamespaces: true
+  provisioning:
+    enabled: true
+    buckets:
+      - name: photobooth
+        region: minio
+    users:
+      - username: photobooth
+        password: not-a-real-password
+        policies:
+         - photobooth-policy
+        setPolicies: true
+    policies:
+      - name: photobooth-policy
+        statements:
+          - resources:
+              - "arn:aws:s3:::photobooth"
+            effect: "Allow"
+            actions:
+              - "s3:GetBucketLocation"
+              - "s3:ListBucket"
+              - "s3:ListBucketMultipartUploads"
+          - resources:
+              - "arn:aws:s3:::photobooth/*"
+            effect: "Allow"
+            actions:
+              - "s3:AbortMultipartUpload"
+              - "s3:DeleteObject"
+              - "s3:GetObject"
+              - "s3:ListMultipartUploadParts"
+              - "s3:PutObject"
+  service:
+    ports:
+      api: 80
+
+  ingress:
+    enabled: true
+    hostname: s3.itsmyparty.nl
+    annotations:
+      kubernetes.io/tls-acme: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+    tls: true
+  apiIngress:
+    enabled: false
+    
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-storageClassName: "longhorn"
+storageClassName: "local-path"
 
 logLevel:
   default: "Information"
@@ -33,11 +89,11 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext:
-  runAsUser: 1001
-  runAsGroup: 1001
-  fsGroup: 1001
-  fsGroupChangePolicy: "OnRootMismatch"
+#podSecurityContext:
+#  runAsUser: 1001
+#  runAsGroup: 1001
+#  fsGroup: 1001
+#  fsGroupChangePolicy: "OnRootMismatch"
 
 securityContext:
   allowPrivilegeEscalation: false
