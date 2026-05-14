@@ -3,4 +3,4 @@ name: home-assistant
 description: Home Assistant Core running in Kubernetes
 type: application
 version: 0.1.0
-appVersion: "2025.12.5"
+appVersion: "2026.5.1"
