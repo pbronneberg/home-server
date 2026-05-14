@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: oauth2-proxy
+  namespace: auth
+spec:
+  chart:
+    spec:
+      chart: oauth2-proxy
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: oauth2-proxy
+        namespace: flux-system
+      version: 10.4.3
+  install:
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: oauth2-proxy
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: ConfigMap
+      name: oauth2-proxy-values
+      valuesKey: values.yaml
+    - kind: Secret
+      name: oauth2-proxy-private-values
+      valuesKey: values.yaml

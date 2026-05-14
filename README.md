@@ -275,9 +275,48 @@ dependencies in
 * kured node reboot orchestration
 * Longhorn and the retained Longhorn storage class
 * kube-prometheus-stack monitoring
+* oauth2-proxy for opt-in GitHub-backed ingress authentication
 * Traefik middlewares used by existing ingresses
 * Home Assistant, Bronneberg, Photobooth, My English Playground, TLS proxy, and
   Longhorn admin workload releases
+
+### GitHub-backed ingress authentication
+
+The `infrastructure-oauth2-proxy` release provides a shared auth endpoint for
+ingresses that opt in to the `default-github-oauth@kubernetescrd` Traefik
+middleware. It uses oauth2-proxy's GitHub provider rather than GitHub as a
+general-purpose OpenID Connect identity provider.
+
+Before protecting any ingress, create a GitHub OAuth app with an authorization
+callback URL that matches the private auth host:
+
+```text
+https://auth.home.example/oauth2/callback
+```
+
+Then edit the encrypted private values:
+
+```bash
+make sops-edit SOPS_FILE=private/flux/home/oauth2-proxy-values.sops.yaml
+```
+
+Replace the placeholder client ID, client secret, generated cookie secret,
+GitHub organization or team, auth callback host, and cookie domain. Generate
+the cookie secret with:
+
+```bash
+openssl rand -base64 32 | tr -- '+/' '-_'
+```
+
+Set `replicaCount: 1` only after those values are real. To protect an ingress,
+include the OAuth middleware after the HTTPS redirect middleware:
+
+```yaml
+traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
+```
+
+Protected hosts must be covered by the oauth2-proxy `cookie_domains` and
+`whitelist_domains` values.
 
 Flux migration parity and rollback notes live in
 [docs/flux-migration-parity.md](docs/flux-migration-parity.md).

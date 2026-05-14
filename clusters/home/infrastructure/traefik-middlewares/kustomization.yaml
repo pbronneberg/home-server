@@ -3,4 +3,5 @@ kind: Kustomization
 namespace: default
 resources:
   - basic-auth.yaml
+  - github-oauth.yaml
   - redirect-https.yaml

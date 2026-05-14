@@ -29,6 +29,12 @@ Monitoring uses `monitoring-values.sops.yaml` for real ingress hostnames. The
 public kube-prometheus-stack values keep ingresses disabled so placeholder
 example domains never request public ACME certificates.
 
+GitHub-backed ingress authentication uses
+`oauth2-proxy-values.sops.yaml` for the OAuth app credentials, allowed GitHub
+organization or team, auth callback hostname, and cookie domain. The committed
+placeholder keeps `replicaCount: 0`; set it to `1` only after replacing the
+example values with real private values.
+
 After restoring the age identity on a workstation, run `make
 sops-recovery-drill` from the repository root before relying on a fresh Flux
 bootstrap. The drill is documented in

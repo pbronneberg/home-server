@@ -1,0 +1,51 @@
+fullnameOverride: oauth2-proxy
+
+# Fill private/flux/home/oauth2-proxy-values.sops.yaml with real GitHub OAuth
+# values and set replicaCount to 1 before opting any ingress into this
+# middleware.
+replicaCount: 0
+
+config:
+  clientID: "placeholder-client-id"
+  clientSecret: "placeholder-client-secret"
+  cookieSecret: "placeholder-cookie-secret"
+  configFile: |
+    email_domains = [ "*" ]
+    provider = "github"
+    github_org = "example-org"
+    reverse_proxy = true
+    upstreams = [ "static://202" ]
+    redirect_url = "https://auth.home.example/oauth2/callback"
+    cookie_domains = [ ".home.example" ]
+    whitelist_domains = [ ".home.example" ]
+    skip_provider_button = true
+    set_xauthrequest = true
+
+ingress:
+  enabled: false
+  path: /
+  pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  hosts:
+    - auth.home.example
+  tls:
+    - secretName: oauth2-proxy-tls
+      hosts:
+        - auth.home.example
+
+metrics:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+resources:
+  limits:
+    memory: 128Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
