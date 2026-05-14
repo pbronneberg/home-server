@@ -24,8 +24,8 @@ spec:
       - wednesday
       - thursday
       - friday
-    startTime: "00:00"
-    endTime: "04:00"
+    startTime: "22:00"
+    endTime: "23:30"
     timeZone: UTC
 ---
 # Agent plan
