@@ -62,11 +62,11 @@
         "/^application\\/home-assistant\\/Chart\\.yaml$/"
       ],
       "matchStrings": [
-        "appVersion:\\s+\"(?<currentValue>\\d{4}\\.\\d+(?:\\.\\d+)?)\""
+        "appVersion:\\s+\"(?<currentValue>\\d{4}\\.\\d+\\.\\d+)\""
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "homeassistant/home-assistant",
-      "versioningTemplate": "docker"
+      "versioningTemplate": "regex:^(?<major>\\d{4})\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
     },
     {
       "customType": "regex",
