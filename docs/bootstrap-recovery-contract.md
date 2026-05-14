@@ -31,8 +31,7 @@ storage.
 | Area | Source of truth | Privacy level | Notes |
 | --- | --- | --- | --- |
 | Repository desired state | GitHub `main` plus reviewed pull requests | Public-safe | This repo records the intended platform shape. |
-| Current infrastructure reconciler | `infra/home-server.helmsman.toml` | Public-safe with placeholders | Helmsman remains the current manual reconciler until Flux parity exists. |
-| Future GitOps reconciler | Planned Flux manifests under a cluster entrypoint such as `clusters/home/` | Public-safe plus SOPS | To be introduced by the Flux migration work. |
+| Infrastructure reconciler | `clusters/home/` | Public-safe plus SOPS | Flux reconciles the committed cluster entrypoint. |
 | Application charts | `application/*` Helm charts | Public-safe with placeholders | Preserve release names, namespaces, PVC names, hostnames, and secrets unless a migration plan says otherwise. |
 | Public example topology | `private/home.example.yaml` | Public-safe | Uses reserved example values only. |
 | Private topology and secrets | `private/*.sops.yaml` | Encrypted private | Must stay encrypted before commit. |
@@ -96,14 +95,9 @@ and then to repository-driven reconciliation.
 
 5. Reconcile platform infrastructure.
 
-   Current interim path: use Helmsman from the management workstation with
-   `infra/home-server.helmsman.toml`, then apply any documented post-install
-   manifests that are still outside Helm.
-
-   Target GitOps path: bootstrap Flux only after the API is reachable, create
-   the Flux SOPS decryption secret from the restored age identity, and let Flux
-   reconcile the committed cluster entrypoint. Flux manifests and the exact
-   bootstrap command are intentionally deferred to the Flux migration work.
+   Bootstrap Flux only after the API is reachable, create the Flux SOPS
+   decryption secret from the restored age identity, and let Flux reconcile the
+   committed cluster entrypoint under `clusters/home/`.
 
 6. Restore persistent workload data.
 
@@ -140,9 +134,8 @@ and then to repository-driven reconciliation.
   backup procedures.
 - Modernize the K3s lifecycle and decide the supported topology before changing
   OS or automated upgrade strategy.
-- Make SOPS and age ready for in-cluster GitOps decryption.
-- Migrate Helmsman-managed infrastructure to Flux only after rollback and
-  validation are documented.
+- Keep SOPS and age recovery tested for in-cluster GitOps decryption.
+- Keep Flux bootstrap and rollback validation current with the live cluster.
 
 ## Acceptance Checklist
 

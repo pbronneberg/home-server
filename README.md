@@ -161,21 +161,6 @@ Note that this installation automatically routes all port `80` and `443` traffic
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
 
-## Installing Helm-Diff
-
-```bash
-helm plugin install https://github.com/databus23/helm-diff
-```
-
-## Installing Helmsman
-
-```bash
-mkdir tmp
-curl -L https://github.com/Praqma/helmsman/releases/download/v3.7.7/helmsman_3.7.7_linux_amd64.tar.gz | tar zx --directory tmp
-sudo mv ./tmp/helmsman /usr/local/bin/helmsman
-rm -rf ./tmp
-```
-
 ## Install infrastructure services in cluster
 
 ### Flux GitOps
@@ -245,8 +230,8 @@ secret overlay:
 flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
 ```
 
-The Flux desired state mirrors the legacy Helmsman infrastructure and keeps
-ordering explicit with Flux `Kustomization` dependencies in
+The Flux desired state keeps ordering explicit with Flux `Kustomization`
+dependencies in
 [`clusters/home/infrastructure.yaml`](clusters/home/infrastructure.yaml):
 
 * namespaces and Helm repositories
@@ -262,17 +247,6 @@ Flux overlay was created, so no dummy token is committed. Add a
 SOPS-encrypted Kubernetes Secret under `private/flux/home` before reconciling
 the runner controller.
 
-Helmsman removal is intentionally deferred. Keep
-[`infra/home-server.helmsman.toml`](infra/home-server.helmsman.toml) available
-as the rollback reference until Flux has reconciled successfully and live
-release parity has been checked.
-
-### Legacy Helmsman
-
-```bash
-helmsman -apply -f ./infra/home-server.helmsman.toml
-```
-
 Create Traefik proxy middlewares
 
 ```bash
@@ -285,10 +259,9 @@ kubectl apply -f infra/traefik-basicauth.yaml
 Repository maintenance CI runs on GitHub-hosted public runners via
 `.github/workflows/ci.yml`.
 
-The Action Runner Controller configuration in `infra/home-server.helmsman.toml`
-and `application/runners/runners.yaml` is legacy self-hosted runner
-configuration. Keep it only if the cluster should still host runners for other
-repositories.
+The Action Runner Controller configuration in `application/runners/runners.yaml`
+is legacy self-hosted runner configuration. Keep it only if the cluster should
+still host runners for other repositories.
 
 If the legacy [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller)
 is used, manage its GitHub token as a SOPS-encrypted `controller-manager`
