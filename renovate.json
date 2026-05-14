@@ -90,6 +90,20 @@
       "automerge": false
     },
     {
+      "description": "Ignore removed Bitnami Shell image from disabled legacy WordPress volume permissions",
+      "matchManagers": [
+        "helm-values"
+      ],
+      "matchPackageNames": [
+        "docker.io/bitnami/bitnami-shell",
+        "bitnami/bitnami-shell"
+      ],
+      "matchFileNames": [
+        "application/myenglishplayground-nl/values.default.yaml"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Label Flux controller updates",
       "matchFileNames": [
         "clusters/home/flux-system/**"
