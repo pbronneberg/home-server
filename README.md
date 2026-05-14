@@ -112,9 +112,11 @@ Use the Makefile SOPS targets for common private overlay tasks:
 ```bash
 make sops-keygen
 make sops-decrypt
+make sops-list
 make sops-edit
 make sops-encrypt
 make sops-decrypt-file
+make sops-decrypt-dir
 make sops-updatekeys
 ```
 
@@ -124,6 +126,9 @@ exist. `make sops-decrypt` prints `private/home.sops.yaml` to stdout.
 encrypted. `make sops-encrypt` encrypts `private/home.sops.yaml` in place.
 `make sops-decrypt-file` writes `private/home.decrypted.yaml`, which is ignored
 by git. Override `SOPS_FILE` for a different encrypted file.
+`make sops-list` lists all encrypted private files, and `make sops-decrypt-dir`
+writes all decrypted private files under the ignored `private-decrypted/`
+directory. Override `SOPS_OUT_DIR` to use a different output directory.
 
 `HomeAssistentConfig.yaml` and `HomeAssistantConfig.yaml` are local-only exports
 and must remain ignored.
@@ -240,19 +245,13 @@ dependencies in
 * Longhorn and the retained Longhorn storage class
 * Traefik middlewares used by existing ingresses
 * kube-prometheus-stack and the legacy Actions Runner Controller
+* TLS proxy and Longhorn admin workload releases
 
 The legacy Actions Runner Controller expects a `controller-manager` secret in
 `actions-runner-system`. The live cluster did not expose that token when this
 Flux overlay was created, so no dummy token is committed. Add a
 SOPS-encrypted Kubernetes Secret under `private/flux/home` before reconciling
 the runner controller.
-
-Create Traefik proxy middlewares
-
-```bash
-kubectl apply -f infra/traefik-https.yaml
-kubectl apply -f infra/traefik-basicauth.yaml
-```
 
 ## GitHub Actions
 
@@ -283,28 +282,4 @@ kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflo
 
 ```
 kubectl apply -n argo -f ./infra/argo/k8sapi-executor.yml
-```
-
-## Installing Workloads
-
-### TLS Proxies
-```
-helm dep up ./application/tls-proxies
-helm install tls-proxies ./application/tls-proxies --namespace websites
-```
-
-### Longhorn admin
-```
-helm install longhorn-admin ./application/longhorn-admin --namespace longhorn-system
-```
-
-### GitHub Action runners
-```
-kubectl create namespace self-hosted-runners
-kubectl apply -f application/runners/runners.yaml --namespace self-hosted-runners
-```
-
-To ensure scheduling is not done on remote/spoke nodes add taints to the given nodes
-```
-kubectl taint nodes <NODE> spoke=true:NoSchedule
 ```

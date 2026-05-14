@@ -11,6 +11,7 @@ HomeAssistentConfig.yaml
 *.decrypted.yaml
 *.plain.yaml
 *.local.yaml
+private-decrypted/
 gitleaks-report.*
 
 # Local SOPS/age identities. Public age recipients are committed in .sops.yaml;
