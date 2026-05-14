@@ -4,8 +4,19 @@
 # Local personal exports/configs
 HomeAssistantConfig.yaml
 HomeAssistentConfig.yaml
+.public-denylist.local
+.public-replacements.local
 
 *.secrets.yaml
+*.decrypted.yaml
+*.plain.yaml
+*.local.yaml
+gitleaks-report.*
+
+# Local SOPS/age identities. Public age recipients are committed in .sops.yaml;
+# private identities stay local and must be backed up separately.
+.sops/age/keys.txt
+.sops/age/*.txt
 
 # Local .terraform directories
 **/.terraform/*

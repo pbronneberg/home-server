@@ -1,0 +1,7 @@
+creation_rules:
+  - path_regex: ^private/.*\.sops\.ya?ml$
+    age: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+
+stores:
+  yaml:
+    indent: 2

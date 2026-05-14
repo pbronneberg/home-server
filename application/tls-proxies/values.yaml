@@ -2,50 +2,50 @@ domoticz:
   service:
     targetPort: 5005
   endpoint:
-    ip: "192.168.254.123"
+    ip: "192.0.2.10"
   ingress:
     hostnames:
-      - "vendelier.bronneberg.org"
+      - "vendelier.home.example"
 
 mail:
   service:
     targetPort: 21680
   endpoint:
-    ip: "192.168.254.137"
+    ip: "192.0.2.20"
   ingress:
     hostnames: 
-      - "mail.bronneberg.org"
-      - "mail.itsmyparty.nl"
-      - "mail.myenglishplayground.nl"
+      - "mail.home.example"
+      - "mail.apps.example.com"
+      - "mail.school.example.com"
 
 photostation:
   service:
     targetPort: 5080
   endpoint:
-    ip: "192.168.254.137"
+    ip: "192.0.2.20"
   ingress:
     hostnames:
-      - "photo.bronneberg.org"
+      - "photo.home.example"
 
 apache:
   service:
     targetPort: 8088
   endpoint:
-    ip: "192.168.254.123"
+    ip: "192.0.2.10"
   ingress:
     hostnames:
-      - "www.myenglishplayground.nl"
-      - "myenglishplayground.nl"
-      - "www.itsmyparty.nl"
-      - "itsmyparty.nl"
-      - "www.bronneberg.org"
-      - "bronneberg.org"
+      - "www.school.example.com"
+      - "school.example.com"
+      - "www.apps.example.com"
+      - "apps.example.com"
+      - "www.home.example"
+      - "home.example"
 
 opensprinkler:
   service:
     targetPort: 8080
   endpoint:
-    ip: "192.168.254.130"
+    ip: "192.0.2.30"
   ingress:
     hostnames:
-      - "sprinkler.bronneberg.org"
+      - "sprinkler.home.example"

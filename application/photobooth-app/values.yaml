@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: pbronneberg/photobooth-app
+  repository: example-org/photobooth-app
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
@@ -52,14 +52,14 @@ ingress:
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   hosts:
-    - host: photobooth.itsmyparty.nl
+    - host: photobooth.apps.example.com
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
    - secretName: photobooth-nl-tls
      hosts:
-       - photobooth.itsmyparty.nl
+       - photobooth.apps.example.com
 
 resources: {}
 

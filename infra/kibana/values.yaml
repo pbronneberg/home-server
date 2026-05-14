@@ -127,13 +127,13 @@ ingress:
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
   hosts:
-    - host: kibana.bronneberg.org
+    - host: kibana.home.example
       paths:
         - path: /
   tls:
     - secretName: kibana-bronneberg-tls
       hosts:
-        - kibana.bronneberg.org
+        - kibana.home.example
 
 readinessProbe:
   failureThreshold: 3

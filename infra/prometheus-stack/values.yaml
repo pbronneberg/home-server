@@ -62,7 +62,7 @@ alertmanager:
     ## Hosts must be provided if Ingress is enabled.
     ##
     hosts: 
-      - alertmanager.bronneberg.org
+      - alertmanager.home.example
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
@@ -77,7 +77,7 @@ alertmanager:
     tls: 
     - secretName: alertmanager-general-tls
       hosts:
-       - alertmanager.bronneberg.org
+       - alertmanager.home.example
 
   ## Configuration for Alertmanager secret
   ##
@@ -152,7 +152,7 @@ grafana:
   ##
   defaultDashboardsTimezone: utc
 
-  adminPassword: prom-operator
+  adminPassword: change-me-use-sops
 
   ingress:
     ## If true, Grafana Ingress will be created
@@ -172,7 +172,7 @@ grafana:
     ## Must be provided if Ingress is enable.
     ##
     hosts:
-      - grafana.bronneberg.org
+      - grafana.home.example
 
     ## Path for grafana ingress
     path: /
@@ -183,7 +183,7 @@ grafana:
     tls:
      - secretName: grafana-general-tls
        hosts:
-       - grafana.bronneberg.org
+       - grafana.home.example
 
   sidecar:
     dashboards:
@@ -247,7 +247,7 @@ prometheus:
     ## Hosts must be provided if Ingress is enabled.
     ##
     hosts:
-      - thanos-gateway.bronneberg.org
+      - thanos-gateway.home.example
 
     ## Paths to use for ingress rules
     ##
@@ -264,7 +264,7 @@ prometheus:
     tls:
      - secretName: thanos-gateway-tls
        hosts:
-       - thanos-gateway.bronneberg.org
+       - thanos-gateway.home.example
     
 
 
@@ -289,7 +289,7 @@ prometheus:
     ## Must be provided if Ingress is enabled.
     ##
     hosts:
-      - prometheus.bronneberg.org
+      - prometheus.home.example
 
     ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
     ##
@@ -306,4 +306,4 @@ prometheus:
     tls:
       - secretName: prometheus-general-tls
         hosts:
-          - prometheus.bronneberg.org
+          - prometheus.home.example

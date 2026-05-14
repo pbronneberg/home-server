@@ -1,0 +1,34 @@
+topology:
+  clusterName: ENC[AES256_GCM,data:oOJR3Dth/9Furha8V2Qv4Q==,iv:m9vOlmvAzV2aVx1Qy6V7rB51WiFKjmHng0yVY8UFGm0=,tag:7Frf8sWFJfVeFbNzpYSYqg==,type:str]
+  domains:
+    primary: ENC[AES256_GCM,data:+Q2B0qrRgz4PERfo,iv:IAV/CQTa2CT1NggCNSnHiklVgxMua9RM8F8Wxj01mUQ=,tag:052Hr+2TST7subtWF5U7qA==,type:str]
+    apps: ENC[AES256_GCM,data:vrkPnXHEV6if72hgUlD3Fg==,iv:GkSJv4/WlGaO4wGaLYYnNE82BuFepJhPCAQwZojGy1o=,tag:L+EtIhO0/FEz/BETkqoTRg==,type:str]
+    school: ENC[AES256_GCM,data:7RN59juDMN7v92Tkt6OArgk9,iv:Qj2ZZVKwu07CgEco9ZMp/7vDPHzjDqC4JQ2gUOs25lE=,tag:u2phHs4g/2I2Uom7zZ8dZg==,type:str]
+  lan:
+    cidr: ENC[AES256_GCM,data:o28/Z/BBsdlyGQro,iv:Ovrw3bw06OlZeaVUdFlyGiMv8AcpRtC8bJpp+LUIP38=,tag:denbqAAO3/vD6MrZ2zjbGA==,type:str]
+    ingressNode: ENC[AES256_GCM,data:z6y8L998HqhmqA==,iv:ybtyj8lgtJrwGK45x25RVLod9f6CVOJrCUjGVJyi79M=,tag:tU5Jnw0TCyr5A4WG7gUGKQ==,type:str]
+    storageNode: ENC[AES256_GCM,data:l6kD4poc+7R/PQ==,iv:DZLbhdJw9TN3GiUAQh0VFpvOTZyXOvbD3xt93OZAqhs=,tag:N2fnaaHGOpW099fOuMNH9A==,type:str]
+    deviceNode: ENC[AES256_GCM,data:jfXkrZ5LS3P8Tg==,iv:F3vp27RLGTm9scDTPxR1V04KNsSXrw5TTlQEjkJ3CWg=,tag:78bKkwRsMA4xDv6JZFS45A==,type:str]
+secrets:
+  grafanaAdminPassword: ENC[AES256_GCM,data:Zb3MyGBXw3wx6BOtEMTv9TPP,iv:7OOMdDervLCnRPixpq2JYRj35eQYvwclhRJv3VjfUfs=,tag:m4vxGgVx2qjC3Fvc9D9Tsw==,type:str]
+  piholeAdminPassword: ENC[AES256_GCM,data:E8e/FWKozRgkSOXD7u4Kq9wm,iv:ndNQyk0jxG3fEyio5GuUdLvnC4xI9tNWQPlvWLsdKgg=,tag:dNH1BcgaJVDvW1KZ4feArA==,type:str]
+  actionRunnerGithubToken: ENC[AES256_GCM,data:TWhAT2X303KmFD1taGGT5eXJ,iv:c0JinJUjBAYcr+moAwZ80PpZOLQj6cOO2vDRfCsa+pc=,tag:nzQaIi6ZrweLZ106MGdRSA==,type:str]
+repositories:
+  homeServer: ENC[AES256_GCM,data:zODSolLdroINHNjuHPdaWnwToxQEwZQ=,iv:khhZKNFrX537uYj+N7asLmwC92ffk9cArPw+QVZdJBc=,tag:okilU7mVJHc/6hlX4nzqKg==,type:str]
+  sampleService: ENC[AES256_GCM,data:OY+6HLV3cUhl9Rv0jcmbmqFnzqdHpS4MPo4=,iv:G5VJxy/hL8mB1VkAsm5VCDXGtNJCCTAsiUbwfyjAJaY=,tag:mYf3KcEMTztfGHYmAsYH3w==,type:str]
+  sampleApp: ENC[AES256_GCM,data:+XhnKvnXWtBNoOz/DxOvJTkQzSD+dA==,iv:Pl3xrjcKAf50Q6CraxzB3JkQaG9bvvSN0Qpv+/uM1jA=,tag:t606VsgP3TjWEvxLFMZ9dA==,type:str]
+sops:
+  age:
+    - recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBMaFlzeDNYc3Z0a2VYKy9K
+        MXF5SmluUlg1YmxpNnlnOEx1MWlVL0E3NlhBCnVWN0Z5b041c2x3OE0xUHpnZmc0
+        WTNMK20zbWlJdy9JdXY1WGxkQlNPb3MKLS0tIFRuSGdiNFVTR28yWUdNR2tZOE1R
+        dFNHaC91ZVdyZk9tQjB1K3JqVHM3N3MKHTp+PtL6iIYgoq5SBnCZEHUwgSv8pofe
+        vklWAHTREEN76z97eBbQFFhWKGUpnwwDi1iVeSt8nyLyK4cMUDt5hQ==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2026-05-14T08:32:39Z"
+  mac: ENC[AES256_GCM,data:ww3gFIdr+QAvYcBkAV6IqukoisxD3td5WJuoXG9uZ2CJe4jmfj0XzKYBEUzfxzWAquSZDceC4MCzQtoPNvE9wtwHHBe2l7Vj6ennYeDeeAoItlgIEdFm6tj3z96ir0xtNi+o6Rpv5Wj3Al63DFg2cfVK3tA0Jnew4eOk3Z1t+Yc=,iv:HWi+3vLx9G1x00UOAjSYibkvDUPSZ5S4YK5iaPG0RWY=,tag:WXp2qU8WEFq/MsC1Hy8tXg==,type:str]
+  unencrypted_suffix: _unencrypted
+  version: 3.11.0

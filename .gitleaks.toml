@@ -1,0 +1,13 @@
+title = "home-server public-readiness secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented non-secret placeholders"
+regexes = [
+  '''change-me-use-sops''',
+  '''not-a-real-password''',
+  '''user@example\.com''',
+  '''example-org''',
+]

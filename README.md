@@ -13,14 +13,22 @@ Run the same checks locally that CI runs on GitHub public runners:
 make ci
 ```
 
+Before changing repository visibility to public, run:
+
+```bash
+make public-check
+```
+
 The CI workflow in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 checks GitHub Actions syntax, YAML files, Helm dependencies, Helm linting, and
-Helm rendering. Dependabot is configured in
+Helm rendering. It also scans the current working tree with Gitleaks and checks
+for public-unsafe topology. Dependabot is configured in
 [`.github/dependabot.yml`](.github/dependabot.yml) for GitHub Actions and Helm
 chart dependencies.
 
 Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
+Publication steps live in [docs/publication-runbook.md](docs/publication-runbook.md).
 
 ### Local maintenance tooling
 
@@ -30,7 +38,15 @@ locally, install these tools on your workstation:
 ```bash
 python3 -m pip install --user yamllint==1.38.0
 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+go install github.com/zricethezav/gitleaks/v8@v8.30.1
 ```
+
+For SOPS/age private overlays, install `sops` and `age`. The local private age
+identity is stored in `.sops/age/keys.txt`, is ignored by git, and must be
+backed up outside this repository.
+
+`HomeAssistentConfig.yaml` and `HomeAssistantConfig.yaml` are local-only exports
+and must remain ignored.
 
 ### First follow-up candidates
 
