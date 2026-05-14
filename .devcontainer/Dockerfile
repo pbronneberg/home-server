@@ -5,6 +5,7 @@ ARG CODEX_VERSION=0.130.0
 ARG GITLEAKS_VERSION=8.30.1
 ARG GIT_FILTER_REPO_VERSION=2.47.0
 ARG HELM_VERSION=3.19.0
+ARG KUBECTL_VERSION=1.36.1
 ARG SOPS_VERSION=3.11.0
 ARG TARGETARCH
 ARG YAMLLINT_VERSION=1.38.0
@@ -54,13 +55,15 @@ RUN set -eux; \
     curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_${gitleaks_arch}.tar.gz" \
       | tar -xz -C /tmp gitleaks; \
     mv /tmp/gitleaks /usr/local/bin/gitleaks; \
+    curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl"; \
     curl -fsSL -o /usr/local/bin/sops "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${sops_arch}"; \
-    chmod +x /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/sops
+    chmod +x /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/kubectl /usr/local/bin/sops
 
 RUN actionlint --version \
     && codex --version \
     && gitleaks version \
     && helm version --short \
+    && kubectl version --client \
     && sops --version \
     && yamllint --version \
     && git-filter-repo --version

@@ -55,6 +55,7 @@ make public-check
 The devcontainer installs the same tools used by the Makefile:
 
 * `helm`
+* `kubectl`
 * `yamllint`
 * `actionlint`
 * `gitleaks`
@@ -70,6 +71,16 @@ be opened as runnable notebooks. Authenticate inside the devcontainer with your
 preferred Codex flow, or provide `OPENAI_API_KEY` through your local shell, VS
 Code secrets, or another non-repository secret store. Do not commit Codex
 tokens, API keys, or generated plaintext credentials.
+
+To use `kubectl` from the devcontainer, configure Kubernetes access on the host
+at `~/.kube/config`, then rebuild or reopen the container. The devcontainer
+mounts host `~/.kube` read-only at `/home/vscode/.kube-host` and sets
+`KUBECONFIG=/home/vscode/.kube-host/config`, so the host kubeconfig remains the
+source of truth and credentials are not copied into the repository.
+
+```bash
+kubectl get nodes
+```
 
 Host-side installs are optional. If you do not use the devcontainer, install
 equivalent versions on your workstation:
