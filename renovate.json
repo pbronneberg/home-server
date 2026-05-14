@@ -54,6 +54,19 @@
         "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?(?: versioning=(?<versioning>\\S+))?\\s+\\s[A-Z0-9_]+_VERSION: \"?(?<currentValue>[^\"\\n]+)\"?"
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver-coerced{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Home Assistant chart appVersion image tag",
+      "managerFilePatterns": [
+        "/^application\\/home-assistant\\/Chart\\.yaml$/"
+      ],
+      "matchStrings": [
+        "appVersion:\\s+\"(?<currentValue>\\d{4}\\.\\d+(?:\\.\\d+)?)\""
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "homeassistant/home-assistant",
+      "versioningTemplate": "docker"
     }
   ],
   "major": {
@@ -65,6 +78,10 @@
       "matchManagers": [
         "custom.regex",
         "dockerfile"
+      ],
+      "matchFileNames": [
+        ".devcontainer/Dockerfile",
+        ".github/workflows/**"
       ],
       "matchUpdateTypes": [
         "minor",
@@ -86,6 +103,23 @@
       ],
       "addLabels": [
         "cluster"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Keep Home Assistant image updates reviewable before Flux reconciles them",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "homeassistant/home-assistant"
+      ],
+      "matchFileNames": [
+        "application/home-assistant/Chart.yaml"
+      ],
+      "addLabels": [
+        "cluster",
+        "workloads"
       ],
       "automerge": false
     },
@@ -126,6 +160,7 @@
       "description": "Label workload dependency updates",
       "matchFileNames": [
         "clusters/home/workloads/**",
+        "application/home-assistant/Chart.yaml",
         "application/**/values*.yaml"
       ],
       "addLabels": [
