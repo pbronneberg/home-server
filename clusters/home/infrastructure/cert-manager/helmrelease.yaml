@@ -12,7 +12,7 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
-      version: v1.12.17
+      version: v1.13.6
   install:
     crds: Create
     remediation:
