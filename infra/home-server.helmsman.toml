@@ -3,8 +3,8 @@
 context= "home-server-infra"
 
 [metadata]
-  org = "personal-cloud.nl"
-  maintainer = "Patrick (patrick@bronneberg.org)"
+  org = "example-cloud"
+  maintainer = "Patrick (user@example.com)"
   description = "Basic infrastructure to be installed on home kubernetes cluster"
   notes = "This requires the bare cluster to be provisioned and the kubecontext to be defined as a prerequisite"
 
@@ -38,11 +38,11 @@ context= "home-server-infra"
   elastic = "https://helm.elastic.co"
   prometheus-community = "https://prometheus-community.github.io/helm-charts"
   actions-runner = "https://actions-runner-controller.github.io/actions-runner-controller"
-  
+
 [apps]
   [apps.cert-manager]
-    namespace = "cert-manager" 
-    enabled = true 
+    namespace = "cert-manager"
+    enabled = true
     chart = "jetstack/cert-manager"
     version = "v1.6.1"
     protected = false
@@ -53,10 +53,10 @@ context= "home-server-infra"
     postInstall="cert-manager/cert-manager.issuers.yaml"
     [apps.cert-manager.set]
     "installCRDs"= "true"
-  
+
   [apps.sealed-secrets]
-    namespace = "kube-system" 
-    enabled = true 
+    namespace = "kube-system"
+    enabled = true
     chart = "sealed-secrets/sealed-secrets"
     version = "1.16.1"
     protected = false
@@ -65,8 +65,8 @@ context= "home-server-infra"
     timeout= 300
 
   [apps.service-mesh]
-    namespace = "mesh" 
-    enabled = false 
+    namespace = "mesh"
+    enabled = false
     chart = "traefik-mesh/traefik-mesh"
     version = "4.0.0"
     protected = false
@@ -75,8 +75,8 @@ context= "home-server-infra"
     timeout= 300
 
   [apps.longhorn]
-    namespace = "longhorn-system" 
-    enabled = true 
+    namespace = "longhorn-system"
+    enabled = true
     chart = "longhorn/longhorn"
     version = "1.2.2"
     protected = false
@@ -85,10 +85,10 @@ context= "home-server-infra"
     timeout= 300
     [apps.longhorn.hooks]
     postInstall="longhorn/storageclass-longhorn.yaml"
-  
+
   [apps.elasticsearch]
-    namespace = "elasticsearch" 
-    enabled = true 
+    namespace = "elasticsearch"
+    enabled = true
     chart = "elastic/elasticsearch"
     version = "7.16.1"
     protected = false
@@ -98,8 +98,8 @@ context= "home-server-infra"
     timeout= 300
 
   [apps.kibana]
-    namespace = "elasticsearch" 
-    enabled = true 
+    namespace = "elasticsearch"
+    enabled = true
     chart = "elastic/kibana"
     version = "7.16.1"
     protected = false
@@ -107,10 +107,10 @@ context= "home-server-infra"
     valuesFile= "kibana/values.yaml"
     wait = true
     timeout= 300
-  
+
   [apps.prometheus-stack]
-    namespace = "prometheus" 
-    enabled = true 
+    namespace = "prometheus"
+    enabled = true
     chart = "prometheus-community/kube-prometheus-stack"
     version = "24.0.1"
     protected = false
@@ -118,10 +118,10 @@ context= "home-server-infra"
     valuesFile= "prometheus-stack/values.yaml"
     wait = true
     timeout= 300
-  
+
   [apps.actions-runner-controller]
-    namespace = "actions-runner-system" 
-    enabled = true 
+    namespace = "actions-runner-system"
+    enabled = true
     chart = "actions-runner/actions-runner-controller"
     version = "0.15.1"
     protected = false

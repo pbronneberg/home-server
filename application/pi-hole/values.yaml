@@ -1,8 +1,8 @@
-externalIp: 192.168.254.123
+externalIp: 192.0.2.10
 storageClassName: "longhorn"
 
 admin:
   password: ""
 
 ingress:
-  host: pihole.bronneberg.org
+  host: pihole.home.example

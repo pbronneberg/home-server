@@ -10,7 +10,7 @@ metadata:
     traefik.ingress.kubernetes.io/frontend-entry-points: https
     traefik.ingress.kubernetes.io/redirect-entry-point: https
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
-    traefik.ingress.kubernetes.io/whitelist-source-range: "127.0.0.1/32, 192.168.254.0/24"
+    traefik.ingress.kubernetes.io/whitelist-source-range: "127.0.0.1/32, 192.0.2.0/24"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
     ingress.kubernetes.io/auth-type: basic
     ingress.kubernetes.io/auth-secret: longhorn-basic-auth

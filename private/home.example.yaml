@@ -1,0 +1,21 @@
+topology:
+  clusterName: home-lab-example
+  domains:
+    primary: home.example
+    apps: apps.example.com
+    school: school.example.com
+  lan:
+    cidr: 192.0.2.0/24
+    ingressNode: 192.0.2.10
+    storageNode: 192.0.2.20
+    deviceNode: 192.0.2.30
+
+secrets:
+  grafanaAdminPassword: change-me-use-sops
+  piholeAdminPassword: change-me-use-sops
+  actionRunnerGithubToken: change-me-use-sops
+
+repositories:
+  homeServer: example-org/home-server
+  sampleService: example-org/sample-service
+  sampleApp: example-org/sample-app

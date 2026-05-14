@@ -7,30 +7,98 @@ Configuration for my home server.
 This repository is maintained through small pull requests, GitHub-hosted
 Actions, and repo-local agent instructions.
 
-Run the same checks locally that CI runs on GitHub public runners:
+Run the same checks inside the devcontainer that CI runs on GitHub public
+runners:
 
 ```bash
 make ci
 ```
 
+`make ci` configures the Helm chart repositories it needs in a temporary cache
+under `/tmp/home-server-helm-repositories`, so a fresh Helm install does not
+need a manual `helm repo add` first.
+
+Before changing repository visibility to public, run:
+
+```bash
+make public-check
+```
+
 The CI workflow in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 checks GitHub Actions syntax, YAML files, Helm dependencies, Helm linting, and
-Helm rendering. Dependabot is configured in
+Helm rendering. It also scans the current working tree with Gitleaks and checks
+for public-unsafe topology. Dependabot is configured in
 [`.github/dependabot.yml`](.github/dependabot.yml) for GitHub Actions and Helm
 chart dependencies.
 
 Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
+Publication steps live in [docs/publication-runbook.md](docs/publication-runbook.md).
 
-### Local maintenance tooling
+### Devcontainer Tooling
 
-GitHub Actions installs the lint tooling automatically. To run `make ci`
-locally, install these tools on your workstation:
+The recommended local workflow is to use the devcontainer so repository tooling
+does not install or upgrade anything on your host machine. Open this repository
+with VS Code Dev Containers or run it from the Dev Containers CLI, then run:
+
+```bash
+make ci
+make public-check
+```
+
+The devcontainer installs the same tools used by the Makefile:
+
+* `helm`
+* `yamllint`
+* `actionlint`
+* `gitleaks`
+* `sops`
+* `age`
+* `git-filter-repo`
+* `codex`
+
+It also recommends the OpenAI VS Code extension (`openai.chatgpt`) so Codex can
+run in the container-attached editor, and Runme (`stateful.runme`) so Markdown
+runbooks such as [docs/publication-runbook.md](docs/publication-runbook.md) can
+be opened as runnable notebooks. Authenticate inside the devcontainer with your
+preferred Codex flow, or provide `OPENAI_API_KEY` through your local shell, VS
+Code secrets, or another non-repository secret store. Do not commit Codex
+tokens, API keys, or generated plaintext credentials.
+
+Host-side installs are optional. If you do not use the devcontainer, install
+equivalent versions on your workstation:
 
 ```bash
 python3 -m pip install --user yamllint==1.38.0
 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+go install github.com/zricethezav/gitleaks/v8@v8.30.1
+npm install -g @openai/codex@0.130.0
 ```
+
+For SOPS/age private overlays, the local private age identity is stored in
+`.sops/age/keys.txt`, is ignored by git, and must be backed up outside this
+repository.
+
+Use the Makefile SOPS targets for common private overlay tasks:
+
+```bash
+make sops-keygen
+make sops-decrypt
+make sops-edit
+make sops-encrypt
+make sops-decrypt-file
+make sops-updatekeys
+```
+
+`make sops-keygen` creates `.sops/age/keys.txt` only if it does not already
+exist. `make sops-decrypt` prints `private/home.sops.yaml` to stdout.
+`make sops-edit` opens the encrypted file through SOPS and writes it back
+encrypted. `make sops-encrypt` encrypts `private/home.sops.yaml` in place.
+`make sops-decrypt-file` writes `private/home.decrypted.yaml`, which is ignored
+by git. Override `SOPS_FILE` for a different encrypted file.
+
+`HomeAssistentConfig.yaml` and `HomeAssistantConfig.yaml` are local-only exports
+and must remain ignored.
 
 ### First follow-up candidates
 

@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: pbronneberg/homepage
+  repository: example-org/homepage
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
@@ -51,14 +51,14 @@ ingress:
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   hosts:
-    - host: www.bronneberg.org
+    - host: www.home.example
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
    - secretName: bronneberg-org-tls
      hosts:
-       - www.bronneberg.org
+       - www.home.example
 
 resources: {}
 
