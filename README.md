@@ -58,9 +58,11 @@ The devcontainer installs the same tools used by the Makefile:
 * `codex`
 
 It also recommends the OpenAI VS Code extension (`openai.chatgpt`) so Codex can
-run in the container-attached editor. Authenticate inside the devcontainer with
-your preferred Codex flow, or provide `OPENAI_API_KEY` through your local shell,
-VS Code secrets, or another non-repository secret store. Do not commit Codex
+run in the container-attached editor, and Runme (`stateful.runme`) so Markdown
+runbooks such as [docs/publication-runbook.md](docs/publication-runbook.md) can
+be opened as runnable notebooks. Authenticate inside the devcontainer with your
+preferred Codex flow, or provide `OPENAI_API_KEY` through your local shell, VS
+Code secrets, or another non-repository secret store. Do not commit Codex
 tokens, API keys, or generated plaintext credentials.
 
 Host-side installs are optional. If you do not use the devcontainer, install

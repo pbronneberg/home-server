@@ -20,7 +20,8 @@
       "extensions": [
         "github.vscode-github-actions",
         "openai.chatgpt",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "stateful.runme"
       ]
     }
   }
