@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: homeassist-values
+  namespace: homeassistant
+type: Opaque
+stringData:
+  values.yaml: |
+    config:
+      existingSecret: homeassist-config
+      key: configuration.yaml
+      defaultMode: 511
+    ingress:
+      hosts:
+        - host: homeassistant.home.example
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls:
+        - secretName: home-assistant-tls
+          hosts:
+            - homeassistant.home.example

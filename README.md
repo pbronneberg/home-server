@@ -268,7 +268,7 @@ dependencies in
 * Longhorn and the retained Longhorn storage class
 * kube-prometheus-stack monitoring
 * Traefik middlewares used by existing ingresses
-* TLS proxy and Longhorn admin workload releases
+* Home Assistant, TLS proxy, and Longhorn admin workload releases
 
 Flux migration parity and rollback notes live in
 [docs/flux-migration-parity.md](docs/flux-migration-parity.md).

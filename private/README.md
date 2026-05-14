@@ -18,6 +18,13 @@ Secret named `sops-age` in the `flux-system` namespace before those manifests
 can reconcile. Workload Helm values that contain real hostnames or LAN
 addresses belong here as encrypted Kubernetes Secrets.
 
+Home Assistant is captured with two private Secrets:
+
+- `home-assistant-config.sops.yaml` stores `configuration.yaml`, generated from
+  the live `homeassistant/homeassist-config` Secret.
+- `home-assistant-values.sops.yaml` stores Helm values such as ingress and
+  config Secret wiring.
+
 After restoring the age identity on a workstation, run `make
 sops-recovery-drill` from the repository root before relying on a fresh Flux
 bootstrap. The drill is documented in

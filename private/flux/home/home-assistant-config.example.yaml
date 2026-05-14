@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: homeassist-config
+  namespace: homeassistant
+type: Opaque
+stringData:
+  configuration.yaml: |
+    homeassistant:
+      name: Home
+      latitude: 51.0000
+      longitude: 5.0000
+      elevation: 0
+      unit_system: metric
+      time_zone: Europe/Amsterdam
+      auth_providers:
+        - type: homeassistant
+
+    default_config:
+
+    http:
+      ip_ban_enabled: false
+      login_attempts_threshold: 5
+      use_x_forwarded_for: true
+      trusted_proxies:
+        - 192.0.2.0/24

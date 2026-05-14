@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: homeassist-values
+  namespace: homeassistant
+type: Opaque
+stringData:
+  values.yaml: ENC[AES256_GCM,data:Mfb3OvroF0Eg3ucZhmiG2uufpROIOE2Q0FaKjqc0V07ZwBi34EhimAT3eCKRpliTnhbkr4fiSzDXPW4LTHA08CLg+7ysz85g9VpoLhI1bgMCK393f9pRdESaFLkZk5ikCd2zdQ9kcyNCxTugo1wUj+smVserIzrcuT9Mpz547A/gSpHGOvQ0ATtGyjCV66CeKw2aAWCWOXI30trHxF8hB29Pk+Nmj73LyaopLrW97EC//SFZlTlcZJ/3BNnXJ5Ym767nc3qtiWibzVewVC5i0X6x8BGj2u/uQR84AQ==,iv:zZX27gcyFUxY06KU5La+KK5UnlEqV7YwfGAFc1uxLIo=,tag:6D0nCB9Aoji/wNMJd/Q3Ww==,type:str]
+sops:
+  age:
+    - recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA5MVFvNUZmZGdPWTdJbkdq
+        cnlIUjRCTkNBT3UrUytDVnQyTzZqaWZMT3ljCjAxRlRaSGliYkkwbkdWVHVoeWlI
+        R1pUdks4Nkw0aVpzNE55SUF0dGFCZk0KLS0tIHp2ekx1R28yYjdsU2Y1OUtNRGlS
+        WWRrL1BZRFRCbEltSnpNOEFQM2NMS1kKwstE3K62nYvG7GuxhnB/rYq5SHIEuB/O
+        cBAG8S7zVDBtCFLpY8iDuH4cVxICihnn+FYgNo9loF7NZGeavMrsGw==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2026-05-14T15:41:06Z"
+  mac: ENC[AES256_GCM,data:i9CDKL77kVVplpVtEv05HeafQoxkGSHaFWGj0kyNYFSVzxw1IJUBCJtDDhrwqXPX+3mOyryvXeIxhbG1jDj50gb2WEL81w9LbhbIaZwEscAGb5ELmZUxK7SvgbkL7JTenlg8cM01rV64Ymqch6oHDaNOnW2KSLPiP4swMNYyyyo=,iv:3XQRSrwPLh2Vf5B9EQBtADIAVzkcXByzVArv6UBlbJI=,tag:luDkzmHT4jVK9R+QuyRJoA==,type:str]
+  encrypted_regex: ^(data|stringData)$
+  version: 3.11.0

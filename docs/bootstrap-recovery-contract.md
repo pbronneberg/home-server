@@ -35,6 +35,7 @@ storage.
 | Application charts | `application/*` Helm charts | Public-safe with placeholders | Preserve release names, namespaces, PVC names, hostnames, and secrets unless a migration plan says otherwise. |
 | Public example topology | `private/home.example.yaml` | Public-safe | Uses reserved example values only. |
 | Private topology and secrets | `private/*.sops.yaml` | Encrypted private | Must stay encrypted before commit. |
+| Home Assistant runtime config | `private/flux/home/home-assistant-config.sops.yaml` | Encrypted private | Captured from the live Home Assistant Secret; contains location, LAN endpoints, and tokens. |
 | Local decryption identity | `.sops/age/keys.txt` | Ignored private | Back up outside the repository before relying on encrypted overlays. |
 | Publication safety checks | `make public-check` | Public-safe | Run before changing repository visibility or touching redaction-sensitive files. |
 

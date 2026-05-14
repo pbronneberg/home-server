@@ -9,5 +9,6 @@ the `flux-system` Kustomization reconcile the infrastructure Kustomizations in
 
 Infrastructure includes namespaces, Helm repositories, SOPS-backed private
 secrets, cert-manager, Longhorn, kube-prometheus-stack monitoring, Traefik
-middlewares, and retained storage classes. Workloads are reconciled separately
-so application-facing releases can depend on the platform pieces they need.
+middlewares, and retained storage classes. Workloads, including Home Assistant,
+are reconciled separately so application-facing releases can depend on the
+platform pieces they need.
