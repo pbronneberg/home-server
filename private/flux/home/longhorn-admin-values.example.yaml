@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: longhorn-admin-values
+  namespace: longhorn-system
+type: Opaque
+stringData:
+  values.yaml: |
+    ingress:
+      host: fs.home.example

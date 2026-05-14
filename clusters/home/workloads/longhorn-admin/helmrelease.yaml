@@ -1,30 +1,28 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: prometheus-stack
+  name: longhorn-admin
 spec:
   chart:
     spec:
-      chart: kube-prometheus-stack
+      chart: ./application/longhorn-admin
       interval: 1h
+      reconcileStrategy: Revision
       sourceRef:
-        kind: HelmRepository
-        name: prometheus-community
+        kind: GitRepository
+        name: flux-system
         namespace: flux-system
-      version: 24.0.1
   install:
-    crds: Create
     remediation:
       retries: 3
   interval: 30m
   maxHistory: 5
-  releaseName: prometheus-stack
+  releaseName: longhorn-admin
   timeout: 5m
   upgrade:
-    crds: CreateReplace
     remediation:
       retries: 3
   valuesFrom:
-    - kind: ConfigMap
-      name: prometheus-stack-values
+    - kind: Secret
+      name: longhorn-admin-values
       valuesKey: values.yaml

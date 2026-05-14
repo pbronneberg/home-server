@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls-proxies-values
+  namespace: websites
+type: Opaque
+stringData:
+  values.yaml: |
+    domoticz:
+      endpoint:
+        ip: "192.0.2.10"
+      ingress:
+        hostnames:
+          - "vendelier.home.example"

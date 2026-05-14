@@ -1,33 +1,28 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: actions-runner-controller
+  name: tls-proxies
 spec:
   chart:
     spec:
-      chart: actions-runner-controller
+      chart: ./application/tls-proxies
       interval: 1h
+      reconcileStrategy: Revision
       sourceRef:
-        kind: HelmRepository
-        name: actions-runner
+        kind: GitRepository
+        name: flux-system
         namespace: flux-system
-      version: 0.15.1
   install:
     remediation:
       retries: 3
   interval: 30m
   maxHistory: 5
-  releaseName: actions-runner-controller
+  releaseName: tls-proxies
   timeout: 5m
   upgrade:
     remediation:
       retries: 3
-  values:
-    authSecret:
-      create: false
-      name: controller-manager
   valuesFrom:
     - kind: Secret
-      name: actions-runner-controller-values
-      optional: true
+      name: tls-proxies-values
       valuesKey: values.yaml

@@ -15,4 +15,5 @@ Back it up outside this repository before adding real encrypted values.
 Flux reconciles Kubernetes Secret manifests from `private/flux/home` with SOPS
 decryption enabled. The cluster needs the matching age identity as a Kubernetes
 Secret named `sops-age` in the `flux-system` namespace before those manifests
-can reconcile.
+can reconcile. Workload Helm values that contain real hostnames or LAN
+addresses belong here as encrypted Kubernetes Secrets.

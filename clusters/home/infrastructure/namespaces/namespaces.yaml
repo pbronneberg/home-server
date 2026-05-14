@@ -16,11 +16,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: prometheus
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: actions-runner-system
 ---
 apiVersion: v1

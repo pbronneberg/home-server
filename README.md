@@ -244,14 +244,7 @@ dependencies in
 * cert-manager and cert-manager issuers
 * Longhorn and the retained Longhorn storage class
 * Traefik middlewares used by existing ingresses
-* kube-prometheus-stack and the legacy Actions Runner Controller
 * TLS proxy and Longhorn admin workload releases
-
-The legacy Actions Runner Controller expects a `controller-manager` secret in
-`actions-runner-system`. The live cluster did not expose that token when this
-Flux overlay was created, so no dummy token is committed. Add a
-SOPS-encrypted Kubernetes Secret under `private/flux/home` before reconciling
-the runner controller.
 
 ## GitHub Actions
 
@@ -261,10 +254,6 @@ Repository maintenance CI runs on GitHub-hosted public runners via
 The Action Runner Controller configuration in `application/runners/runners.yaml`
 is legacy self-hosted runner configuration. Keep it only if the cluster should
 still host runners for other repositories.
-
-If the legacy [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller)
-is used, manage its GitHub token as a SOPS-encrypted `controller-manager`
-Kubernetes Secret in `private/flux/home`.
 
 Install the [K3S system upgrader](https://rancher.com/docs/k3s/latest/en/upgrades/automated/) to automatically upgrade all nodes in the cluster to the newest K3S versions.
 

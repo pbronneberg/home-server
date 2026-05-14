@@ -71,6 +71,7 @@ lint-yaml:
 
 flux-build:
 	@if [ -n "$(FLUX_KUSTOMIZATION_DIRS)" ]; then \
+		set -e; \
 		for dir in $(FLUX_KUSTOMIZATION_DIRS); do \
 			printf 'Building Flux/Kustomize overlay %s\n' "$$dir"; \
 			if command -v "$(KUSTOMIZE)" >/dev/null 2>&1; then \

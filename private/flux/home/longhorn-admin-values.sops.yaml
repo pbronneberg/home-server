@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+  values.yaml: ENC[AES256_GCM,data:SJL2Y/RNoWB4bReM6mSUviq7DBDxcTPzlEwEXZjW5YA2UFMfB97eD5nESbX7JNjy,iv:/98oO56qhEJB7MEjwpbt6ckKzZzejhpYGsqewEIvEHc=,tag:BzfCicKO2Xzz5qjZU6ZkQw==,type:str]
+kind: Secret
+metadata:
+  name: longhorn-admin-values
+  namespace: longhorn-system
+sops:
+  age:
+    - recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSArSm1pQVhZbzNkRXI3KzZr
+        V3N6dlBTVSt3L203THVVcWdZTXRBOS9lRTB3ClJMSGZOT2d5K3ZJREFQU1kyaXI3
+        K0FGL29UWll5WmwzNkZiUThyUGJoM1UKLS0tIER2TVcxN0FxcUtCYWVJdzAwMGlj
+        SlhDMnJlL3FnajhpSVlUbE11eldoRDAKoc3W3AvMtzwg4j69aNCjVpopMXLEpuCb
+        tLQhHeZfgAtyHZxSTb+LkBQAtDiftU5ZfC/eoPR4b+C0Q0RumnLZQw==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2026-05-14T13:18:53Z"
+  mac: ENC[AES256_GCM,data:QUIqFR8QNBkMXlwQgZwtiqFQIWcEByZ/WapmsP6OdN80qENEcLHM/zLgKriWIzwaTOJOrFd7hkKWZjmszW7hQhnXPK5qxLa1uEokqYiDURGfHV+MXoTDtrLeEkK6aWAv2IY5TTRPV/QZcyD2+GnfPVGlZa1enpbYnn0XoX9g3FA=,iv:/iRECjVD+qNVzQlSUyX67gMcGcXA5ZcAcfrbpJRgSgo=,tag:Jn43h0plJy6Zat5Yo/lTyw==,type:str]
+  encrypted_regex: ^(data|stringData)$
+  version: 3.11.0
