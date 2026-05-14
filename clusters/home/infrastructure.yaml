@@ -135,3 +135,22 @@ spec:
     name: flux-system
   timeout: 2m
   wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-monitoring
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-longhorn-storageclasses
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./clusters/home/infrastructure/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 10m
+  wait: true

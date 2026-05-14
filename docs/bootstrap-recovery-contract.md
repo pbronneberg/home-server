@@ -97,7 +97,9 @@ and then to repository-driven reconciliation.
 
    Bootstrap Flux only after the API is reachable, create the Flux SOPS
    decryption secret from the restored age identity, and let Flux reconcile the
-   committed cluster entrypoint under `clusters/home/`.
+   committed cluster entrypoint under `clusters/home/`. Validate the restored
+   identity with `make sops-recovery-drill`; the drill is documented in
+   `docs/sops-age-recovery-drill.md`.
 
 6. Restore persistent workload data.
 

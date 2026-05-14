@@ -134,6 +134,7 @@ make sops-encrypt
 make sops-decrypt-file
 make sops-decrypt-dir
 make sops-updatekeys
+make sops-recovery-drill
 ```
 
 `make sops-keygen` creates `.sops/age/keys.txt` only if it does not already
@@ -145,6 +146,11 @@ by git. Override `SOPS_FILE` for a different encrypted file.
 `make sops-list` lists all encrypted private files, and `make sops-decrypt-dir`
 writes all decrypted private files under the ignored `private-decrypted/`
 directory. Override `SOPS_OUT_DIR` to use a different output directory.
+`make sops-recovery-drill` validates that a restored age identity can recreate
+the Flux `sops-age` Secret shape, decrypt private overlays, and render the
+private Flux Kustomize overlay without writing plaintext into the repository.
+The drill procedure is documented in
+[docs/sops-age-recovery-drill.md](docs/sops-age-recovery-drill.md).
 
 `HomeAssistentConfig.yaml` and `HomeAssistantConfig.yaml` are local-only exports
 and must remain ignored.
@@ -260,8 +266,12 @@ dependencies in
 * SOPS-encrypted private Kubernetes Secrets
 * cert-manager and cert-manager issuers
 * Longhorn and the retained Longhorn storage class
+* kube-prometheus-stack monitoring
 * Traefik middlewares used by existing ingresses
 * TLS proxy and Longhorn admin workload releases
+
+Flux migration parity and rollback notes live in
+[docs/flux-migration-parity.md](docs/flux-migration-parity.md).
 
 ## GitHub Actions
 

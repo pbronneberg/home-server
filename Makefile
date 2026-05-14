@@ -24,7 +24,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check
 
 help:
 	@printf '%s\n' \
@@ -48,6 +48,7 @@ help:
 		'  sops-edit          Edit encrypted private values with SOPS.' \
 		'  sops-encrypt       Encrypt private values in place with SOPS.' \
 		'  sops-updatekeys    Re-encrypt private overlays after age recipient changes.' \
+		'  sops-recovery-drill Validate restored age key and private Flux overlays.' \
 		'  scan-secrets   Scan the current working tree for secrets with Gitleaks.' \
 		'  scan-history   Scan all Git history for secrets with Gitleaks.' \
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
@@ -169,6 +170,9 @@ sops-encrypt: sops-check-key
 
 sops-updatekeys: sops-check-key
 	$(SOPS_WITH_AGE) $(SOPS) updatekeys --yes $(SOPS_FILES)
+
+sops-recovery-drill: sops-check-key
+	@SOPS="$(SOPS)" SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)" KUBECTL="$(KUBECTL)" KUSTOMIZE="$(KUSTOMIZE)" ./scripts/sops-private.sh drill
 
 scan-secrets:
 	@set -euo pipefail; \
