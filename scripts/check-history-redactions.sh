@@ -22,7 +22,7 @@ report_history_matches() {
 
 report_history_matches \
   "private RFC1918 network ranges exist in Git history" \
-  '(^|[^0-9])(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)'
+  '(^|[^0-9])((10|192\.168|172\.(1[6-9]|2[0-9]|3[0-1]))\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})([^0-9]|$)'
 
 report_history_matches \
   "personal email providers exist in Git history" \

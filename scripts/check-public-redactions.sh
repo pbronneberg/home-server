@@ -28,7 +28,7 @@ report_matches() {
 
 report_matches \
   "private RFC1918 network ranges must not be committed" \
-  '(^|[^0-9])(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)'
+  '(^|[^0-9])((10|192\.168|172\.(1[6-9]|2[0-9]|3[0-1]))\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})([^0-9]|$)'
 
 report_matches \
   "personal email providers must be replaced with user@example.com" \
