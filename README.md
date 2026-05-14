@@ -7,6 +7,12 @@ Configuration for my home server.
 This repository is maintained through small pull requests, GitHub-hosted
 Actions, and repo-local agent instructions.
 
+The home lab modernization strategy starts with the bootstrap and recovery
+contract in [docs/bootstrap-recovery-contract.md](docs/bootstrap-recovery-contract.md).
+It defines the minimum path from bare OS to reachable K3s API to repository
+reconciliation without depending on in-cluster services that may be down during
+recovery.
+
 Run the same checks inside the devcontainer that CI runs on GitHub public
 runners:
 
@@ -104,8 +110,6 @@ and must remain ignored.
 
 The new Helm checks pass, but they report a couple of modernization candidates:
 
-* migrate the Pi-hole ingress from `networking.k8s.io/v1beta1` to
-  `networking.k8s.io/v1`
 * replace the TLS proxy chart's legacy `Endpoints` resource with
   `EndpointSlice`
 * decide whether to remove the legacy self-hosted runner manifests entirely
