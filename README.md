@@ -270,6 +270,7 @@ dependencies in
 * namespaces and Helm repositories
 * SOPS-encrypted private Kubernetes Secrets
 * cert-manager and cert-manager issuers
+* Rancher System Upgrade Controller and K3s upgrade plans
 * kured node reboot orchestration
 * Longhorn and the retained Longhorn storage class
 * kube-prometheus-stack monitoring
@@ -288,11 +289,13 @@ The Action Runner Controller configuration in `application/runners/runners.yaml`
 is legacy self-hosted runner configuration. Keep it only if the cluster should
 still host runners for other repositories.
 
-Install the [K3s system upgrader](https://docs.k3s.io/upgrades/automated/) to
-automatically upgrade cluster nodes during the configured maintenance windows.
+The [K3s system upgrader](https://docs.k3s.io/upgrades/automated/) is deployed
+by Flux from `clusters/home/infrastructure/system-upgrade-controller`, and K3s
+upgrade plans are reconciled from
+`clusters/home/infrastructure/system-upgrade-plans`. The server plan runs before
+the agent plan during the configured maintenance windows.
 
-```
-kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/crd.yaml
-kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
-kubectl apply -f infra/system-upgrader/upgrade-plans.yml
+```bash
+kubectl -n system-upgrade get plans -o wide
+kubectl -n system-upgrade get jobs
 ```

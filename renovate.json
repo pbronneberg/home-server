@@ -67,6 +67,19 @@
       "datasourceTemplate": "docker",
       "depNameTemplate": "homeassistant/home-assistant",
       "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Rancher System Upgrade Controller release assets",
+      "managerFilePatterns": [
+        "/^clusters\\/home\\/infrastructure\\/system-upgrade-controller\\/kustomization\\.yaml$/"
+      ],
+      "matchStrings": [
+        "github\\.com\\/rancher\\/system-upgrade-controller\\/releases\\/download\\/v(?<currentValue>[^/]+)\\/"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "rancher/system-upgrade-controller",
+      "versioningTemplate": "semver"
     }
   ],
   "major": {
@@ -120,6 +133,23 @@
       "addLabels": [
         "cluster",
         "workloads"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Keep System Upgrade Controller updates reviewable before Flux reconciles them",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "rancher/system-upgrade-controller"
+      ],
+      "matchFileNames": [
+        "clusters/home/infrastructure/system-upgrade-controller/kustomization.yaml"
+      ],
+      "addLabels": [
+        "cluster",
+        "infrastructure"
       ],
       "automerge": false
     },

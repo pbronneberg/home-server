@@ -80,4 +80,5 @@ flux resume kustomization <name> -n flux-system
 ```
 
 Legacy files under `infra/` remain rollback references only. They are not the
-steady-state reconciler path; `clusters/home` is the desired state.
+steady-state reconciler path; `clusters/home` is the desired state. Node upgrade
+automation lives under `clusters/home/infrastructure/system-upgrade-*`.

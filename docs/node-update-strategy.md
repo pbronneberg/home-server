@@ -6,17 +6,18 @@ maintenance loops.
 ## K3s
 
 K3s is upgraded by Rancher's System Upgrade Controller using
-[`infra/system-upgrader/upgrade-plans.yml`](../infra/system-upgrader/upgrade-plans.yml).
+[`clusters/home/infrastructure/system-upgrade-plans/plans.yaml`](../clusters/home/infrastructure/system-upgrade-plans/plans.yaml).
+The controller and CRD are reconciled from
+[`clusters/home/infrastructure/system-upgrade-controller`](../clusters/home/infrastructure/system-upgrade-controller).
 The server plan runs before the agent plan, both use `concurrency: 1`, and both
 are restricted to weekday UTC maintenance windows.
 
-Install or refresh the controller from a trusted workstation with cluster admin
-access:
+Flux installs and refreshes the controller automatically. To force a reconcile
+after changing the controller or plans:
 
 ```bash
-kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/crd.yaml
-kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
-kubectl apply -f infra/system-upgrader/upgrade-plans.yml
+flux reconcile kustomization infrastructure-system-upgrade-controller -n flux-system
+flux reconcile kustomization infrastructure-system-upgrade-plans -n flux-system
 ```
 
 Monitor progress with:
