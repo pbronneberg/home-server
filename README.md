@@ -79,6 +79,24 @@ For SOPS/age private overlays, the local private age identity is stored in
 `.sops/age/keys.txt`, is ignored by git, and must be backed up outside this
 repository.
 
+Use the Makefile SOPS targets for common private overlay tasks:
+
+```bash
+make sops-keygen
+make sops-decrypt
+make sops-edit
+make sops-encrypt
+make sops-decrypt-file
+make sops-updatekeys
+```
+
+`make sops-keygen` creates `.sops/age/keys.txt` only if it does not already
+exist. `make sops-decrypt` prints `private/home.sops.yaml` to stdout.
+`make sops-edit` opens the encrypted file through SOPS and writes it back
+encrypted. `make sops-encrypt` encrypts `private/home.sops.yaml` in place.
+`make sops-decrypt-file` writes `private/home.decrypted.yaml`, which is ignored
+by git. Override `SOPS_FILE` for a different encrypted file.
+
 `HomeAssistentConfig.yaml` and `HomeAssistantConfig.yaml` are local-only exports
 and must remain ignored.
 
