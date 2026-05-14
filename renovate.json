@@ -71,8 +71,7 @@
         "patch"
       ],
       "groupName": "repository maintenance tooling",
-      "labels": [
-        "dependencies",
+      "addLabels": [
         "tooling"
       ],
       "automerge": true,
@@ -85,18 +84,46 @@
         "flux",
         "helm-values"
       ],
-      "labels": [
-        "dependencies",
+      "addLabels": [
         "cluster"
       ],
       "automerge": false
     },
     {
-      "description": "Group Flux controller updates together",
+      "description": "Label Flux controller updates",
       "matchFileNames": [
-        "clusters/home/flux-system/gotk-components.yaml"
+        "clusters/home/flux-system/**"
+      ],
+      "addLabels": [
+        "flux"
       ],
       "groupName": "flux controllers"
+    },
+    {
+      "description": "Label infrastructure dependency updates",
+      "matchFileNames": [
+        "clusters/home/infrastructure/**"
+      ],
+      "addLabels": [
+        "infrastructure"
+      ]
+    },
+    {
+      "description": "Label workload dependency updates",
+      "matchFileNames": [
+        "clusters/home/workloads/**",
+        "application/**/values*.yaml"
+      ],
+      "addLabels": [
+        "workloads"
+      ]
+    },
+    {
+      "description": "Group infrastructure HelmRelease chart updates together",
+      "matchFileNames": [
+        "clusters/home/infrastructure/**/helmrelease.yaml"
+      ],
+      "groupName": "cluster infrastructure Helm releases"
     }
   ]
 }
