@@ -138,6 +138,25 @@
         "clusters/home/infrastructure/**/helmrelease.yaml"
       ],
       "groupName": "cluster infrastructure Helm releases"
+    },
+    {
+      "description": "Upgrade Longhorn one supported minor at a time",
+      "matchManagers": [
+        "flux"
+      ],
+      "matchPackageNames": [
+        "longhorn"
+      ],
+      "matchFileNames": [
+        "clusters/home/infrastructure/longhorn/helmrelease.yaml"
+      ],
+      "allowedVersions": "<{{major}}.{{add minor 2}}.0",
+      "groupName": "longhorn storage upgrade",
+      "addLabels": [
+        "longhorn",
+        "storage"
+      ],
+      "dependencyDashboardApproval": true
     }
   ]
 }
