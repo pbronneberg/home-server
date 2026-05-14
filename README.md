@@ -1,8 +1,48 @@
 # home-server
 
-Configuration for my home server
+Configuration for my home server.
 
-## Pre-requisites
+## Maintenance Workflow
+
+This repository is maintained through small pull requests, GitHub-hosted
+Actions, and repo-local agent instructions.
+
+Run the same checks locally that CI runs on GitHub public runners:
+
+```bash
+make ci
+```
+
+The CI workflow in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+checks GitHub Actions syntax, YAML files, Helm dependencies, Helm linting, and
+Helm rendering. Dependabot is configured in
+[`.github/dependabot.yml`](.github/dependabot.yml) for GitHub Actions and Helm
+chart dependencies.
+
+Agent instructions live in [AGENTS.md](AGENTS.md) and
+[`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
+
+### Local maintenance tooling
+
+GitHub Actions installs the lint tooling automatically. To run `make ci`
+locally, install these tools on your workstation:
+
+```bash
+python3 -m pip install --user yamllint==1.38.0
+go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+```
+
+### First follow-up candidates
+
+The new Helm checks pass, but they report a couple of modernization candidates:
+
+* migrate the Pi-hole ingress from `networking.k8s.io/v1beta1` to
+  `networking.k8s.io/v1`
+* replace the TLS proxy chart's legacy `Endpoints` resource with
+  `EndpointSlice`
+* decide whether to remove the legacy self-hosted runner manifests entirely
+
+## Server Pre-requisites
 
 * Ubuntu server
 
@@ -55,8 +95,20 @@ kubectl apply -f infra/traefik-https.yaml
 kubectl apply -f infra/traefik-basicauth.yaml
 ```
 
-For the [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller), a Github PAT is required.
-First [Create](https://github.com/settings/tokens) this PAT, then create a secret containing this token.
+## GitHub Actions
+
+Repository maintenance CI runs on GitHub-hosted public runners via
+`.github/workflows/ci.yml`.
+
+The Action Runner Controller configuration in `infra/home-server.helmsman.toml`
+and `application/runners/runners.yaml` is legacy self-hosted runner
+configuration. Keep it only if the cluster should still host runners for other
+repositories.
+
+If the legacy [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller)
+is used, a GitHub PAT is required. First
+[create](https://github.com/settings/tokens) this PAT, then create a secret
+containing this token.
 
 ```
 kubectl create namespace  actions-runner-system
@@ -94,7 +146,7 @@ helm install tls-proxies ./application/tls-proxies --namespace websites
 helm install longhorn-admin ./application/longhorn-admin --namespace longhorn-system
 ```
 
-### Github Action runners
+### GitHub Action runners
 ```
 kubectl create namespace self-hosted-runners
 kubectl apply -f application/runners/runners.yaml --namespace self-hosted-runners

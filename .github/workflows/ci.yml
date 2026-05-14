@@ -1,0 +1,71 @@
+name: ci
+
+on:
+  pull_request:
+    paths:
+      - ".github/**"
+      - "AGENTS.md"
+      - "Makefile"
+      - ".yamllint.yml"
+      - "README.md"
+      - "application/**"
+      - "infra/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+      - "AGENTS.md"
+      - "Makefile"
+      - ".yamllint.yml"
+      - "README.md"
+      - "application/**"
+      - "infra/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ACTIONLINT_VERSION: v1.7.12
+  HELM_VERSION: v3.19.0
+  YAMLLINT_VERSION: "1.38.0"
+
+jobs:
+  lint-and-render:
+    name: Lint and render Helm configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.25.x"
+          cache: false
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Install linters
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "yamllint==${YAMLLINT_VERSION}"
+          go install "github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}"
+
+      - name: Run repository checks
+        run: make ci
