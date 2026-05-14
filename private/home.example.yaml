@@ -12,7 +12,6 @@ topology:
 
 secrets:
   grafanaAdminPassword: change-me-use-sops
-  piholeAdminPassword: change-me-use-sops
   actionRunnerGithubToken: change-me-use-sops
 
 repositories:

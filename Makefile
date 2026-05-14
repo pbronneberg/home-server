@@ -147,6 +147,7 @@ scan-secrets:
 	tmp_dir="$$(mktemp -d)"; \
 	trap 'rm -rf "$$tmp_dir"' EXIT; \
 	git ls-files -z --cached --others --exclude-standard | while IFS= read -r -d '' file; do \
+		[ -e "$$file" ] || continue; \
 		mkdir -p "$$tmp_dir/$$(dirname "$$file")"; \
 		cp "$$file" "$$tmp_dir/$$file"; \
 	done; \

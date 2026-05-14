@@ -1,8 +1,0 @@
-externalIp: 192.0.2.10
-storageClassName: "longhorn"
-
-admin:
-  password: ""
-
-ingress:
-  host: pihole.home.example

@@ -11,7 +11,6 @@ topology:
     deviceNode: ENC[AES256_GCM,data:jfXkrZ5LS3P8Tg==,iv:F3vp27RLGTm9scDTPxR1V04KNsSXrw5TTlQEjkJ3CWg=,tag:78bKkwRsMA4xDv6JZFS45A==,type:str]
 secrets:
   grafanaAdminPassword: ENC[AES256_GCM,data:Zb3MyGBXw3wx6BOtEMTv9TPP,iv:7OOMdDervLCnRPixpq2JYRj35eQYvwclhRJv3VjfUfs=,tag:m4vxGgVx2qjC3Fvc9D9Tsw==,type:str]
-  piholeAdminPassword: ENC[AES256_GCM,data:E8e/FWKozRgkSOXD7u4Kq9wm,iv:ndNQyk0jxG3fEyio5GuUdLvnC4xI9tNWQPlvWLsdKgg=,tag:dNH1BcgaJVDvW1KZ4feArA==,type:str]
   actionRunnerGithubToken: ENC[AES256_GCM,data:TWhAT2X303KmFD1taGGT5eXJ,iv:c0JinJUjBAYcr+moAwZ80PpZOLQj6cOO2vDRfCsa+pc=,tag:nzQaIi6ZrweLZ106MGdRSA==,type:str]
 repositories:
   homeServer: ENC[AES256_GCM,data:zODSolLdroINHNjuHPdaWnwToxQEwZQ=,iv:khhZKNFrX537uYj+N7asLmwC92ffk9cArPw+QVZdJBc=,tag:okilU7mVJHc/6hlX4nzqKg==,type:str]
@@ -28,7 +27,7 @@ sops:
         dFNHaC91ZVdyZk9tQjB1K3JqVHM3N3MKHTp+PtL6iIYgoq5SBnCZEHUwgSv8pofe
         vklWAHTREEN76z97eBbQFFhWKGUpnwwDi1iVeSt8nyLyK4cMUDt5hQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-05-14T08:32:39Z"
-  mac: ENC[AES256_GCM,data:ww3gFIdr+QAvYcBkAV6IqukoisxD3td5WJuoXG9uZ2CJe4jmfj0XzKYBEUzfxzWAquSZDceC4MCzQtoPNvE9wtwHHBe2l7Vj6ennYeDeeAoItlgIEdFm6tj3z96ir0xtNi+o6Rpv5Wj3Al63DFg2cfVK3tA0Jnew4eOk3Z1t+Yc=,iv:HWi+3vLx9G1x00UOAjSYibkvDUPSZ5S4YK5iaPG0RWY=,tag:WXp2qU8WEFq/MsC1Hy8tXg==,type:str]
+  lastmodified: "2026-05-14T11:28:56Z"
+  mac: ENC[AES256_GCM,data:Dnn0SxHOqXnxP9Aoii0NXD7CWaRVh5dolkaSOqvsqbfO+JKYiENpvZ/xy25JOBA3wKC2yalZS8hky/Pd4qEhnhY74xJRPvUR8z/mzlmonspAQbzF/dnGdM7RMELahqNVVgKzZlVbE3MLS3Tia2s3OCXFsCReczjxhTdUf7xjHoQ=,iv:j5t1mZiw6/cOnGImQZocknmGLcwj3XDFHoxd1Pjoq40=,tag:OcCuwK7gbCWwAGA8gKpsIg==,type:str]
   unencrypted_suffix: _unencrypted
   version: 3.11.0
