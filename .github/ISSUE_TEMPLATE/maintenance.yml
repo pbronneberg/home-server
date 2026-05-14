@@ -1,0 +1,35 @@
+name: Maintenance Task
+description: Track a small home-server maintenance change.
+title: "[maintenance] "
+labels:
+  - maintenance
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be improved, repaired, upgraded, or verified?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Workloads, namespaces, hostnames, storage, or infrastructure files involved.
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks And Rollback
+      description: Possible operational impact and how to back out safely.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Readiness
+      options:
+        - label: Secrets are not included in the issue or proposed files.
+        - label: The intended verification command is known.
+        - label: Any live-cluster action will be manual and explicit.
