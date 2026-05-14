@@ -1,0 +1,51 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kured
+  namespace: kube-system
+spec:
+  chart:
+    spec:
+      chart: kured
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: kubereboot
+        namespace: flux-system
+      version: 5.11.0
+  install:
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: kured
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    configuration:
+      annotateNodes: true
+      concurrency: 1
+      drainTimeout: 10m
+      endTime: "06:00"
+      lockTtl: 30m
+      period: 1h
+      rebootDays:
+        - mon
+        - tue
+        - wed
+        - thu
+      startTime: "03:00"
+      timeZone: UTC
+      useRebootSentinelHostPath: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    tolerations:
+      - effect: NoSchedule
+        operator: Exists

@@ -58,6 +58,11 @@ remain PR-reviewed before Flux reconciles them from `main`. Review Flux
 controller update PRs for preserved bootstrap settings, especially the cluster
 domain.
 
+Node updates are split into explicit maintenance loops: K3s upgrades through
+Rancher's System Upgrade Controller, Ubuntu package updates through host
+`unattended-upgrades`, and Kubernetes-aware reboots through kured. The runbook
+is [docs/node-update-strategy.md](docs/node-update-strategy.md).
+
 Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
 Publication steps live in [docs/publication-runbook.md](docs/publication-runbook.md).
@@ -265,6 +270,7 @@ dependencies in
 * namespaces and Helm repositories
 * SOPS-encrypted private Kubernetes Secrets
 * cert-manager and cert-manager issuers
+* kured node reboot orchestration
 * Longhorn and the retained Longhorn storage class
 * kube-prometheus-stack monitoring
 * Traefik middlewares used by existing ingresses
@@ -282,9 +288,11 @@ The Action Runner Controller configuration in `application/runners/runners.yaml`
 is legacy self-hosted runner configuration. Keep it only if the cluster should
 still host runners for other repositories.
 
-Install the [K3S system upgrader](https://rancher.com/docs/k3s/latest/en/upgrades/automated/) to automatically upgrade all nodes in the cluster to the newest K3S versions.
+Install the [K3s system upgrader](https://docs.k3s.io/upgrades/automated/) to
+automatically upgrade cluster nodes during the configured maintenance windows.
 
 ```
+kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/crd.yaml
 kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
 kubectl apply -f infra/system-upgrader/upgrade-plans.yml
 ```

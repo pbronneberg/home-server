@@ -7,16 +7,25 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
+  channel: https://update.k3s.io/v1-release/channels/stable
   nodeSelector:
     matchExpressions:
-    - key: node-role.kubernetes.io/master
+    - key: node-role.kubernetes.io/control-plane
       operator: In
       values:
       - "true"
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade
-  version: v1.17.4+k3s1
+  window:
+    days:
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+    startTime: "02:00"
+    endTime: "04:00"
+    timeZone: UTC
 ---
 # Agent plan
 apiVersion: upgrade.cattle.io/v1
@@ -27,9 +36,10 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
+  channel: https://update.k3s.io/v1-release/channels/stable
   nodeSelector:
     matchExpressions:
-    - key: node-role.kubernetes.io/master
+    - key: node-role.kubernetes.io/control-plane
       operator: DoesNotExist
   prepare:
     args:
@@ -39,4 +49,12 @@ spec:
   serviceAccountName: system-upgrade
   upgrade:
     image: rancher/k3s-upgrade
-  version: v1.17.4+k3s1
+  window:
+    days:
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+    startTime: "04:00"
+    endTime: "06:00"
+    timeZone: UTC

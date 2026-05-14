@@ -88,6 +88,23 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: infrastructure-kured
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-sources
+  interval: 10m
+  path: ./clusters/home/infrastructure/kured
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: infrastructure-longhorn
   namespace: flux-system
 spec:
