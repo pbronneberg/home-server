@@ -2,9 +2,12 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 ARG ACTIONLINT_VERSION=1.7.12
 ARG CODEX_VERSION=0.130.0
+ARG FLUX_VERSION=2.8.6
 ARG GITLEAKS_VERSION=8.30.1
 ARG GIT_FILTER_REPO_VERSION=2.47.0
 ARG HELM_VERSION=3.19.0
+ARG KUBECTL_VERSION=1.36.1
+ARG KUSTOMIZE_VERSION=5.8.1
 ARG SOPS_VERSION=3.11.0
 ARG TARGETARCH
 ARG YAMLLINT_VERSION=1.38.0
@@ -40,10 +43,13 @@ RUN python3 -m venv /opt/home-server-tools \
 
 RUN set -eux; \
     case "${TARGETARCH}" in \
-      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; sops_arch="amd64" ;; \
-      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; sops_arch="arm64" ;; \
+      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64" ;; \
+      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64" ;; \
       *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
     esac; \
+    curl -fsSL "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_${flux_arch}.tar.gz" \
+      | tar -xz -C /tmp flux; \
+    mv /tmp/flux /usr/local/bin/flux; \
     curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-${helm_arch}.tar.gz" \
       | tar -xz -C /tmp; \
     mv "/tmp/linux-${helm_arch}/helm" /usr/local/bin/helm; \
@@ -54,13 +60,20 @@ RUN set -eux; \
     curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_${gitleaks_arch}.tar.gz" \
       | tar -xz -C /tmp gitleaks; \
     mv /tmp/gitleaks /usr/local/bin/gitleaks; \
+    curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl"; \
+    curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_${kustomize_arch}.tar.gz" \
+      | tar -xz -C /tmp kustomize; \
+    mv /tmp/kustomize /usr/local/bin/kustomize; \
     curl -fsSL -o /usr/local/bin/sops "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${sops_arch}"; \
-    chmod +x /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/sops
+    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/kubectl /usr/local/bin/kustomize /usr/local/bin/sops
 
 RUN actionlint --version \
     && codex --version \
+    && flux --version \
     && gitleaks version \
     && helm version --short \
+    && kubectl version --client \
+    && kustomize version \
     && sops --version \
     && yamllint --version \
     && git-filter-repo --version

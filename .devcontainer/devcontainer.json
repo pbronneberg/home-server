@@ -5,14 +5,23 @@
     "args": {
       "ACTIONLINT_VERSION": "1.7.12",
       "CODEX_VERSION": "0.130.0",
+      "FLUX_VERSION": "2.8.6",
       "GITLEAKS_VERSION": "8.30.1",
       "GIT_FILTER_REPO_VERSION": "2.47.0",
       "HELM_VERSION": "3.19.0",
+      "KUBECTL_VERSION": "1.36.1",
+      "KUSTOMIZE_VERSION": "5.8.1",
       "SOPS_VERSION": "3.11.0",
       "YAMLLINT_VERSION": "1.38.0"
     }
   },
+  "initializeCommand": "mkdir -p ~/.kube",
+  "mounts": [
+    "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube-host,type=bind,readonly"
+  ],
+  "postCreateCommand": "mkdir -p ~/.kube/cache",
   "remoteEnv": {
+    "KUBECONFIG": "/home/vscode/.kube-host/config",
     "SOPS_AGE_KEY_FILE": "${containerWorkspaceFolder}/.sops/age/keys.txt"
   },
   "customizations": {

@@ -4,15 +4,19 @@ ACTIONLINT ?= actionlint
 AGE_KEYGEN ?= age-keygen
 GITLEAKS ?= gitleaks
 HELM ?= helm
+KUBECTL ?= kubectl
+KUSTOMIZE ?= kustomize
 RENDER_DIR ?= /tmp/home-server-helm-rendered
 SOPS ?= sops
 SOPS_AGE_KEY_FILE ?= .sops/age/keys.txt
 SOPS_FILE ?= private/home.sops.yaml
 SOPS_DECRYPTED_FILE ?= private/home.decrypted.yaml
-SOPS_FILES ?= private/*.sops.yaml
+SOPS_OUT_DIR ?= private-decrypted
+SOPS_FILES ?= $(shell find private -type f \( -name '*.sops.yaml' -o -name '*.sops.yml' \) 2>/dev/null | sort)
 YAMLLINT ?= yamllint
 
 CHART_DIRS := $(shell find application -name Chart.yaml -exec dirname {} \; | sort)
+FLUX_KUSTOMIZATION_DIRS := $(shell find clusters private/flux -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
 HELM_REPO_ROOT ?= /tmp/home-server-helm-repositories
 HELM_REPO_CONFIG ?= $(HELM_REPO_ROOT)/repositories.yaml
 HELM_REPO_CACHE ?= $(HELM_REPO_ROOT)/cache
@@ -20,7 +24,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-decrypt sops-decrypt-file sops-edit sops-encrypt sops-updatekeys scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys scan-secrets scan-history check-public-redactions check-history-redactions public-check
 
 help:
 	@printf '%s\n' \
@@ -30,14 +34,17 @@ help:
 		'  lint           Run workflow and YAML linting.' \
 		'  lint-actions   Lint GitHub Actions workflows with actionlint.' \
 		'  lint-yaml      Lint YAML values, manifests, and workflows with yamllint.' \
+		'  flux-build     Build all Flux/Kustomize cluster and private overlays.' \
 		'  helm-repos     Configure Helm repositories used by chart dependencies.' \
 		'  helm-deps      Build dependencies for charts that declare them.' \
 		'  helm-lint      Lint all Helm charts under application/.' \
 		'  helm-template  Render all Helm charts under application/.' \
 		'  helm-clean     Remove locally generated Helm dependency artifacts.' \
 		'  sops-keygen        Create the local SOPS age key if missing.' \
+		'  sops-list          List encrypted private files.' \
 		'  sops-decrypt       Print decrypted private values to stdout.' \
 		'  sops-decrypt-file  Write decrypted private values to an ignored file.' \
+		'  sops-decrypt-dir   Decrypt all private SOPS files into SOPS_OUT_DIR.' \
 		'  sops-edit          Edit encrypted private values with SOPS.' \
 		'  sops-encrypt       Encrypt private values in place with SOPS.' \
 		'  sops-updatekeys    Re-encrypt private overlays after age recipient changes.' \
@@ -46,7 +53,7 @@ help:
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
 		'  check-history-redactions Check Git history for public unsafe topology.'
 
-ci: lint helm-lint helm-template
+ci: lint helm-lint helm-template flux-build
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -61,6 +68,21 @@ lint-actions:
 
 lint-yaml:
 	$(YAMLLINT) .
+
+flux-build:
+	@if [ -n "$(FLUX_KUSTOMIZATION_DIRS)" ]; then \
+		set -e; \
+		for dir in $(FLUX_KUSTOMIZATION_DIRS); do \
+			printf 'Building Flux/Kustomize overlay %s\n' "$$dir"; \
+			if command -v "$(KUSTOMIZE)" >/dev/null 2>&1; then \
+				$(KUSTOMIZE) build "$$dir" >/dev/null; \
+			else \
+				$(KUBECTL) kustomize "$$dir" >/dev/null; \
+			fi; \
+		done; \
+	else \
+		printf '%s\n' 'No Flux/Kustomize cluster overlays found.'; \
+	fi
 
 helm-repos:
 	@set -euo pipefail; \
@@ -124,14 +146,20 @@ sops-keygen:
 	mkdir -p "$$(dirname "$$key_file")"; \
 	$(AGE_KEYGEN) -o "$$key_file"
 
+sops-list:
+	@SOPS_PRIVATE_ROOT=private ./scripts/sops-private.sh list
+
 sops-decrypt: sops-check-key
-	$(SOPS_WITH_AGE) $(SOPS) decrypt "$(SOPS_FILE)"
+	@SOPS="$(SOPS)" SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)" SOPS_FILE="$(SOPS_FILE)" ./scripts/sops-private.sh decrypt
 
 sops-decrypt-file: sops-check-key
 	@set -euo pipefail; \
 	umask 077; \
 	printf 'Writing decrypted private values to %s\n' "$(SOPS_DECRYPTED_FILE)"; \
-	$(SOPS_WITH_AGE) $(SOPS) decrypt "$(SOPS_FILE)" > "$(SOPS_DECRYPTED_FILE)"
+	SOPS="$(SOPS)" SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)" SOPS_FILE="$(SOPS_FILE)" ./scripts/sops-private.sh decrypt > "$(SOPS_DECRYPTED_FILE)"
+
+sops-decrypt-dir: sops-check-key
+	@SOPS="$(SOPS)" SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)" SOPS_OUT_DIR="$(SOPS_OUT_DIR)" ./scripts/sops-private.sh decrypt-dir
 
 sops-edit: sops-check-key
 	$(SOPS_WITH_AGE) $(SOPS) "$(SOPS_FILE)"
@@ -147,6 +175,7 @@ scan-secrets:
 	tmp_dir="$$(mktemp -d)"; \
 	trap 'rm -rf "$$tmp_dir"' EXIT; \
 	git ls-files -z --cached --others --exclude-standard | while IFS= read -r -d '' file; do \
+		[ -e "$$file" ] || continue; \
 		mkdir -p "$$tmp_dir/$$(dirname "$$file")"; \
 		cp "$$file" "$$tmp_dir/$$file"; \
 	done; \

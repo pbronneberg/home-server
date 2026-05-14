@@ -1,0 +1,37 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: workload-tls-proxies
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-private-secrets
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./clusters/home/workloads/tls-proxies
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: workload-longhorn-admin
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-longhorn
+    - name: infrastructure-private-secrets
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./clusters/home/workloads/longhorn-admin
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
