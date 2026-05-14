@@ -14,6 +14,10 @@ runners:
 make ci
 ```
 
+`make ci` configures the Helm chart repositories it needs in a temporary cache
+under `/tmp/home-server-helm-repositories`, so a fresh Helm install does not
+need a manual `helm repo add` first.
+
 Before changing repository visibility to public, run:
 
 ```bash

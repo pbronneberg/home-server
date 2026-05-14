@@ -7,8 +7,13 @@ RENDER_DIR ?= /tmp/home-server-helm-rendered
 YAMLLINT ?= yamllint
 
 CHART_DIRS := $(shell find application -name Chart.yaml -exec dirname {} \; | sort)
+HELM_REPO_ROOT ?= /tmp/home-server-helm-repositories
+HELM_REPO_CONFIG ?= $(HELM_REPO_ROOT)/repositories.yaml
+HELM_REPO_CACHE ?= $(HELM_REPO_ROOT)/cache
+HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami
+HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 
-.PHONY: help ci lint lint-actions lint-yaml helm-deps helm-lint helm-template helm-clean scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml helm-repos helm-deps helm-lint helm-template helm-clean scan-secrets scan-history check-public-redactions check-history-redactions public-check
 
 help:
 	@printf '%s\n' \
@@ -18,6 +23,7 @@ help:
 		'  lint           Run workflow and YAML linting.' \
 		'  lint-actions   Lint GitHub Actions workflows with actionlint.' \
 		'  lint-yaml      Lint YAML values, manifests, and workflows with yamllint.' \
+		'  helm-repos     Configure Helm repositories used by chart dependencies.' \
 		'  helm-deps      Build dependencies for charts that declare them.' \
 		'  helm-lint      Lint all Helm charts under application/.' \
 		'  helm-template  Render all Helm charts under application/.' \
@@ -43,12 +49,23 @@ lint-actions:
 lint-yaml:
 	$(YAMLLINT) .
 
-helm-deps:
+helm-repos:
+	@set -euo pipefail; \
+	mkdir -p "$(HELM_REPO_ROOT)" "$(HELM_REPO_CACHE)"; \
+	for repo in $(HELM_REPOS); do \
+		name="$${repo%%=*}"; \
+		url="$${repo#*=}"; \
+		printf 'Configuring Helm repository %s (%s)\n' "$$name" "$$url"; \
+		$(HELM_WITH_REPOS) $(HELM) repo add "$$name" "$$url" --force-update >/dev/null; \
+	done; \
+	$(HELM_WITH_REPOS) $(HELM) repo update
+
+helm-deps: helm-repos
 	@set -euo pipefail; \
 	for chart in $(CHART_DIRS); do \
 		if grep -Eq '^[[:space:]]*dependencies:' "$$chart/Chart.yaml"; then \
 			printf 'Building Helm dependencies for %s\n' "$$chart"; \
-			$(HELM) dependency build "$$chart"; \
+			$(HELM_WITH_REPOS) $(HELM) dependency build "$$chart" --skip-refresh; \
 		fi; \
 	done
 
@@ -75,7 +92,7 @@ helm-clean:
 	for chart in $(CHART_DIRS); do \
 		rm -rf "$$chart/charts" "$$chart/Chart.lock"; \
 	done; \
-	rm -rf "$(RENDER_DIR)"
+	rm -rf "$(RENDER_DIR)" "$(HELM_REPO_ROOT)"
 
 scan-secrets:
 	@set -euo pipefail; \
