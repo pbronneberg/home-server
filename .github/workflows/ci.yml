@@ -46,7 +46,7 @@ env:
   # renovate: datasource=github-releases depName=gitleaks/gitleaks
   GITLEAKS_VERSION: v8.30.1
   # renovate: datasource=github-releases depName=helm/helm
-  HELM_VERSION: v3.19.0
+  HELM_VERSION: v4.2.0
   # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/(?<version>.*)$
   KUSTOMIZE_VERSION: v5.8.1
   # renovate: datasource=pypi depName=yamllint
