@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/**"
       - ".devcontainer/**"
+      - ".sops.yaml"
       - "AGENTS.md"
       - "Makefile"
       - ".yamllint.yml"
@@ -12,12 +13,14 @@ on:
       - "application/**"
       - "clusters/**"
       - "infra/**"
+      - "private/**"
   push:
     branches:
       - main
     paths:
       - ".github/**"
       - ".devcontainer/**"
+      - ".sops.yaml"
       - "AGENTS.md"
       - "Makefile"
       - ".yamllint.yml"
@@ -25,6 +28,7 @@ on:
       - "application/**"
       - "clusters/**"
       - "infra/**"
+      - "private/**"
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-stack
+spec:
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      version: 24.0.1
+  install:
+    crds: Create
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: prometheus-stack
+  timeout: 5m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: ConfigMap
+      name: prometheus-stack-values
+      valuesKey: values.yaml

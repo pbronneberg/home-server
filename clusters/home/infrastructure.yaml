@@ -1,0 +1,174 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-namespaces
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./clusters/home/infrastructure/namespaces
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-sources
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-namespaces
+  interval: 10m
+  path: ./clusters/home/infrastructure/sources
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-private-secrets
+  namespace: flux-system
+spec:
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: infrastructure-namespaces
+  interval: 10m
+  path: ./private/flux/home
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-cert-manager
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-sources
+  interval: 10m
+  path: ./clusters/home/infrastructure/cert-manager
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-cert-manager-issuers
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager
+  interval: 10m
+  path: ./clusters/home/infrastructure/cert-manager-issuers
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-longhorn
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-sources
+  interval: 10m
+  path: ./clusters/home/infrastructure/longhorn
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-longhorn-storageclasses
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-longhorn
+  interval: 10m
+  path: ./clusters/home/infrastructure/longhorn-storageclasses
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-traefik-middlewares
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+  interval: 10m
+  path: ./clusters/home/infrastructure/traefik-middlewares
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-monitoring
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-longhorn-storageclasses
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./clusters/home/infrastructure/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-actions-runner-controller
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager
+    - name: infrastructure-private-secrets
+  interval: 10m
+  path: ./clusters/home/infrastructure/actions-runner-controller
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true

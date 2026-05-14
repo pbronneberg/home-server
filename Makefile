@@ -15,7 +15,7 @@ SOPS_FILES ?= private/*.sops.yaml
 YAMLLINT ?= yamllint
 
 CHART_DIRS := $(shell find application -name Chart.yaml -exec dirname {} \; | sort)
-FLUX_KUSTOMIZATION_DIRS := $(shell find clusters -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
+FLUX_KUSTOMIZATION_DIRS := $(shell find clusters private/flux -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
 HELM_REPO_ROOT ?= /tmp/home-server-helm-repositories
 HELM_REPO_CONFIG ?= $(HELM_REPO_ROOT)/repositories.yaml
 HELM_REPO_CACHE ?= $(HELM_REPO_ROOT)/cache
@@ -33,7 +33,7 @@ help:
 		'  lint           Run workflow and YAML linting.' \
 		'  lint-actions   Lint GitHub Actions workflows with actionlint.' \
 		'  lint-yaml      Lint YAML values, manifests, and workflows with yamllint.' \
-		'  flux-build     Build all Flux/Kustomize cluster entrypoints under clusters/.' \
+		'  flux-build     Build all Flux/Kustomize cluster and private overlays.' \
 		'  helm-repos     Configure Helm repositories used by chart dependencies.' \
 		'  helm-deps      Build dependencies for charts that declare them.' \
 		'  helm-lint      Lint all Helm charts under application/.' \

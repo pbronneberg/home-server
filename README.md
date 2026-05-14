@@ -186,10 +186,42 @@ and authenticate to this GitHub repository using a deploy key or GitHub App
 credentials stored as Kubernetes secrets in `flux-system`. GitHub-hosted
 Actions must not receive kubeconfig or cluster credentials.
 
-From a trusted workstation or the devcontainer with your local kubeconfig:
+Flux also decrypts SOPS-encrypted Kubernetes Secret manifests from
+[`private/flux/home`](private/flux/home). Store the local age identity in the
+cluster before or immediately after bootstrap; it is required for the
+`infrastructure-private-secrets` Kustomization:
 
 ```bash
-export GITHUB_TOKEN=<github-token-with-repo-admin-for-bootstrap>
+kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic sops-age \
+  -n flux-system \
+  --from-file=age.agekey=.sops/age/keys.txt \
+  --dry-run=client \
+  -o yaml | kubectl apply -f -
+```
+
+From a trusted workstation or the devcontainer with your local kubeconfig,
+bootstrap Flux with a short-lived fine-grained GitHub personal access token.
+Create the token for this bootstrap operation only, then expire or revoke it
+after Flux has created the repository deploy key and committed its bootstrap
+manifests.
+
+Use these fine-grained token settings:
+
+* Resource owner: `pbronneberg`
+* Repository access: only `pbronneberg/home-server`
+* Expiration: short-lived, such as one day or one week
+* Repository permissions:
+  * Contents: read and write, so bootstrap can commit Flux manifests
+  * Administration: read and write, so bootstrap can create the deploy key
+  * Metadata: read-only, added automatically by GitHub
+
+Leave all other permissions unset. Do not pass `--token-auth`; the token is
+only for bootstrap, while Flux should use the repository deploy key for
+steady-state pulls.
+
+```bash
+export GITHUB_TOKEN=<fine-grained-bootstrap-token>
 flux bootstrap github \
   --owner=pbronneberg \
   --repository=home-server \
@@ -206,21 +238,28 @@ flux get kustomizations -n flux-system
 flux get helmreleases --all-namespaces
 ```
 
+If the SOPS age key was added after bootstrap, ask Flux to retry the private
+secret overlay:
+
+```bash
+flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
+```
+
 The Flux desired state mirrors the legacy Helmsman infrastructure and keeps
 ordering explicit with Flux `Kustomization` dependencies in
 [`clusters/home/infrastructure.yaml`](clusters/home/infrastructure.yaml):
 
 * namespaces and Helm repositories
+* SOPS-encrypted private Kubernetes Secrets
 * cert-manager and cert-manager issuers
 * Longhorn and the retained Longhorn storage class
 * Traefik middlewares used by existing ingresses
 * kube-prometheus-stack and the legacy Actions Runner Controller
 
-The legacy Actions Runner Controller keeps using the `controller-manager`
-secret in the `actions-runner-system` namespace. If private Helm values are
-still needed, create an in-cluster secret named
-`actions-runner-controller-values` with a `values.yaml` key instead of
-committing plaintext values.
+The legacy Actions Runner Controller uses the SOPS-encrypted
+`controller-manager` secret from `private/flux/home`. If private Helm values are
+still needed later, add a SOPS-encrypted Kubernetes Secret with the expected
+`values.yaml` key instead of committing plaintext values.
 
 Helmsman removal is intentionally deferred. Keep
 [`infra/home-server.helmsman.toml`](infra/home-server.helmsman.toml) available
@@ -251,14 +290,8 @@ configuration. Keep it only if the cluster should still host runners for other
 repositories.
 
 If the legacy [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller)
-is used, a GitHub PAT is required. First
-[create](https://github.com/settings/tokens) this PAT, then create a secret
-containing this token.
-
-```
-kubectl create namespace  actions-runner-system
-kubectl create secret generic controller-manager -n actions-runner-system --from-literal=github_token=<TOKEN>
-```
+is used, its GitHub token is managed as the SOPS-encrypted
+`controller-manager` Kubernetes Secret in `private/flux/home`.
 
 Install the [K3S system upgrader](https://rancher.com/docs/k3s/latest/en/upgrades/automated/) to automatically upgrade all nodes in the cluster to the newest K3S versions.
 

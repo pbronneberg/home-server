@@ -11,3 +11,8 @@ This directory contains public examples and SOPS-encrypted private overlays.
 
 The local age identity is stored at `.sops/age/keys.txt` and is ignored by git.
 Back it up outside this repository before adding real encrypted values.
+
+Flux reconciles Kubernetes Secret manifests from `private/flux/home` with SOPS
+decryption enabled. The cluster needs the matching age identity as a Kubernetes
+Secret named `sops-age` in the `flux-system` namespace before those manifests
+can reconcile.
