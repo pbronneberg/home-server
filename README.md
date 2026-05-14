@@ -40,9 +40,23 @@ make public-check
 The CI workflow in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 checks GitHub Actions syntax, YAML files, Helm dependencies, Helm linting, and
 Helm rendering. It also scans the current working tree with Gitleaks and checks
-for public-unsafe topology. Dependabot is configured in
-[`.github/dependabot.yml`](.github/dependabot.yml) for GitHub Actions and Helm
-chart dependencies.
+for public-unsafe topology.
+
+Dependency maintenance is split between GitHub-native Dependabot and Renovate:
+
+* Dependabot is configured in
+  [`.github/dependabot.yml`](.github/dependabot.yml) for GitHub Actions and
+  Helm chart dependencies.
+* Renovate is configured in [`renovate.json`](renovate.json) for Flux
+  `HelmRelease` versions, Flux controller manifests, Helm values image tags,
+  Dockerfile base images, and repo-local tool version pins.
+
+Enable the Renovate GitHub App for this repository so it can open dependency
+PRs. Minor and patch updates for repository maintenance tooling can automerge
+after CI passes. Cluster-facing Flux, Helm values, and deployed workload updates
+remain PR-reviewed before Flux reconciles them from `main`. Review Flux
+controller update PRs for preserved bootstrap settings, especially the cluster
+domain.
 
 Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
@@ -59,7 +73,9 @@ make ci
 make public-check
 ```
 
-The devcontainer installs the same tools used by the Makefile:
+The devcontainer installs the same tools used by the Makefile. Version pins live
+in [`.devcontainer/Dockerfile`](.devcontainer/Dockerfile) so Renovate can keep
+them current:
 
 * `helm`
 * `kubectl`

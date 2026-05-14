@@ -1,15 +1,25 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
+# renovate: datasource=github-releases depName=rhysd/actionlint extractVersion=^v(?<version>.*)$
 ARG ACTIONLINT_VERSION=1.7.12
+# renovate: datasource=npm depName=@openai/codex
 ARG CODEX_VERSION=0.130.0
+# renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.*)$
 ARG FLUX_VERSION=2.8.6
+# renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.*)$
 ARG GITLEAKS_VERSION=8.30.1
+# renovate: datasource=pypi depName=git-filter-repo
 ARG GIT_FILTER_REPO_VERSION=2.47.0
+# renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.*)$
 ARG HELM_VERSION=3.19.0
+# renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
 ARG KUBECTL_VERSION=1.36.1
+# renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/v(?<version>.*)$
 ARG KUSTOMIZE_VERSION=5.8.1
+# renovate: datasource=github-releases depName=getsops/sops extractVersion=^v(?<version>.*)$
 ARG SOPS_VERSION=3.11.0
 ARG TARGETARCH
+# renovate: datasource=pypi depName=yamllint
 ARG YAMLLINT_VERSION=1.38.0
 
 ENV PATH="/opt/home-server-tools/bin:${PATH}"

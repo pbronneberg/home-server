@@ -1,0 +1,102 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "timezone": "UTC",
+  "schedule": [
+    "before 6am on monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "enabledManagers": [
+    "custom.regex",
+    "dockerfile",
+    "flux",
+    "helm-values"
+  ],
+  "prConcurrentLimit": 4,
+  "prHourlyLimit": 2,
+  "rangeStrategy": "bump",
+  "rebaseWhen": "behind-base-branch",
+  "flux": {
+    "managerFilePatterns": [
+      "/^clusters\\/home\\/.+\\.ya?ml$/"
+    ]
+  },
+  "helm-values": {
+    "managerFilePatterns": [
+      "/^application\\/.+\\/values(?:\\.default)?\\.ya?ml$/"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update devcontainer tool version ARG pins",
+      "managerFilePatterns": [
+        "/^\\.devcontainer\\/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?(?: versioning=(?<versioning>\\S+))?\\s+ARG [A-Z0-9_]+_VERSION=(?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver-coerced{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Update GitHub Actions tool version environment pins",
+      "managerFilePatterns": [
+        "/^\\.github\\/workflows\\/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?(?: versioning=(?<versioning>\\S+))?\\s+\\s[A-Z0-9_]+_VERSION: \"?(?<currentValue>[^\"\\n]+)\"?"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver-coerced{{/if}}"
+    }
+  ],
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+  "packageRules": [
+    {
+      "description": "Automerge low-risk repository maintenance tool updates after CI passes",
+      "matchManagers": [
+        "custom.regex",
+        "dockerfile"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "repository maintenance tooling",
+      "labels": [
+        "dependencies",
+        "tooling"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Keep deployed cluster changes reviewable before Flux reconciles them",
+      "matchManagers": [
+        "flux",
+        "helm-values"
+      ],
+      "labels": [
+        "dependencies",
+        "cluster"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Group Flux controller updates together",
+      "matchFileNames": [
+        "clusters/home/flux-system/gotk-components.yaml"
+      ],
+      "groupName": "flux controllers"
+    }
+  ]
+}

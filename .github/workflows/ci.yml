@@ -9,6 +9,7 @@ on:
       - "AGENTS.md"
       - "Makefile"
       - ".yamllint.yml"
+      - "renovate.json"
       - "README.md"
       - "application/**"
       - "clusters/**"
@@ -24,6 +25,7 @@ on:
       - "AGENTS.md"
       - "Makefile"
       - ".yamllint.yml"
+      - "renovate.json"
       - "README.md"
       - "application/**"
       - "clusters/**"
@@ -39,10 +41,15 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # renovate: datasource=github-releases depName=rhysd/actionlint
   ACTIONLINT_VERSION: v1.7.12
+  # renovate: datasource=github-releases depName=gitleaks/gitleaks
   GITLEAKS_VERSION: v8.30.1
+  # renovate: datasource=github-releases depName=helm/helm
   HELM_VERSION: v3.19.0
+  # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/(?<version>.*)$
   KUSTOMIZE_VERSION: v5.8.1
+  # renovate: datasource=pypi depName=yamllint
   YAMLLINT_VERSION: "1.38.0"
 
 jobs:
