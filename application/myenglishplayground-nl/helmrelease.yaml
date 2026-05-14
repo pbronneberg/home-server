@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: myenglishplayground-nl
+  namespace: websites
+spec:
+  chart:
+    spec:
+      chart: wordpress
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+      version: 30.1.6
+  install:
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: myenglishplayground-nl
+  timeout: 10m
+  upgrade:
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: ConfigMap
+      name: myenglishplayground-nl-values
+      valuesKey: values.yaml

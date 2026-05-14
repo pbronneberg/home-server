@@ -23,7 +23,8 @@ make ci
 `make ci` configures the Helm chart repositories it needs in a temporary cache
 under `/tmp/home-server-helm-repositories`, so a fresh Helm install does not
 need a manual `helm repo add` first. It also builds the Flux/Kustomize cluster
-entrypoints under `clusters/`.
+entrypoints under `clusters/`, `private/flux/`, and application paths
+referenced by Flux.
 
 To check only the Flux and Kustomize cluster overlays, run:
 
@@ -275,7 +276,8 @@ dependencies in
 * Longhorn and the retained Longhorn storage class
 * kube-prometheus-stack monitoring
 * Traefik middlewares used by existing ingresses
-* Home Assistant, TLS proxy, and Longhorn admin workload releases
+* Home Assistant, Bronneberg, Photobooth, My English Playground, TLS proxy, and
+  Longhorn admin workload releases
 
 Flux migration parity and rollback notes live in
 [docs/flux-migration-parity.md](docs/flux-migration-parity.md).

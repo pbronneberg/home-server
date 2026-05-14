@@ -4,8 +4,6 @@ ignore: |
   .git/
   .helmsman-tmp/
   .idea/
-  HomeAssistantConfig.yaml
-  HomeAssistentConfig.yaml
   application/**/templates/**/*.yaml
   application/**/templates/**/*.yml
   application/**/templates/*.yaml

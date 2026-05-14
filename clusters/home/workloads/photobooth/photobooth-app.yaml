@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: photobooth-app
+  namespace: websites
+spec:
+  chart:
+    spec:
+      chart: ./application/photobooth-app
+      interval: 1h
+      reconcileStrategy: Revision
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: photobooth-app
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3

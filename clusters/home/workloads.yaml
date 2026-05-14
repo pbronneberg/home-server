@@ -1,6 +1,24 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: workload-bronneberg-org
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./clusters/home/workloads/bronneberg-org
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: workload-home-assistant
   namespace: flux-system
 spec:
@@ -15,6 +33,45 @@ spec:
     kind: GitRepository
     name: flux-system
   timeout: 5m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: workload-photobooth
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-sources
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./clusters/home/workloads/photobooth
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 10m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: workload-myenglishplayground-nl
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-longhorn-storageclasses
+    - name: infrastructure-sources
+    - name: infrastructure-traefik-middlewares
+  interval: 10m
+  path: ./application/myenglishplayground-nl
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 10m
   wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1

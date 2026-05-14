@@ -16,7 +16,7 @@ SOPS_FILES ?= $(shell find private -type f \( -name '*.sops.yaml' -o -name '*.so
 YAMLLINT ?= yamllint
 
 CHART_DIRS := $(shell find application -name Chart.yaml -exec dirname {} \; | sort)
-FLUX_KUSTOMIZATION_DIRS := $(shell find clusters private/flux -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
+FLUX_KUSTOMIZATION_DIRS := $(shell find clusters private/flux application -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
 HELM_REPO_ROOT ?= /tmp/home-server-helm-repositories
 HELM_REPO_CONFIG ?= $(HELM_REPO_ROOT)/repositories.yaml
 HELM_REPO_CACHE ?= $(HELM_REPO_ROOT)/cache

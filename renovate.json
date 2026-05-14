@@ -24,7 +24,8 @@
   "rebaseWhen": "behind-base-branch",
   "flux": {
     "managerFilePatterns": [
-      "/^clusters\\/home\\/.+\\.ya?ml$/"
+      "/^clusters\\/home\\/.+\\.ya?ml$/",
+      "/^application\\/myenglishplayground-nl\\/helmrelease\\.ya?ml$/"
     ]
   },
   "helm-values": {
@@ -190,6 +191,7 @@
       "description": "Label workload dependency updates",
       "matchFileNames": [
         "clusters/home/workloads/**",
+        "application/myenglishplayground-nl/helmrelease.yaml",
         "application/home-assistant/Chart.yaml",
         "application/**/values*.yaml"
       ],
