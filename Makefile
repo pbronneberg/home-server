@@ -20,7 +20,7 @@ FLUX_KUSTOMIZATION_DIRS := $(shell find clusters private/flux application -name 
 HELM_REPO_ROOT ?= /tmp/home-server-helm-repositories
 HELM_REPO_CONFIG ?= $(HELM_REPO_ROOT)/repositories.yaml
 HELM_REPO_CACHE ?= $(HELM_REPO_ROOT)/cache
-HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami
+HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.min.io/
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 

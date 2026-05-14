@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the MongoDB service/statefulset name.
+*/}}
+{{- define "photobooth-api.mongodbName" -}}
+{{- printf "%s-mongodb" (include "photobooth-api.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}

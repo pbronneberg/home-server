@@ -24,10 +24,7 @@ version: 0.1.0
 appVersion: "0.0.4-pre11"
 
 dependencies:
-  - name: mongodb
-    version: 19.0.2
-    repository: https://charts.bitnami.com/bitnami
   - name: minio
-    version: 17.0.21
-    repository: https://charts.bitnami.com/bitnami
+    version: 5.4.0
+    repository: https://charts.min.io/
     alias: s3

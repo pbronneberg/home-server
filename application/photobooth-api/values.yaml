@@ -13,58 +13,81 @@ api:
     secretName: storage-user-photobooth
 
 mongodb:
-  useStatefulSet: true
-  auth:
-    enabled: false
-  tls:
-    enabled: false
+  enabled: true
+  image:
+    # Use dhi.io/mongodb here if the cluster has Docker Hardened Images registry access.
+    repository: mongo
+    tag: "8.0.21"
+    pullPolicy: IfNotPresent
+  service:
+    port: 27017
+  persistence:
+    enabled: true
+    storageClassName: ""
+    size: 8Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
 
 s3:
-  createNamespaces: true
-  provisioning:
+  mode: standalone
+  replicas: 1
+  rootUser: minio-root
+  rootPassword: not-a-real-root-password
+  persistence:
     enabled: true
-    buckets:
-      - name: photobooth
-        region: minio
-    users:
-      - username: photobooth
-        password: not-a-real-password
-        policies:
-         - photobooth-policy
-        setPolicies: true
-    policies:
-      - name: photobooth-policy
-        statements:
-          - resources:
-              - "arn:aws:s3:::photobooth"
-            effect: "Allow"
-            actions:
-              - "s3:GetBucketLocation"
-              - "s3:ListBucket"
-              - "s3:ListBucketMultipartUploads"
-          - resources:
-              - "arn:aws:s3:::photobooth/*"
-            effect: "Allow"
-            actions:
-              - "s3:AbortMultipartUpload"
-              - "s3:DeleteObject"
-              - "s3:GetObject"
-              - "s3:ListMultipartUploadParts"
-              - "s3:PutObject"
+    storageClass: local-path
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+  serviceAccount:
+    create: true
+    name: photobooth-api-s3
+  buckets:
+    - name: photobooth
+      policy: none
+      purge: false
+  users:
+    - accessKey: photobooth
+      secretKey: not-a-real-password
+      policy: photobooth-policy
+  policies:
+    - name: photobooth-policy
+      statements:
+        - resources:
+            - "arn:aws:s3:::photobooth"
+          effect: "Allow"
+          actions:
+            - "s3:GetBucketLocation"
+            - "s3:ListBucket"
+            - "s3:ListBucketMultipartUploads"
+        - resources:
+            - "arn:aws:s3:::photobooth/*"
+          effect: "Allow"
+          actions:
+            - "s3:AbortMultipartUpload"
+            - "s3:DeleteObject"
+            - "s3:GetObject"
+            - "s3:ListMultipartUploadParts"
+            - "s3:PutObject"
   service:
-    ports:
-      api: 80
+    port: "80"
 
   ingress:
     enabled: true
-    hostname: s3.apps.example.com
+    hosts:
+      - s3.apps.example.com
     annotations:
       kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
       traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
-    tls: true
-  apiIngress:
-    enabled: false
+    tls:
+      - hosts:
+          - s3.apps.example.com
+        secretName: s3.apps.example.com-tls
     
 imagePullSecrets: []
 nameOverride: ""
