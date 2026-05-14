@@ -25,6 +25,10 @@ Home Assistant is captured with two private Secrets:
 - `home-assistant-values.sops.yaml` stores Helm values such as ingress and
   config Secret wiring.
 
+Monitoring uses `monitoring-values.sops.yaml` for real ingress hostnames. The
+public kube-prometheus-stack values keep ingresses disabled so placeholder
+example domains never request public ACME certificates.
+
 After restoring the age identity on a workstation, run `make
 sops-recovery-drill` from the repository root before relying on a fresh Flux
 bootstrap. The drill is documented in

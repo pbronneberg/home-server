@@ -145,6 +145,7 @@ spec:
   dependsOn:
     - name: infrastructure-cert-manager-issuers
     - name: infrastructure-longhorn-storageclasses
+    - name: infrastructure-private-secrets
     - name: infrastructure-traefik-middlewares
   interval: 10m
   path: ./clusters/home/infrastructure/monitoring

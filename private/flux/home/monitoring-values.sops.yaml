@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-stack-private-values
+  namespace: monitoring
+type: Opaque
+stringData:
+  values.yaml: ENC[AES256_GCM,data:7oTs/T2OWbX5vmyXwbAhNINNh6jFkEmMkZMH5UVsV+94AOoOoCdkM1qO0TMOyuLje9uk8O/jycEU6BDv39vIfEGpm0qQkm7tpSkThQju/t1ytvNCqW2EymbmliNG+ehWZmKK+qphhNXBRU+jUZEbD7ZWIOKC+oN6Uju8nQO3PSf5Ske5U5Oz6wKyIiXwYnUNQWHYAyg52yuCvkt3YRtxF0LfvBnalGWFC61PYqlRnTkqWBOsMVGLox/NijtrGH3ouU9B+B/SHMz7DpxXp+tUj12Izh5jongtpw+WArBG7eIAZ6SXbFmYuP79A5K4ufO35xWZHBS6Qp1DNU5Ljm77UHNsswX8NeMPLXhAbGw8j4mfG6/eVgTRGEfEs3EQw3jyvy+pHqjv1htE16EjWnt9o38sxpPNLvEGQYvSzT00sj4B9FvvgXavaP4irdGOMiJr9cLmRm3Dsk+eHYj7viS2uLCeWtpRlJSEIqJLOy8dzfFOnKzD7nfgfE1/GANKZcnaWoZchb9NlXPz15E4IAgWSbM3DIE+ut27DeEETFESNmqb4rtglZQasoaHDVTZjrsFkfrZetyapz7nkZcAZUD6qkpaYpTpNr6QABl03CcLxRsEIgrKLBkRloilk0WBG//ftEUJ7VOlshZbjEaq5btNze9yZ9n3TQzzcxhrNdjREQTUMoW2gtIt2BGOolCmtBSUIwxpcWjVhyq8tU/GuXSUNNlDDYOuHqs2n+oUHadc73hS+kmvel2KYWR0hh6KlPyqMgTEBaMrNlZ67sZxN8cL0l/f3LVbhwzffEclxROGmrf0T/j/A4PQxPA2otD73y1CXlX1zZ6i/6gcESY0apOMra41NcoSQlV4nx7U3mMtmpFnwAfBAxsn50I+Dyh3KPe5S40oYfOgHPAb8tKLaHFeCOx51LiWhOmpaFXnkNO1asnikkDvL3wJRALKBi9dO8Z6tT6rXKM6Ro7nwPfFpDlbxmaQaS8+zk/wdQNKHvJunTYRkfWr0c0=,iv:akM3nils+qShDO8sdpYs9A5+RTlVtBRqTFNG+hAnc6M=,tag:kpRh9eoJGzdx581JMxm1YA==,type:str]
+sops:
+  age:
+    - recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBFZ1FNZG5vTmlhcFcxemFz
+        Y2s3TUpHMTU1b3NicXZ0OWxhQlowUDJlNWtVCnpNTEtsSGQzaGY2YkdRTzRRNEdC
+        eXMwWWFKcWxNQ3dkVmsvSTJYZUVZVk0KLS0tIElaSUNTMCtNUDF0a2paUElnWG9X
+        NnNTTXlnMjRHQWZFWExzWDZFenlHSzAKOZPkvxcE0N5Rg1ampALH3pukBll1pL8w
+        a85yiOB3hKU3euE2sW6nP/7DOcc+l0S+busMtZvT+YvKq+JV6dYDUQ==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2026-05-14T16:28:34Z"
+  mac: ENC[AES256_GCM,data:uW0vBCbsCpN9h1cQSO+JHUURgdn6FbU4u9AIlNhBNCy+Y0A0OT54Jv1YZQ7ElWJ+Z0xf2AGWKfMPv/T2pYHJiXMQLyYxNOicuAfwi4IHPinMEV590UQrGzMahWLwrojEYulzPZaeIuJuo8gwQzYXMTZ3hk/wFEQCXeq43sZB4EY=,iv:hk6DotK82phNxT6okYD/rtnGXzm39pn3cG5WHNfQcww=,tag:pimUVaFdWgjFMsz8hmhoPw==,type:str]
+  encrypted_regex: ^(data|stringData)$
+  version: 3.11.0

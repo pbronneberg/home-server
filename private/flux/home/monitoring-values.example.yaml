@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-stack-private-values
+  namespace: monitoring
+type: Opaque
+stringData:
+  values.yaml: |
+    alertmanager:
+      ingress:
+        enabled: true
+        hosts:
+          - alertmanager.home.example
+        tls:
+          - secretName: alertmanager-general-tls
+            hosts:
+              - alertmanager.home.example
+    grafana:
+      ingress:
+        enabled: true
+        hosts:
+          - grafana.home.example
+        tls:
+          - secretName: grafana-general-tls
+            hosts:
+              - grafana.home.example
+    prometheus:
+      thanosIngress:
+        enabled: true
+        hosts:
+          - thanos-gateway.home.example
+        tls:
+          - secretName: thanos-gateway-tls
+            hosts:
+              - thanos-gateway.home.example
+      ingress:
+        enabled: true
+        hosts:
+          - prometheus.home.example
+        tls:
+          - secretName: prometheus-general-tls
+            hosts:
+              - prometheus.home.example

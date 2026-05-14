@@ -29,3 +29,6 @@ spec:
     - kind: ConfigMap
       name: prometheus-stack-values
       valuesKey: values.yaml
+    - kind: Secret
+      name: prometheus-stack-private-values
+      valuesKey: values.yaml
