@@ -1,3 +1,10 @@
+.DS_Store
+.idea/
+
+# Local personal exports/configs
+HomeAssistantConfig.yaml
+HomeAssistentConfig.yaml
+
 *.secrets.yaml
 
 # Local .terraform directories
@@ -36,4 +43,3 @@ override.tf.json
 #Helm
 Chart.lock
 *.tgz
-
