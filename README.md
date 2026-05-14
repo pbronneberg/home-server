@@ -7,7 +7,8 @@ Configuration for my home server.
 This repository is maintained through small pull requests, GitHub-hosted
 Actions, and repo-local agent instructions.
 
-Run the same checks locally that CI runs on GitHub public runners:
+Run the same checks inside the devcontainer that CI runs on GitHub public
+runners:
 
 ```bash
 make ci
@@ -30,20 +31,47 @@ Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
 Publication steps live in [docs/publication-runbook.md](docs/publication-runbook.md).
 
-### Local maintenance tooling
+### Devcontainer Tooling
 
-GitHub Actions installs the lint tooling automatically. To run `make ci`
-locally, install these tools on your workstation:
+The recommended local workflow is to use the devcontainer so repository tooling
+does not install or upgrade anything on your host machine. Open this repository
+with VS Code Dev Containers or run it from the Dev Containers CLI, then run:
+
+```bash
+make ci
+make public-check
+```
+
+The devcontainer installs the same tools used by the Makefile:
+
+* `helm`
+* `yamllint`
+* `actionlint`
+* `gitleaks`
+* `sops`
+* `age`
+* `git-filter-repo`
+* `codex`
+
+It also recommends the OpenAI VS Code extension (`openai.chatgpt`) so Codex can
+run in the container-attached editor. Authenticate inside the devcontainer with
+your preferred Codex flow, or provide `OPENAI_API_KEY` through your local shell,
+VS Code secrets, or another non-repository secret store. Do not commit Codex
+tokens, API keys, or generated plaintext credentials.
+
+Host-side installs are optional. If you do not use the devcontainer, install
+equivalent versions on your workstation:
 
 ```bash
 python3 -m pip install --user yamllint==1.38.0
 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 go install github.com/zricethezav/gitleaks/v8@v8.30.1
+npm install -g @openai/codex@0.130.0
 ```
 
-For SOPS/age private overlays, install `sops` and `age`. The local private age
-identity is stored in `.sops/age/keys.txt`, is ignored by git, and must be
-backed up outside this repository.
+For SOPS/age private overlays, the local private age identity is stored in
+`.sops/age/keys.txt`, is ignored by git, and must be backed up outside this
+repository.
 
 `HomeAssistentConfig.yaml` and `HomeAssistantConfig.yaml` are local-only exports
 and must remain ignored.
