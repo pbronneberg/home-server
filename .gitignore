@@ -2,8 +2,6 @@
 .idea/
 
 # Local personal exports/configs
-HomeAssistantConfig.yaml
-HomeAssistentConfig.yaml
 .public-denylist.local
 .public-replacements.local
 

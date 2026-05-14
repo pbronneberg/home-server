@@ -46,7 +46,7 @@ if [ -n "$admin_password_matches" ]; then
 fi
 
 domain_matches="$(
-  rg -n -I --hidden --glob '!.git/**' --glob '!private/*.sops.yaml' --glob '!application/myenglishplayground-nl/values.default.yaml' -- '([[:alnum:]-]+\.)+(com|org|nl|net|dev|io)' application infra README.md .github AGENTS.md private \
+  rg -n -I --hidden --glob '!.git/**' --glob '!private/*.sops.yaml' --glob '!application/myenglishplayground-nl/values.default.yaml' -- '([[:alnum:]-]+\.)+(com|org|nl|net|dev|io)' application clusters README.md .github AGENTS.md private \
     | grep -Ev 'example\.com|home\.example|github\.com|githubusercontent\.com|github\.io|ghcr\.io|k3s\.io|k8s\.io|helm\.sh|semver\.org|kubernetes\.io|docker\.io|hub\.docker\.com|charts\.|cert-manager\.io|traefik\.io|prometheus\.io|letsencrypt\.org|users\.noreply\.github\.com|databus23|Praqma|rancher|argoproj|bitnami|elastic\.co|cattle\.io|longhorn\.io|amazonaws\.com|summerwind\.dev|nip\.io' || true
 )"
 
