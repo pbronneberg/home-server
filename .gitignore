@@ -15,8 +15,8 @@ gitleaks-report.*
 
 # Local SOPS/age identities. Public age recipients are committed in .sops.yaml;
 # private identities stay local and must be backed up separately.
-.sops/age/keys.txt
-.sops/age/*.txt
+.sops/age/
+**/.sops/age/
 
 # Local .terraform directories
 **/.terraform/*

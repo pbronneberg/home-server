@@ -20,28 +20,27 @@ The repository is configured for SOPS with age in `.sops.yaml`.
 
 Create or rotate a local age identity:
 
-```bash
-mkdir -p .sops/age
-age-keygen -o .sops/age/keys.txt
+```bash {"cwd":"../"}
+make sops-keygen
 ```
 
 If you rotate the age key, replace the public recipient in `.sops.yaml`, then
 run:
 
-```bash
-SOPS_AGE_KEY_FILE=.sops/age/keys.txt sops updatekeys private/*.sops.yaml
+```bash {"cwd":"../"}
+make sops-updatekeys
 ```
 
 Encrypt a private overlay:
 
-```bash
-SOPS_AGE_KEY_FILE=.sops/age/keys.txt sops --encrypt --in-place private/home.sops.yaml
+```bash {"cwd":"../"}
+make sops-encrypt
 ```
 
 Decrypt for local inspection without writing plaintext into the repo:
 
-```bash
-SOPS_AGE_KEY_FILE=.sops/age/keys.txt sops decrypt private/home.sops.yaml
+```bash {"cwd":"../"}
+make sops-decrypt
 ```
 
 Back up `.sops/age/keys.txt` outside this repository before storing real
@@ -54,43 +53,43 @@ to become the new public `main`.
 
 1. Create a private mirror backup:
 
-   ```bash
-   git clone --mirror git@github.com:example-org/home-server.git ../home-server-private-backup.git
-   ```
+```bash
+git clone --mirror git@github.com:example-org/home-server.git ../home-server-private-backup.git
+```
 
 2. Create `.public-replacements.local` with exact private string replacements.
-   Use `git-filter-repo` replacement syntax, for example:
+Use `git-filter-repo` replacement syntax, for example:
 
-   ```text
-   private-value==>example-value
-   ```
+```text
+private-value==>example-value
+```
 
 3. Rewrite local history:
 
-   ```bash
-   git filter-repo --replace-text .public-replacements.local --refs main
-   ```
+```bash
+git filter-repo --replace-text .public-replacements.local --refs main
+```
 
 4. Re-run:
 
-   ```bash
-   make public-check
-   ```
+```bash
+make public-check
+```
 
 5. Confirm no old topology remains:
 
-   ```bash
-   make check-history-redactions
-   ```
+```bash
+make check-history-redactions
+```
 
 6. Delete stale remote branches after confirming the mirror backup is usable.
    Keep only sanitized `main`.
 
 7. Force-push sanitized `main`:
 
-   ```bash
-   git push --force-with-lease origin main
-   ```
+```bash
+git push --force-with-lease origin main
+```
 
 ## GitHub Settings Before Public Visibility
 
@@ -99,6 +98,6 @@ to become the new public `main`.
 - Enable Dependabot alerts and Dependabot security updates.
 - Protect `main` with required status checks.
 - Confirm no public-runner workflow has kubeconfig, cluster credentials, or
-  home-network deployment credentials.
+   home-network deployment credentials.
 - Change repository visibility only after the rewritten `main` passes all
-  checks on GitHub Actions.
+   checks on GitHub Actions.
