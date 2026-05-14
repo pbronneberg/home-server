@@ -35,6 +35,9 @@ surfaces.
   there is a deliberate migration plan.
 - Never commit real secrets, kubeconfigs, private keys, tokens, or local
   machine exports.
+- Never commit real home-lab topology in plaintext. Use reserved example
+  domains/IP ranges in public files and SOPS-encrypted overlays for private
+  values.
 - Keep generated Helm dependency files and packaged charts out of git unless a
   user intentionally asks to vendor dependencies.
 - Update `README.md` when setup, maintenance, or deployment commands change.
@@ -43,11 +46,15 @@ surfaces.
 
 - Treat Helm charts as the primary source of application manifests.
 - Run `make ci` before proposing or merging changes.
+- Run `make public-check` before changing repository visibility or touching
+  files that could reveal private topology.
 - Run `helm dependency build` before linting charts that declare
   dependencies.
 - Render charts with `helm template` after changing templates or values.
 - For secret-backed values, add safe placeholder keys to committed values and
   keep real values in ignored `*.secrets.yaml` files.
+- For real operational values that must be versioned, use SOPS/age encrypted
+  files under `private/*.sops.yaml`.
 - For storage or network changes, call out possible data, DNS, ingress, or TLS
   impact in the PR description.
 

@@ -5,7 +5,7 @@ metadata:
 spec:
   template:
     spec:
-      repository: pbronneberg/home-server
+      repository: example-org/home-server
       labels:
         - home-server
         - k3s
@@ -17,11 +17,11 @@ spec:
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
-  name: runner-dotnet6-microservice
+  name: runner-sample-service
 spec:
   template:
     spec:
-      repository: pbronneberg/dotnet6-microservice
+      repository: example-org/sample-service
       labels:
         - home-server
         - k3s
@@ -34,11 +34,11 @@ spec:
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
-  name: runner-someone-elses-computer
+  name: runner-sample-app
 spec:
   template:
     spec:
-      repository: pbronneberg/someone-elses-computer
+      repository: example-org/sample-app
       labels:
         - home-server
         - k3s
@@ -54,13 +54,13 @@ metadata:
   name: runner-autoscaler-dn6us
 spec:
   scaleTargetRef:
-    name: runner-dotnet6-microservice
+    name: runner-sample-service
   minReplicas: 1
   maxReplicas: 5
   metrics:
   - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
     repositoryNames:
-    -  pbronneberg/dotnet6-microservice
+    -  example-org/sample-service
 
 ---
 apiVersion: actions.summerwind.dev/v1alpha1
@@ -69,13 +69,13 @@ metadata:
   name: runner-autoscaler-sec
 spec:
   scaleTargetRef:
-    name: runner-someone-elses-computer
+    name: runner-sample-app
   minReplicas: 1
   maxReplicas: 5
   metrics:
   - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
     repositoryNames:
-    -  pbronneberg/someone-elses-computer
+    -  example-org/sample-app
 
 ---
 apiVersion: actions.summerwind.dev/v1alpha1
@@ -90,4 +90,4 @@ spec:
   metrics:
   - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
     repositoryNames:
-    -  pbronneberg/home-server
+    -  example-org/home-server

@@ -226,7 +226,7 @@ ingress:
   ingressClassName: ""
   ## @param ingress.hostname Default host for the ingress record
   ##
-  hostname: www.myenglishplayground.nl
+  hostname: www.school.example.com
   ## @param ingress.path Default path for the ingress record
   ## NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers
   ##
@@ -267,7 +267,7 @@ ingress:
   ##     path: /
   ##
   extraHosts:
-    - name: "myenglishplayground.nl"
+    - name: "school.example.com"
       path: /
 
 ## @section Persistence Parameters

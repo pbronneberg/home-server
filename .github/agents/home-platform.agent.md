@@ -36,6 +36,8 @@ and understandable.
 - Do not store plaintext Kubernetes Secrets in git. Use ignored local secret
   values, encrypted GitOps secrets such as SOPS, or an external secrets
   operator depending on the workload.
+- Do not store real home-lab topology in public files. Use reserved example
+  domains and IP ranges, and put real values in SOPS/age encrypted overlays.
 - Validate manifests before deployment: lint workflows and YAML, build Helm
   dependencies, lint charts, render templates, and add schema/policy checks
   before enabling automated reconciliation.
@@ -56,12 +58,15 @@ and understandable.
   private material.
 - When a chart depends on a remote chart, run `helm dependency build` before
   `helm lint` or `helm template`.
+- Before making the repository public, run `make public-check` and follow
+  `docs/publication-runbook.md`.
 
 ## Review Checklist
 
 - Does `make ci` pass?
 - Are Helm dependencies declared and renderable?
 - Are secret placeholders safe for CI while real values stay ignored?
+- Are real topology values absent from plaintext tracked files?
 - Are workflow permissions and credentials scoped to the minimum needed?
 - Could the change break existing DNS, TLS, ingress routing, or storage?
 - Is any migration or rollback action documented?

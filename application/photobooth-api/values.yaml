@@ -57,7 +57,7 @@ s3:
 
   ingress:
     enabled: true
-    hostname: s3.itsmyparty.nl
+    hostname: s3.apps.example.com
     annotations:
       kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
@@ -115,14 +115,14 @@ ingress:
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   hosts:
-    - host: photobooth.itsmyparty.nl
+    - host: photobooth.apps.example.com
       paths:
         - path: /api/v1
           pathType: ImplementationSpecific
   tls:
    - secretName: photobooth-nl-tls
      hosts:
-       - photobooth.itsmyparty.nl
+       - photobooth.apps.example.com
 
 resources:
   limits:
