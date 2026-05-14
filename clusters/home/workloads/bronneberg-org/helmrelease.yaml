@@ -23,3 +23,7 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: bronneberg-org-values
+      valuesKey: values.yaml

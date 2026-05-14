@@ -6,6 +6,7 @@ metadata:
 spec:
   dependsOn:
     - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-private-secrets
     - name: infrastructure-traefik-middlewares
   interval: 10m
   path: ./clusters/home/workloads/bronneberg-org
@@ -43,6 +44,7 @@ metadata:
 spec:
   dependsOn:
     - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-private-secrets
     - name: infrastructure-sources
     - name: infrastructure-traefik-middlewares
   interval: 10m

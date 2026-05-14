@@ -1,8 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - bronneberg-org-values.sops.yaml
   - home-assistant-config.sops.yaml
   - home-assistant-values.sops.yaml
   - longhorn-admin-values.sops.yaml
   - monitoring-values.sops.yaml
+  - photobooth-api-values.sops.yaml
+  - photobooth-app-values.sops.yaml
   - tls-proxies-values.sops.yaml

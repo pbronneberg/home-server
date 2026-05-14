@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: photobooth-app-values
+  namespace: websites
+type: Opaque
+stringData:
+  values.yaml: ENC[AES256_GCM,data:VmzcqPtrTL8DND4jbwf2IZ+MDOLO5jlAxH0cykWxPsOo/JFvzlpTJNKISb4a0VdG4ubMOslcNWN8/1C3pDqYC03ST5tczh60IjCIo/3gJsehhtUisr9pSCg/MbM7X9mHqACaxZEjp8LMppQzEuohsbADN8n7+lJlCdSX8fRs8ujrUYAEBQLiyLvV5SmuHVjanEngMSzV4eTuvbWDmmlziVQmpSUNmWUaXbToGvXQPEEvdl93Ii9syYiaf26ty8I8Onq6aWUypNUGbO0zkvs9dreqTjqRlkrv0Boa0Q==,iv:+k3OvqFhyrubSp4Xzkrkmom7GmvwRYlPjmDEAAl68d4=,tag:rE3NYCe3MO+dIekKrENBfA==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBUY0dzZ1VQd1pOOTc1NGV5
+        TjRYYTluRFBlblhDUS9uL3g3clcwYk5PTFI0CkJpNE1pYlNyQ1ovOHRtM2diU1Yy
+        NXFoTDNrM0w1Y3ZicWJCMituakVUS1UKLS0tIGNoNlRVRUdvZ0pyZ0dDYmhWRkx6
+        aldmbUtsU004SDhEbUVFNGpPemQ4YlUKsprWU/kwzsepdV3itJkXom60PQD/GY7m
+        Ey9C+N0U+/5K6sgBQpqCRu6YWnHnExXeUU0KAfcJWLlloAPdDQeH4Q==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-05-14T22:19:16Z"
+  mac: ENC[AES256_GCM,data:NHvy6/y7ydbh4KOfLycUcP+Scbu305lpgipjqL4+yzsmz2pere+h+9vgMTEtwWaPZeYLav8vePS5dwpfes4szASy372svm4oVfqOJF73JJyrJf433zPn98mA+/69ywwphCcR5H/BMpo3EULLzqLQyz55SP86mBIOhZ1PBUyzuc8=,iv:GkNnXmrKB7UlC4GHpmfw/ZChiiaBjmWB4woSLurnfC4=,tag:BMYIK9VEdy4SyOgg1syqtw==,type:str]
+  version: 3.13.0

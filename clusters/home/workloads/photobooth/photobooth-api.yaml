@@ -23,3 +23,7 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: photobooth-api-values
+      valuesKey: values.yaml

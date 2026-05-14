@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bronneberg-org-values
+  namespace: websites
+type: Opaque
+stringData:
+  values.yaml: ENC[AES256_GCM,data:VLpMg51jkUmeEaxYvv/zZLWKCZ/buoIYiw2iJSL8YOaCrGmbP2yKrimokKLb6vUiefc+rEvLodNCa8dzoZqlvjwwP8bnggfS9Zhe98k/86+Dpie1svB/cLOREQCKToNt+tSvAopc/oXNZ13cB+C46LGT/Kd2B68h5WJVMJc4FXlTwG9yh2dKC5Rldw2Z+cmgJLcpY0WIp78svixPc/NIbne2+jGs4VDfjwj4k+adPQikpVs/ZtZkirTnPPP0uWP3xV2v9Kz8//D1Z9ffymgTr2mvOWgDwqn8+jHKtIkfl+E/E3gDQZ1/BtdvPoi/CFXk0TXcA+bmN+zgJMF5Ga5CoXGTvpnHBaJcDvmMErbNDYYfhYMRb9nRsJSu/ThQ8wINxz9WLxKPlso8T4mz183lCc4OX2nVoZN65aOwWUURV1xiSCK8HRLx7cRT6nvU45w=,iv:smXnZlbrJfD9f33wuO8ESilhjWUh5nZCUkLCVSf0hTo=,tag:MWU+I7/3LLTvQdmN/VIFww==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAzTEJJTXNFUW5UMGtsOXBS
+        NjVDVnJueGMvc3FFc1ZzbUZqV3g0QjZPbjF3CmNPaDJWa3Y3LzVJcC9HMEN3OHA4
+        b01GRmMyNVJPdytTUG5wMEdlMUNKT2sKLS0tIE9DaWFxNGVVUGZGNlFmTFFGRmJD
+        NjJ6ZkIvMWgvcDV5WDdnYzRiNW9PMk0KRkrKVAkdfEGzXKhDDPCKQglxmRK0a+/l
+        Mb8KQbjdQmbC+7dTcudZ2iHt8BiL/+CHIy65zhOgfp1UGRsV5uTeyQ==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-05-14T22:19:15Z"
+  mac: ENC[AES256_GCM,data:vRMZNXaKVX6CE+3S7+I7kHc1CbiryyTyEBZrIMyu4o0sAUxw2TaYn1IyvDt69EmiDempKkxUAKq4sMGFZPn0N25syalfyzy9uJqAsv+a4GnWkIM9J88VDIytcSt5yWvLJ9x6iTlTab/zjYsKIpdNBNv5YStAsay5Pi+r0iQPy0A=,iv:gdQ4CFhPpcmsnprNCffw4p+wKUXiuOiZjT8ZPDasUrY=,tag:KtXuiDU9rWb61aasc9ZabA==,type:str]
+  version: 3.13.0
