@@ -216,6 +216,7 @@ flux bootstrap github \
   --owner=pbronneberg \
   --repository=home-server \
   --branch=main \
+  --cluster-domain=home-server.bronneberg.local \
   --path=clusters/home \
   --personal
 ```
