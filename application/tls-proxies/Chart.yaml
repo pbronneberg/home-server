@@ -11,21 +11,9 @@ appVersion: 1.16.0
 dependencies:
 - name: tls-proxy
   version: 0.1.0
-  alias: domoticz
-  repository: file://../common/tls-proxy
-- name: tls-proxy
-  version: 0.1.0
-  alias: photostation
-  repository: file://../common/tls-proxy
-- name: tls-proxy
-  version: 0.1.0
   alias: apache
   repository: file://../common/tls-proxy
 - name: tls-proxy
   version: 0.1.0
   alias: opensprinkler
-  repository: file://../common/tls-proxy
-- name: tls-proxy
-  version: 0.1.0
-  alias: mail
   repository: file://../common/tls-proxy
