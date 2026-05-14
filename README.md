@@ -261,14 +261,3 @@ Install the [K3S system upgrader](https://rancher.com/docs/k3s/latest/en/upgrade
 kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
 kubectl apply -f infra/system-upgrader/upgrade-plans.yml
 ```
-
-### argo
-
-```
-kubectl create ns argo
-kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/install.yaml
-```
-
-```
-kubectl apply -n argo -f ./infra/argo/k8sapi-executor.yml
-```
