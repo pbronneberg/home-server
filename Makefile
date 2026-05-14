@@ -4,6 +4,8 @@ ACTIONLINT ?= actionlint
 AGE_KEYGEN ?= age-keygen
 GITLEAKS ?= gitleaks
 HELM ?= helm
+KUBECTL ?= kubectl
+KUSTOMIZE ?= kustomize
 RENDER_DIR ?= /tmp/home-server-helm-rendered
 SOPS ?= sops
 SOPS_AGE_KEY_FILE ?= .sops/age/keys.txt
@@ -13,6 +15,7 @@ SOPS_FILES ?= private/*.sops.yaml
 YAMLLINT ?= yamllint
 
 CHART_DIRS := $(shell find application -name Chart.yaml -exec dirname {} \; | sort)
+FLUX_KUSTOMIZATION_DIRS := $(shell find clusters -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
 HELM_REPO_ROOT ?= /tmp/home-server-helm-repositories
 HELM_REPO_CONFIG ?= $(HELM_REPO_ROOT)/repositories.yaml
 HELM_REPO_CACHE ?= $(HELM_REPO_ROOT)/cache
@@ -20,7 +23,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-decrypt sops-decrypt-file sops-edit sops-encrypt sops-updatekeys scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-decrypt sops-decrypt-file sops-edit sops-encrypt sops-updatekeys scan-secrets scan-history check-public-redactions check-history-redactions public-check
 
 help:
 	@printf '%s\n' \
@@ -30,6 +33,7 @@ help:
 		'  lint           Run workflow and YAML linting.' \
 		'  lint-actions   Lint GitHub Actions workflows with actionlint.' \
 		'  lint-yaml      Lint YAML values, manifests, and workflows with yamllint.' \
+		'  flux-build     Build all Flux/Kustomize cluster entrypoints under clusters/.' \
 		'  helm-repos     Configure Helm repositories used by chart dependencies.' \
 		'  helm-deps      Build dependencies for charts that declare them.' \
 		'  helm-lint      Lint all Helm charts under application/.' \
@@ -46,7 +50,7 @@ help:
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
 		'  check-history-redactions Check Git history for public unsafe topology.'
 
-ci: lint helm-lint helm-template
+ci: lint helm-lint helm-template flux-build
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -61,6 +65,20 @@ lint-actions:
 
 lint-yaml:
 	$(YAMLLINT) .
+
+flux-build:
+	@if [ -n "$(FLUX_KUSTOMIZATION_DIRS)" ]; then \
+		for dir in $(FLUX_KUSTOMIZATION_DIRS); do \
+			printf 'Building Flux/Kustomize overlay %s\n' "$$dir"; \
+			if command -v "$(KUSTOMIZE)" >/dev/null 2>&1; then \
+				$(KUSTOMIZE) build "$$dir" >/dev/null; \
+			else \
+				$(KUBECTL) kustomize "$$dir" >/dev/null; \
+			fi; \
+		done; \
+	else \
+		printf '%s\n' 'No Flux/Kustomize cluster overlays found.'; \
+	fi
 
 helm-repos:
 	@set -euo pipefail; \

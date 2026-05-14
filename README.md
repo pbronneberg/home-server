@@ -22,7 +22,14 @@ make ci
 
 `make ci` configures the Helm chart repositories it needs in a temporary cache
 under `/tmp/home-server-helm-repositories`, so a fresh Helm install does not
-need a manual `helm repo add` first.
+need a manual `helm repo add` first. It also builds the Flux/Kustomize cluster
+entrypoints under `clusters/`.
+
+To check only the Flux and Kustomize cluster overlays, run:
+
+```bash
+make flux-build
+```
 
 Before changing repository visibility to public, run:
 
@@ -56,6 +63,8 @@ The devcontainer installs the same tools used by the Makefile:
 
 * `helm`
 * `kubectl`
+* `flux`
+* `kustomize`
 * `yamllint`
 * `actionlint`
 * `gitleaks`
@@ -87,8 +96,10 @@ equivalent versions on your workstation:
 
 ```bash
 python3 -m pip install --user yamllint==1.38.0
+go install github.com/fluxcd/flux2/v2/cmd/flux@v2.8.6
 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 go install github.com/zricethezav/gitleaks/v8@v8.30.1
+go install sigs.k8s.io/kustomize/kustomize/v5@v5.8.1
 npm install -g @openai/codex@0.130.0
 ```
 
@@ -166,6 +177,57 @@ rm -rf ./tmp
 ```
 
 ## Install infrastructure services in cluster
+
+### Flux GitOps
+
+Flux is the intended pull-based reconciler for infrastructure under
+[`clusters/home`](clusters/home). The Flux controllers run inside the cluster
+and authenticate to this GitHub repository using a deploy key or GitHub App
+credentials stored as Kubernetes secrets in `flux-system`. GitHub-hosted
+Actions must not receive kubeconfig or cluster credentials.
+
+From a trusted workstation or the devcontainer with your local kubeconfig:
+
+```bash
+export GITHUB_TOKEN=<github-token-with-repo-admin-for-bootstrap>
+flux bootstrap github \
+  --owner=pbronneberg \
+  --repository=home-server \
+  --branch=main \
+  --path=clusters/home \
+  --personal
+```
+
+After bootstrap, inspect reconciliation from your kubeconfig:
+
+```bash
+flux get sources git -n flux-system
+flux get kustomizations -n flux-system
+flux get helmreleases --all-namespaces
+```
+
+The Flux desired state mirrors the legacy Helmsman infrastructure and keeps
+ordering explicit with Flux `Kustomization` dependencies in
+[`clusters/home/infrastructure.yaml`](clusters/home/infrastructure.yaml):
+
+* namespaces and Helm repositories
+* cert-manager and cert-manager issuers
+* Longhorn and the retained Longhorn storage class
+* Traefik middlewares used by existing ingresses
+* kube-prometheus-stack and the legacy Actions Runner Controller
+
+The legacy Actions Runner Controller keeps using the `controller-manager`
+secret in the `actions-runner-system` namespace. If private Helm values are
+still needed, create an in-cluster secret named
+`actions-runner-controller-values` with a `values.yaml` key instead of
+committing plaintext values.
+
+Helmsman removal is intentionally deferred. Keep
+[`infra/home-server.helmsman.toml`](infra/home-server.helmsman.toml) available
+as the rollback reference until Flux has reconciled successfully and live
+release parity has been checked.
+
+### Legacy Helmsman
 
 ```bash
 helmsman -apply -f ./infra/home-server.helmsman.toml
