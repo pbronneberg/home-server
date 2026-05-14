@@ -23,7 +23,8 @@ spec:
       - tuesday
       - wednesday
       - thursday
-    startTime: "02:00"
+      - friday
+    startTime: "00:00"
     endTime: "04:00"
     timeZone: UTC
 ---
