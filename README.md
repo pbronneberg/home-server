@@ -256,10 +256,11 @@ ordering explicit with Flux `Kustomization` dependencies in
 * Traefik middlewares used by existing ingresses
 * kube-prometheus-stack and the legacy Actions Runner Controller
 
-The legacy Actions Runner Controller uses the SOPS-encrypted
-`controller-manager` secret from `private/flux/home`. If private Helm values are
-still needed later, add a SOPS-encrypted Kubernetes Secret with the expected
-`values.yaml` key instead of committing plaintext values.
+The legacy Actions Runner Controller expects a `controller-manager` secret in
+`actions-runner-system`. The live cluster did not expose that token when this
+Flux overlay was created, so no dummy token is committed. Add a
+SOPS-encrypted Kubernetes Secret under `private/flux/home` before reconciling
+the runner controller.
 
 Helmsman removal is intentionally deferred. Keep
 [`infra/home-server.helmsman.toml`](infra/home-server.helmsman.toml) available
@@ -290,8 +291,8 @@ configuration. Keep it only if the cluster should still host runners for other
 repositories.
 
 If the legacy [Action Runner Controller](https://github.com/actions-runner-controller/actions-runner-controller)
-is used, its GitHub token is managed as the SOPS-encrypted
-`controller-manager` Kubernetes Secret in `private/flux/home`.
+is used, manage its GitHub token as a SOPS-encrypted `controller-manager`
+Kubernetes Secret in `private/flux/home`.
 
 Install the [K3S system upgrader](https://rancher.com/docs/k3s/latest/en/upgrades/automated/) to automatically upgrade all nodes in the cluster to the newest K3S versions.
 

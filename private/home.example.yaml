@@ -10,11 +10,10 @@ topology:
     storageNode: 192.0.2.20
     deviceNode: 192.0.2.30
 
-secrets:
-  grafanaAdminPassword: change-me-use-sops
-  actionRunnerGithubToken: change-me-use-sops
+secrets: {}
 
 repositories:
   homeServer: example-org/home-server
   sampleService: example-org/sample-service
   sampleApp: example-org/sample-app
+  aeCwis: example-org/ae-cwis
