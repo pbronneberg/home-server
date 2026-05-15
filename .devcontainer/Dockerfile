@@ -5,7 +5,7 @@ ARG ACTIONLINT_VERSION=1.7.12
 # renovate: datasource=npm depName=@openai/codex
 ARG CODEX_VERSION=0.130.0
 # renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.*)$
-ARG FLUX_VERSION=2.8.6
+ARG FLUX_VERSION=2.8.7
 # renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.*)$
 ARG GITLEAKS_VERSION=8.30.1
 # renovate: datasource=pypi depName=git-filter-repo
