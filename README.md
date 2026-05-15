@@ -20,6 +20,12 @@ runners:
 make ci
 ```
 
+To run only the report-only security posture checks:
+
+```bash
+make security-audit
+```
+
 `make ci` configures the Helm chart repositories it needs in a temporary cache
 under `/tmp/home-server-helm-repositories`, so a fresh Helm install does not
 need a manual `helm repo add` first. It also builds the Flux/Kustomize cluster
@@ -165,9 +171,11 @@ and must remain ignored.
 
 The new Helm checks pass, but they report a couple of modernization candidates:
 
+* decide whether to remove the legacy self-hosted runner manifests entirely
 * replace the TLS proxy chart's legacy `Endpoints` resource with
   `EndpointSlice`
-* decide whether to remove the legacy self-hosted runner manifests entirely
+* enable NetworkPolicy enforcement workload by workload after audit findings
+  are clean
 
 ## Server Pre-requisites
 
@@ -178,7 +186,7 @@ The new Helm checks pass, but they report a couple of modernization candidates:
 Instructions from [k3s.io](https://k3s.io/)
 
 ```bash
-curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
+curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 600
 ```
 
 After installation, get the `Kubeconfig` from
@@ -317,6 +325,11 @@ traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kuberne
 
 Protected hosts must be covered by the oauth2-proxy `cookie_domains` and
 `whitelist_domains` values.
+
+The security hardening runbook is
+[docs/security-hardening.md](docs/security-hardening.md). It records the
+audit-first rollout order, sensitive-ingress tiering, storage checks, and drift
+cleanup queue.
 
 Flux migration parity and rollback notes live in
 [docs/flux-migration-parity.md](docs/flux-migration-parity.md).

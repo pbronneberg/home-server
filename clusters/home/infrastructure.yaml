@@ -196,6 +196,7 @@ metadata:
 spec:
   dependsOn:
     - name: infrastructure-cert-manager-issuers
+    - name: infrastructure-oauth2-proxy
   interval: 10m
   path: ./clusters/home/infrastructure/traefik-middlewares
   prune: true

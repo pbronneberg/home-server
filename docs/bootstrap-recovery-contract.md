@@ -85,8 +85,8 @@ and then to repository-driven reconciliation.
 
    The current bootstrap command lives in the README. After install, immediately
    copy the server token and admin kubeconfig into the external recovery store.
-   Verify the API from the management workstation before installing
-   higher-level services.
+   Keep the kubeconfig private on disk, such as mode `0600`, and verify the API
+   from the management workstation before installing higher-level services.
 
 4. Restore or initialize cluster state deliberately.
 

@@ -23,11 +23,10 @@ config:
 
 ingress:
   enabled: false
+  className: "traefik"
   path: /
   pathType: Prefix
   annotations:
-    kubernetes.io/ingress.class: "traefik"
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   hosts:
