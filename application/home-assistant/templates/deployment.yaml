@@ -17,6 +17,7 @@ spec:
       {{- end }}
       labels:
         {{- include "home-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: home-automation
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -25,6 +26,7 @@ spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "home-assistant.serviceAccountName" . }}
       {{- end }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       hostNetwork: {{ .Values.hostNetwork }}
       dnsPolicy: {{ ternary "ClusterFirstWithHostNet" .Values.dnsPolicy .Values.hostNetwork }}
       securityContext:
@@ -35,7 +37,11 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if .Values.image.digest }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+          {{- else }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- with .Values.timezone }}
           env:

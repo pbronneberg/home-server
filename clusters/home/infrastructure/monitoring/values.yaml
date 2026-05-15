@@ -50,14 +50,11 @@ alertmanager:
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    ingressClassName: ""
+    ingressClassName: "traefik"
 
     annotations:
-      kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/redirect-entry-point: https
-      traefik.ingress.kubernetes.io/redirect-permanent: "true"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
 
     ## Hosts must be provided if Ingress is enabled.
     ##
@@ -158,15 +155,13 @@ grafana:
     ## If true, Grafana Ingress will be created
     ##
     enabled: false
+    ingressClassName: "traefik"
 
     ## Annotations for Grafana Ingress
     ##
     annotations:
-      kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/redirect-entry-point: https
-      traefik.ingress.kubernetes.io/redirect-permanent: "true"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
 
     ## Hostnames.
     ## Must be provided if Ingress is enable.
@@ -235,14 +230,11 @@ prometheus:
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    ingressClassName: ""
+    ingressClassName: "traefik"
 
     annotations:
-      kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/redirect-entry-point: https
-      traefik.ingress.kubernetes.io/redirect-permanent: "true"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
 
     ## Hosts must be provided if Ingress is enabled.
     ##
@@ -274,14 +266,11 @@ prometheus:
 
     # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
     # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    ingressClassName: ""
+    ingressClassName: "traefik"
 
     annotations:
-      kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/redirect-entry-point: https
-      traefik.ingress.kubernetes.io/redirect-permanent: "true"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
 
     labels: {}
 

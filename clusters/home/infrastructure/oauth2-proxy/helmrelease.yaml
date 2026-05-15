@@ -1,33 +1,32 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: myenglishplayground-nl
-  namespace: websites
+  name: oauth2-proxy
+  namespace: auth
 spec:
   chart:
     spec:
-      chart: wordpress
+      chart: oauth2-proxy
       interval: 1h
       sourceRef:
         kind: HelmRepository
-        name: bitnami
+        name: oauth2-proxy
         namespace: flux-system
-      version: 30.1.6
+      version: 10.4.3
   install:
     remediation:
       retries: 3
   interval: 30m
   maxHistory: 5
-  releaseName: myenglishplayground-nl
-  timeout: 10m
+  releaseName: oauth2-proxy
+  timeout: 5m
   upgrade:
     remediation:
       retries: 3
   valuesFrom:
     - kind: ConfigMap
-      name: myenglishplayground-nl-values
+      name: oauth2-proxy-values
       valuesKey: values.yaml
     - kind: Secret
-      name: myenglishplayground-nl-private-values
-      optional: true
+      name: oauth2-proxy-private-values
       valuesKey: values.yaml

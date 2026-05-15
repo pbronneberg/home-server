@@ -9,6 +9,7 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
+  digest: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -17,6 +18,7 @@ fullnameOverride: ""
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  automountServiceAccountToken: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -25,13 +27,16 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
   # fsGroup: 2000
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
@@ -42,13 +47,9 @@ service:
 
 ingress:
   enabled: true
-  className: ""
+  className: "traefik"
   annotations:
-    kubernetes.io/ingress.class: "traefik"
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   hosts:
     - host: www.home.example
@@ -60,7 +61,18 @@ ingress:
      hosts:
        - www.home.example
 
-resources: {}
+resources:
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
+
+networkPolicy:
+  enabled: false
+  ingressNamespace: kube-system
+  monitoringNamespace: monitoring
 
 autoscaling:
   enabled: false

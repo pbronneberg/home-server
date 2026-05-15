@@ -63,7 +63,7 @@ wordpressBlogName: My English Playground
 wordpressTablePrefix: wp_
 ## @param wordpressScheme Scheme to use to generate WordPress URLs
 ##
-wordpressScheme: http
+wordpressScheme: https
 ## @param wordpressSkipInstall Skip wizard installation
 ## NOTE: useful if you use an external database that already contains WordPress data
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#connect-wordpress-docker-container-to-an-existing-database
@@ -116,7 +116,7 @@ smtpProtocol: ""
 smtpExistingSecret: ""
 ## @param allowEmptyPassword Allow the container to be started with blank passwords
 ##
-allowEmptyPassword: true
+allowEmptyPassword: false
 ## @param allowOverrideNone Configure Apache to prohibit overriding directives with htaccess files
 ##
 allowOverrideNone: false
@@ -194,6 +194,13 @@ nodeSelector: {}
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 tolerations: []
+podSecurityContext:
+  enabled: true
+  fsGroup: 1001
+containerSecurityContext:
+  enabled: true
+  runAsUser: 1001
+  runAsNonRoot: true
 ## WordPress containers' resource requests and limits
 ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
 ## @param resources.limits The resources limits for the WordPress containers
@@ -201,7 +208,9 @@ tolerations: []
 ## @param resources.requests.cpu The requested cpu for the WordPress containers
 ##
 resources:
-  limits: {}
+  limits:
+    cpu: "1"
+    memory: 1Gi
   requests:
     memory: 512Mi
     cpu: 300m
@@ -223,7 +232,7 @@ ingress:
   ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster .
   ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
   ##
-  ingressClassName: ""
+  ingressClassName: "traefik"
   ## @param ingress.hostname Default host for the ingress record
   ##
   hostname: www.school.example.com
@@ -243,11 +252,7 @@ ingress:
   ##   cert-manager.io/cluster-issuer: cluster-issuer-name
   ##
   annotations:
-    kubernetes.io/ingress.class: "traefik"
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   ## @param ingress.tls Enable TLS configuration for the host defined at `ingress.hostname` parameter
   ## TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
@@ -311,7 +316,7 @@ serviceAccount:
   ## @param serviceAccount.automountServiceAccountToken Allows auto mount of ServiceAccountToken on the serviceAccount created
   ## Can be set to false if pods using this serviceAccount do not need to use K8s API
   ##
-  automountServiceAccountToken: true
+  automountServiceAccountToken: false
   ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount
   ##
   annotations: {}
@@ -643,10 +648,10 @@ memcached:
   auth:
     ## @param memcached.auth.enabled Enable Memcached authentication
     ##
-    enabled: false
+    enabled: true
     ## @param memcached.auth.username Memcached admin user
     ##
-    username: ""
+    username: memcached
     ## @param memcached.auth.password Memcached admin password
     ##
     password: ""

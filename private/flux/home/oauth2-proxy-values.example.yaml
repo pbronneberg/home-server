@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oauth2-proxy-private-values
+  namespace: auth
+type: Opaque
+stringData:
+  client-id: replace-with-github-oauth-client-id
+  client-secret: replace-with-github-oauth-client-secret
+  cookie-secret: replace-with-generated-cookie-secret
+  values.yaml: |
+    # Set this to 1 after replacing every placeholder in this Secret.
+    replicaCount: 0
+    config:
+      existingSecret: oauth2-proxy-private-values
+      configFile: |
+        email_domains = [ "*" ]
+        provider = "github"
+        github_org = "example-org"
+        # github_team = "platform"
+        reverse_proxy = true
+        upstreams = [ "static://202" ]
+        redirect_url = "https://auth.home.example/oauth2/callback"
+        cookie_domains = [ ".home.example" ]
+        whitelist_domains = [ ".home.example" ]
+        skip_provider_button = true
+        set_xauthrequest = true
+    ingress:
+      enabled: true
+      hosts:
+        - auth.home.example
+      tls:
+        - secretName: oauth2-proxy-tls
+          hosts:
+            - auth.home.example

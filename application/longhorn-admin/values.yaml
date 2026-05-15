@@ -1,2 +1,7 @@
 ingress:
+  className: traefik
   host: fs.home.example
+  middlewares:
+    - default-redirect-https@kubernetescrd
+    - default-github-oauth@kubernetescrd
+    - default-basic-auth@kubernetescrd

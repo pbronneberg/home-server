@@ -24,7 +24,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check
 
 help:
 	@printf '%s\n' \
@@ -40,6 +40,7 @@ help:
 		'  helm-lint      Lint all Helm charts under application/.' \
 		'  helm-template  Render all Helm charts under application/.' \
 		'  helm-clean     Remove locally generated Helm dependency artifacts.' \
+		'  security-audit Run report-only security posture checks.' \
 		'  sops-keygen        Create the local SOPS age key if missing.' \
 		'  sops-list          List encrypted private files.' \
 		'  sops-decrypt       Print decrypted private values to stdout.' \
@@ -54,7 +55,7 @@ help:
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
 		'  check-history-redactions Check Git history for public unsafe topology.'
 
-ci: lint helm-lint helm-template flux-build
+ci: lint helm-lint helm-template flux-build security-audit
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -129,6 +130,9 @@ helm-clean:
 		rm -rf "$$chart/charts" "$$chart/Chart.lock"; \
 	done; \
 	rm -rf "$(RENDER_DIR)" "$(HELM_REPO_ROOT)"
+
+security-audit:
+	@bash scripts/security-audit.sh
 
 sops-check-key:
 	@test -f "$(SOPS_AGE_KEY_FILE)" || { \

@@ -5,17 +5,13 @@ metadata:
   labels:
     {{- include "longhorn-admin.labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/frontend-entry-points: https
-    traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
-    traefik.ingress.kubernetes.io/whitelist-source-range: "127.0.0.1/32, 192.0.2.0/24"
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
-    ingress.kubernetes.io/auth-type: basic
-    ingress.kubernetes.io/auth-secret: longhorn-basic-auth
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," .Values.ingress.middlewares }}
 
 spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
   tls:
     - hosts:
         - {{ .Values.ingress.host }}

@@ -6,6 +6,7 @@ resources:
   - home-assistant-values.sops.yaml
   - longhorn-admin-values.sops.yaml
   - monitoring-values.sops.yaml
+  - oauth2-proxy-values.sops.yaml
   - photobooth-api-values.sops.yaml
   - photobooth-app-values.sops.yaml
   - tls-proxies-values.sops.yaml

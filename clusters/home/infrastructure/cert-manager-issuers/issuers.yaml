@@ -17,7 +17,7 @@ spec:
           ingressTemplate:
             metadata:
               annotations:
-                "traefik.ingress.kubernetes.io/frontend-entry-points": "http"
+                "traefik.ingress.kubernetes.io/router.entrypoints": "web"
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
