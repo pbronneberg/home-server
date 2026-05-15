@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: photobooth-api-values
+  namespace: websites
+type: Opaque
+stringData:
+  values.yaml: |
+    mongodb:
+      auth:
+        rootPassword: replace-with-generated-mongodb-root-password
+    s3:
+      rootPassword: replace-with-generated-minio-root-password
+      users:
+        - accessKey: photobooth
+          secretKey: replace-with-generated-photobooth-s3-secret
+          policy: photobooth-policy

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myenglishplayground-nl-private-values
+  namespace: websites
+type: Opaque
+stringData:
+  values.yaml: |
+    wordpressPassword: replace-with-generated-password
+    mariadb:
+      auth:
+        rootPassword: replace-with-generated-root-password
+        password: replace-with-generated-wordpress-db-password
+    memcached:
+      auth:
+        password: replace-with-generated-memcached-password

@@ -27,3 +27,7 @@ spec:
     - kind: ConfigMap
       name: myenglishplayground-nl-values
       valuesKey: values.yaml
+    - kind: Secret
+      name: myenglishplayground-nl-private-values
+      optional: true
+      valuesKey: values.yaml

@@ -7,6 +7,8 @@ replicaCount: 1
 image:
   repository: bronneberg/photobooth-api
   pullPolicy: Always
+  tag: ""
+  digest: ""
 
 api:
   s3:
@@ -18,7 +20,24 @@ mongodb:
     # Use dhi.io/mongodb here if the cluster has Docker Hardened Images registry access.
     repository: mongo
     tag: "8.0.21"
+    digest: ""
     pullPolicy: IfNotPresent
+  auth:
+    enabled: true
+    secretName: ""
+    rootUser: root
+    rootPassword: not-a-real-mongodb-root-password
+    usernameKey: mongodb-root-username
+    passwordKey: mongodb-root-password
+    database: photobooth
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
   service:
     port: 27017
   persistence:
@@ -26,6 +45,9 @@ mongodb:
     storageClassName: ""
     size: 8Gi
   resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
     requests:
       cpu: 50m
       memory: 128Mi
@@ -40,6 +62,9 @@ s3:
     storageClass: local-path
     size: 10Gi
   resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
     requests:
       cpu: 50m
       memory: 256Mi
@@ -78,12 +103,12 @@ s3:
 
   ingress:
     enabled: true
+    ingressClassName: "traefik"
     hosts:
       - s3.apps.example.com
     annotations:
-      kubernetes.io/tls-acme: "true"
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
     tls:
       - hosts:
           - s3.apps.example.com
@@ -104,6 +129,7 @@ environment: "Release"
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  automountServiceAccountToken: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -112,7 +138,10 @@ serviceAccount:
 
 podAnnotations: {}
 
-#podSecurityContext:
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
 #  runAsUser: 1001
 #  runAsGroup: 1001
 #  fsGroup: 1001
@@ -120,6 +149,10 @@ podAnnotations: {}
 
 securityContext:
   allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
 
 service:
   type: ClusterIP
@@ -129,13 +162,9 @@ basePath: "/api/v1"
 
 ingress:
   enabled: true
-  className: ""
+  className: "traefik"
   annotations:
-    kubernetes.io/ingress.class: "traefik"
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
     traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
   hosts:
     - host: photobooth.apps.example.com
@@ -166,3 +195,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+networkPolicy:
+  enabled: false
+  ingressNamespace: kube-system
+  monitoringNamespace: monitoring

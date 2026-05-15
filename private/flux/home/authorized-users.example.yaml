@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: authorized-users
+  namespace: default
+type: Opaque
+stringData:
+  users: |
+    username:replace-with-htpasswd-hash

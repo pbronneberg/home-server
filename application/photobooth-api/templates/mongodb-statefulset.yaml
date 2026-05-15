@@ -19,10 +19,33 @@ spec:
         {{- include "photobooth-api.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: mongodb
     spec:
+      securityContext:
+        {{- toYaml .Values.mongodb.podSecurityContext | nindent 8 }}
       containers:
         - name: mongodb
+          securityContext:
+            {{- toYaml .Values.mongodb.securityContext | nindent 12 }}
+          {{- if .Values.mongodb.image.digest }}
+          image: "{{ .Values.mongodb.image.repository }}@{{ .Values.mongodb.image.digest }}"
+          {{- else }}
           image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          {{- if .Values.mongodb.auth.enabled }}
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-auth" (include "photobooth-api.mongodbName" .)) .Values.mongodb.auth.secretName }}
+                  key: {{ .Values.mongodb.auth.usernameKey }}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-auth" (include "photobooth-api.mongodbName" .)) .Values.mongodb.auth.secretName }}
+                  key: {{ .Values.mongodb.auth.passwordKey }}
+            - name: MONGO_INITDB_DATABASE
+              value: {{ .Values.mongodb.auth.database | quote }}
+          {{- end }}
           ports:
             - name: mongodb
               containerPort: {{ .Values.mongodb.service.port }}

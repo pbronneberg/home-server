@@ -29,6 +29,23 @@ Monitoring uses `monitoring-values.sops.yaml` for real ingress hostnames. The
 public kube-prometheus-stack values keep ingresses disabled so placeholder
 example domains never request public ACME certificates.
 
+My English Playground can use an optional
+`myenglishplayground-nl-private-values` Secret for WordPress, MariaDB, and
+Memcached credentials. Start from
+`private/flux/home/myenglishplayground-nl-values.example.yaml`, encrypt the real
+Secret as SOPS, and add it to this overlay only after replacing every
+placeholder.
+
+Photobooth API private values should override the public placeholder MongoDB
+and MinIO credentials. Start from
+`private/flux/home/photobooth-api-values.example.yaml` when rotating those
+secrets.
+
+The shared Traefik basic-auth fallback expects a default namespace Secret named
+`authorized-users`. Start from
+`private/flux/home/authorized-users.example.yaml`, store only htpasswd hashes,
+and commit the real Secret only as a SOPS-encrypted file.
+
 GitHub-backed ingress authentication uses
 `oauth2-proxy-values.sops.yaml` for the OAuth app credentials, allowed GitHub
 organization or team, auth callback hostname, and cookie domain. The committed

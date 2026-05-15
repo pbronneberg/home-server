@@ -1,0 +1,5 @@
+{{/*
+The TLS proxy chart creates ExternalName-style Services and Endpoints only. It
+does not select pods, so Kubernetes NetworkPolicy cannot constrain the proxied
+backend here without accidentally selecting unrelated namespace pods.
+*/}}

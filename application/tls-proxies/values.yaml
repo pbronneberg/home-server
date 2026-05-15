@@ -47,5 +47,8 @@ opensprinkler:
   endpoint:
     ip: "192.0.2.30"
   ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
     hostnames:
       - "sprinkler.home.example"

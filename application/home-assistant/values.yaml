@@ -4,6 +4,7 @@ image:
   repository: homeassistant/home-assistant
   pullPolicy: IfNotPresent
   tag: ""
+  digest: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -22,7 +23,7 @@ containerName: homeassist
 config:
   existingSecret: homeassist-config
   key: configuration.yaml
-  defaultMode: 511
+  defaultMode: 384
 
 volumeNames:
   config: homeassist-config
@@ -41,14 +42,21 @@ persistence:
 
 serviceAccount:
   create: false
+  automountServiceAccountToken: false
   annotations: {}
   name: ""
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
 
-securityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
 
 probes:
   enabled: false
@@ -63,14 +71,10 @@ service:
 
 ingress:
   enabled: true
-  className: ""
+  className: "traefik"
   annotations:
-    kubernetes.io/ingress.class: "traefik"
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
   hosts:
     - host: homeassistant.home.example
       paths:
@@ -81,7 +85,18 @@ ingress:
       hosts:
         - homeassistant.home.example
 
-resources: {}
+resources:
+  limits:
+    cpu: "1"
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+networkPolicy:
+  enabled: false
+  ingressNamespace: kube-system
+  monitoringNamespace: monitoring
 
 nodeSelector: {}
 
