@@ -1136,6 +1136,8 @@ memcached:
   ## @param memcached.enabled Deploy a Memcached server for caching database queries
   ##
   enabled: false
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
   ## Authentication parameters
   ## ref: https://github.com/bitnami/bitnami-docker-memcached#creating-the-memcached-admin-user
   ##

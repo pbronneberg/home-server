@@ -23,21 +23,17 @@ mongodb:
     digest: ""
     pullPolicy: IfNotPresent
   auth:
-    enabled: true
+    enabled: false
     secretName: ""
     rootUser: root
     rootPassword: not-a-real-mongodb-root-password
     usernameKey: mongodb-root-username
     passwordKey: mongodb-root-password
     database: photobooth
-  podSecurityContext:
-    seccompProfile:
-      type: RuntimeDefault
-  securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-        - ALL
+  # Existing PVC-backed MongoDB data needs a deliberate auth and ownership
+  # migration before these can be enabled safely.
+  podSecurityContext: null
+  securityContext: null
   service:
     port: 27017
   persistence:

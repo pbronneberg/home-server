@@ -32,6 +32,13 @@ make security-audit
    verify ingress, DNS, monitoring, and required backend traffic before moving
    to the next workload.
 
+5. Treat legacy image and data-volume exceptions as migration work.
+
+   Some current images still bind privileged ports or existing PVC data with
+   root-owned files. Keep lower-risk controls like token automount disabling and
+   seccomp where compatible, then move those workloads to non-root images or
+   corrected volume ownership in a separate rollout.
+
 ## Host And Cluster Checks
 
 - Install K3s with a private kubeconfig mode, for example
@@ -56,6 +63,8 @@ make security-audit
 - Watch image filesystem pressure during upgrades and after large image churn.
 - Keep Longhorn backup target health and restore drills on the recovery backlog;
   do not rely on snapshots as the only copy of important data.
+- MongoDB auth for existing Photobooth data remains opt-in until the application
+  connection string and existing database users are migrated together.
 
 ## Drift Cleanup Queue
 
