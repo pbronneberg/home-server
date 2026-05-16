@@ -19,7 +19,7 @@ spec:
   interval: 30m
   maxHistory: 5
   releaseName: myenglishplayground-nl
-  timeout: 10m
+  timeout: 20m
   upgrade:
     remediation:
       retries: 3
