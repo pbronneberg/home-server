@@ -1,9 +1,8 @@
 fullnameOverride: oauth2-proxy
 
 # Fill private/flux/home/oauth2-proxy-values.sops.yaml with real GitHub OAuth
-# values and set replicaCount to 1 before opting any ingress into this
-# middleware.
-replicaCount: 0
+# values before opting any ingress into this middleware.
+replicaCount: 1
 
 config:
   clientID: "placeholder-client-id"
