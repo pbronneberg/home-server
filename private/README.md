@@ -49,8 +49,8 @@ and commit the real Secret only as a SOPS-encrypted file.
 GitHub-backed ingress authentication uses
 `oauth2-proxy-values.sops.yaml` for the OAuth app credentials, allowed GitHub
 organization or team, auth callback hostname, and cookie domain. The committed
-placeholder keeps `replicaCount: 0`; set it to `1` only after replacing the
-example values with real private values.
+example keeps `replicaCount: 0`; cluster runtime values enable one replica
+because protected ingresses depend on oauth2-proxy being available.
 
 After restoring the age identity on a workstation, run `make
 sops-recovery-drill` from the repository root before relying on a fresh Flux

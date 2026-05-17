@@ -30,3 +30,6 @@ spec:
     - kind: Secret
       name: oauth2-proxy-private-values
       valuesKey: values.yaml
+    - kind: ConfigMap
+      name: oauth2-proxy-runtime-values
+      valuesKey: values.yaml
