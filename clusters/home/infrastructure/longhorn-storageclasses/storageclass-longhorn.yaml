@@ -4,7 +4,7 @@ metadata:
   name: longhorn-retain
 parameters:
   fromBackup: ""
-  numberOfReplicas: "1"
+  numberOfReplicas: "2"
   staleReplicaTimeout: "2880"
   recurringJobs: '[{"name":"snap", "task":"snapshot", "cron":"*/30 * * * *", "retain":10},
                    {"name":"backup", "task":"backup", "cron":"0 * * * *", "retain":20}]'

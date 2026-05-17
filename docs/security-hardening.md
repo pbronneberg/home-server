@@ -66,11 +66,10 @@ make security-audit
 - Home Assistant keeps `NET_RAW` so DHCP/LAN discovery integrations can open
   raw sockets. Treat it as a workload-specific exception rather than a default
   for other app charts.
-- On the single-node home cluster, `longhorn-retain` provisions one replica.
-  Two retained replicas can over-schedule the single Longhorn disk during
-  repeated Helm install/remediation cycles. Keep host `multipathd` configured to
-  ignore Longhorn block devices; otherwise kubelet may see `/dev/longhorn/*`
-  volumes as busy during pod startup.
+- On the single-node home cluster, retained Longhorn volumes can over-schedule
+  the single disk during repeated Helm install/remediation cycles. Keep host
+  `multipathd` configured to ignore Longhorn block devices; otherwise kubelet
+  may see `/dev/longhorn/*` volumes as busy during pod startup.
 - MongoDB auth for existing Photobooth data remains opt-in until the application
   connection string and existing database users are migrated together.
 
