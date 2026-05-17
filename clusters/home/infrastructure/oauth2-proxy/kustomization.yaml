@@ -10,6 +10,6 @@ configMapGenerator:
       - values.yaml
   - name: oauth2-proxy-runtime-values
     files:
-      - runtime-values.yaml
+      - values.yaml=runtime-values.yaml
 generatorOptions:
   disableNameSuffixHash: true
