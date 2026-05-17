@@ -76,7 +76,7 @@ ingress:
   className: "traefik"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
   hosts:
     - host: homeassistant.home.example
       paths:
