@@ -54,7 +54,7 @@ alertmanager:
 
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
 
     ## Hosts must be provided if Ingress is enabled.
     ##
@@ -161,7 +161,7 @@ grafana:
     ##
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd
 
     ## Hostnames.
     ## Must be provided if Ingress is enable.
@@ -234,7 +234,7 @@ prometheus:
 
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
 
     ## Hosts must be provided if Ingress is enabled.
     ##
@@ -270,7 +270,7 @@ prometheus:
 
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd,default-basic-auth@kubernetescrd
 
     labels: {}
 

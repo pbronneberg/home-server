@@ -104,7 +104,7 @@ s3:
       - s3.apps.example.com
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
+      traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd
     tls:
       - hosts:
           - s3.apps.example.com

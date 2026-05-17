@@ -3,5 +3,5 @@ ingress:
   host: fs.home.example
   middlewares:
     - default-redirect-https@kubernetescrd
-    - default-github-oauth@kubernetescrd
+    - auth-github-oauth@kubernetescrd
     - default-basic-auth@kubernetescrd

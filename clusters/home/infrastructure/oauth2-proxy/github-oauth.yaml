@@ -31,6 +31,5 @@ spec:
       - "401-403"
     service:
       name: oauth2-proxy
-      namespace: auth
       port: 80
     query: /oauth2/sign_in?rd={url}
