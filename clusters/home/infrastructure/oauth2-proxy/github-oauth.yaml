@@ -14,7 +14,7 @@ metadata:
   name: github-oauth-forward-auth
 spec:
   forwardAuth:
-    address: http://oauth2-proxy.auth.svc.cluster.local/oauth2/auth
+    address: http://oauth2-proxy.auth.svc.home-server.bronneberg.local/oauth2/auth
     trustForwardHeader: true
     authResponseHeaders:
       - X-Auth-Request-User
