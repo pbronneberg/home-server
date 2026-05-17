@@ -63,6 +63,14 @@ make security-audit
 - Watch image filesystem pressure during upgrades and after large image churn.
 - Keep Longhorn backup target health and restore drills on the recovery backlog;
   do not rely on snapshots as the only copy of important data.
+- Home Assistant keeps `NET_RAW` so DHCP/LAN discovery integrations can open
+  raw sockets. Treat it as a workload-specific exception rather than a default
+  for other app charts.
+- On the single-node home cluster, `longhorn-retain` provisions one replica.
+  Two retained replicas can over-schedule the single Longhorn disk during
+  repeated Helm install/remediation cycles. Keep host `multipathd` configured to
+  ignore Longhorn block devices; otherwise kubelet may see `/dev/longhorn/*`
+  volumes as busy during pod startup.
 - MongoDB auth for existing Photobooth data remains opt-in until the application
   connection string and existing database users are migrated together.
 
