@@ -1,0 +1,31 @@
+{{- if .Values.oauth2Proxy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "longhorn-admin.fullname" . }}-oauth2
+  labels:
+    {{- include "longhorn-admin.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," .Values.oauth2Proxy.middlewares }}
+    traefik.ingress.kubernetes.io/router.priority: "10000"
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: longhorn-tls
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.oauth2Proxy.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.oauth2Proxy.serviceName }}
+                port:
+                  number: 80
+{{- end }}

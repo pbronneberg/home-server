@@ -1,0 +1,28 @@
+{{- if .Values.oauth2Proxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.oauth2Proxy.serviceName }}
+  labels:
+    {{- include "longhorn-admin.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ .Values.oauth2Proxy.serviceName }}
+  labels:
+    {{- include "longhorn-admin.labels" . | nindent 4 }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.oauth2Proxy.endpointIP }}
+    ports:
+      - name: http
+        port: 80
+        protocol: TCP
+{{- end }}

@@ -5,3 +5,12 @@ ingress:
     - default-redirect-https@kubernetescrd
     - auth-github-oauth@kubernetescrd
     - default-basic-auth@kubernetescrd
+
+
+oauth2Proxy:
+  enabled: false
+  serviceName: oauth2-proxy
+  endpointIP: 192.0.2.10
+  path: /oauth2
+  middlewares:
+    - default-redirect-https@kubernetescrd

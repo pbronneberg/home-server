@@ -8,3 +8,5 @@ stringData:
   values.yaml: |
     ingress:
       host: fs.home.example
+    oauth2Proxy:
+      enabled: true
