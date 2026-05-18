@@ -291,7 +291,7 @@ dependencies in
 ### GitHub-backed ingress authentication
 
 The `infrastructure-oauth2-proxy` release provides a shared auth endpoint for
-ingresses that opt in to the `default-github-oauth@kubernetescrd` Traefik
+ingresses that opt in to the `auth-github-oauth@kubernetescrd` Traefik
 middleware. It uses oauth2-proxy's GitHub provider rather than GitHub as a
 general-purpose OpenID Connect identity provider.
 
@@ -320,8 +320,12 @@ Set `replicaCount: 1` only after those values are real. To protect an ingress,
 include the OAuth middleware after the HTTPS redirect middleware:
 
 ```yaml
-traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-github-oauth@kubernetescrd
+traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd
 ```
+
+The middleware forward-auth URL is an in-cluster Kubernetes service address
+called by Traefik, not a browser-facing redirect target. Browsers only need to
+resolve the auth callback host configured in `redirect_url`.
 
 Protected hosts must be covered by the oauth2-proxy `cookie_domains` and
 `whitelist_domains` values.

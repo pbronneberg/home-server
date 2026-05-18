@@ -21,7 +21,7 @@ make security-audit
 
    Public websites can keep only the HTTPS redirect middleware. Home Assistant,
    Longhorn admin, monitoring endpoints, S3 admin/API exposure, and home-control
-   proxy hosts should include `default-github-oauth@kubernetescrd`; keep
+   proxy hosts should include `auth-github-oauth@kubernetescrd`; keep
    `default-basic-auth@kubernetescrd` only as a secondary fallback where it is
    already expected.
 
