@@ -4,6 +4,22 @@ fullnameOverride: oauth2-proxy
 # values before opting any ingress into this middleware.
 replicaCount: 1
 
+podAnnotations:
+  oauth2-proxy.bronneberg.org/custom-templates-revision: "2026-05-18-3"
+
+extraArgs:
+  custom-templates-dir: /etc/oauth2-proxy/custom-templates
+
+extraVolumes:
+  - name: custom-templates
+    configMap:
+      name: oauth2-proxy-custom-templates
+
+extraVolumeMounts:
+  - name: custom-templates
+    mountPath: /etc/oauth2-proxy/custom-templates
+    readOnly: true
+
 config:
   clientID: "placeholder-client-id"
   clientSecret: "placeholder-client-secret"
