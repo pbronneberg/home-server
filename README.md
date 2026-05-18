@@ -329,7 +329,23 @@ called by Traefik, not a browser-facing redirect target. Browsers only need to
 resolve the auth callback host configured in `redirect_url`.
 
 Protected hosts must be covered by the oauth2-proxy `cookie_domains` and
-`whitelist_domains` values.
+`whitelist_domains` values. Apps that expose the same-host oauth2-proxy path
+can log out through:
+
+```text
+https://<protected-host>/oauth2/sign_out?rd=https%3A%2F%2Fstatus.home.example%2F
+```
+
+That clears the oauth2-proxy session cookie for the configured cookie domain and
+returns the browser to an unprotected page. The `rd` target must be URL-encoded
+and allowed by `whitelist_domains`; use the real public status or landing host
+from the private overlay. Do not redirect back to `/oauth2/sign_in` while
+`skip_provider_button = true`, because that can immediately start the GitHub
+OAuth flow again.
+
+This does not sign the browser out of GitHub itself. Apps with their own logout
+redirect, such as Grafana, should point that redirect at the same sign-out URL
+with an unprotected `rd` target.
 
 The security hardening runbook is
 [docs/security-hardening.md](docs/security-hardening.md). It records the

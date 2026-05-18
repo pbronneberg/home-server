@@ -222,7 +222,8 @@ grafana:
   # so users do not see Grafana's own login page after the edge OAuth flow.
   grafana.ini:
     auth:
-      signout_redirect_url: "/oauth2/sign_out?rd=/oauth2/sign_in"
+      # Override this in private values when the public status host differs.
+      signout_redirect_url: "/oauth2/sign_out?rd=https%3A%2F%2Fstatus.home.example%2F"
     auth.proxy:
       enabled: true
       header_name: X-Auth-Request-Email
