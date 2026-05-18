@@ -1,0 +1,59 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "cluster-status.fullname" . }}
+  labels:
+    {{- include "cluster-status.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - {{ include "cluster-status.fullname" . }}-public
+    verbs: ["get", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cluster-status.fullname" . }}
+  labels:
+    {{- include "cluster-status.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cluster-status.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cluster-status.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "cluster-status.fullname" . }}
+  labels:
+    {{- include "cluster-status.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["kustomize.toolkit.fluxcd.io"]
+    resources: ["kustomizations"]
+    verbs: ["get", "list"]
+  - apiGroups: ["helm.toolkit.fluxcd.io"]
+    resources: ["helmreleases"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "cluster-status.fullname" . }}
+  labels:
+    {{- include "cluster-status.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "cluster-status.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cluster-status.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}

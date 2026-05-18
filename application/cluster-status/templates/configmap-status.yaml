@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cluster-status.fullname" . }}-public
+  labels:
+    {{- include "cluster-status.labels" . | nindent 4 }}
+data:
+  status.json: |
+    {
+      "schemaVersion": 1,
+      "state": "unknown",
+      "checkedAt": "1970-01-01T00:00:00Z",
+      "summary": "Cluster status warming up",
+      "signals": [
+        {"id":"edge","label":"Edge warming up","state":"unknown"},
+        {"id":"gitops","label":"GitOps warming up","state":"unknown"}
+      ]
+    }

@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cluster-status
+  namespace: websites
+spec:
+  chart:
+    spec:
+      chart: ./application/cluster-status
+      interval: 1h
+      reconcileStrategy: Revision
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: cluster-status
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: cluster-status-values
+      valuesKey: values.yaml

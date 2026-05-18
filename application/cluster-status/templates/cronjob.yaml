@@ -1,0 +1,115 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "cluster-status.fullname" . }}
+  labels:
+    {{- include "cluster-status.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.checker.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.checker.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.checker.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "cluster-status.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: status-checker
+        spec:
+          serviceAccountName: {{ include "cluster-status.serviceAccountName" . }}
+          automountServiceAccountToken: {{ .Values.checker.automountServiceAccountToken }}
+          restartPolicy: Never
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          initContainers:
+            - name: edge-checks
+              image: "{{ .Values.checker.curlImage.repository }}:{{ .Values.checker.curlImage.tag }}"
+              imagePullPolicy: {{ .Values.checker.curlImage.pullPolicy }}
+              securityContext:
+                {{- toYaml .Values.checkerSecurityContext | nindent 16 }}
+              command:
+                - sh
+                - -ec
+                - |
+                  edge_state="green"
+                  failures=""
+                  {{- range .Values.checker.edgeChecks }}
+                  code="$(curl -ksS -L --max-time {{ $.Values.checker.timeoutSeconds }} -o /dev/null -w '%{http_code}' {{ .url | quote }} || true)"
+                  case " {{ join " " .expectedCodes }} " in
+                    *" ${code} "*) ;;
+                    *) edge_state="red"; failures="${failures}{{ .name }}:${code} ";;
+                  esac
+                  {{- end }}
+                  printf '%s' "${edge_state}" > /work/edge-state
+                  printf '%s' "${failures:-ok}" > /work/edge-message
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+          containers:
+            - name: publish-status
+              image: "{{ .Values.checker.kubectlImage.repository }}:{{ .Values.checker.kubectlImage.tag }}"
+              imagePullPolicy: {{ .Values.checker.kubectlImage.pullPolicy }}
+              securityContext:
+                {{- toYaml .Values.checkerSecurityContext | nindent 16 }}
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+              command:
+                - sh
+                - -ec
+                - |
+                  edge_state="$(cat /work/edge-state 2>/dev/null || printf red)"
+                  edge_message="$(cat /work/edge-message 2>/dev/null || printf edge-check-failed)"
+                  gitops_state="green"
+
+                  check_flux_kind() {
+                    kind="$1"
+                    if ! kubectl get "${kind}" -A -o jsonpath='{range .items[*]}{.metadata.namespace}/{.metadata.name}{"|"}{.metadata.generation}{"|"}{.status.observedGeneration}{"|"}{range .status.conditions[?(@.type=="Ready")]}{.status}{end}{"\n"}{end}' > "/work/${kind}.txt" 2>/dev/null; then
+                      gitops_state="red"
+                      return
+                    fi
+                    while IFS='|' read -r _ generation observed ready; do
+                      [ -z "${generation}" ] && continue
+                      if [ "${generation}" != "${observed}" ] || [ "${ready}" != "True" ]; then
+                        gitops_state="red"
+                      fi
+                    done < "/work/${kind}.txt"
+                  }
+
+                  check_flux_kind kustomizations.kustomize.toolkit.fluxcd.io
+                  check_flux_kind helmreleases.helm.toolkit.fluxcd.io
+
+                  state="green"
+                  [ "${edge_state}" = "green" ] || state="red"
+                  [ "${gitops_state}" = "green" ] || state="red"
+
+                  edge_label="Edge green"
+                  gitops_label="GitOps current"
+                  [ "${edge_state}" = "green" ] || edge_label="Edge degraded"
+                  [ "${gitops_state}" = "green" ] || gitops_label="GitOps degraded"
+
+                  checked_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                  cat > /work/status.json <<EOF
+                  {
+                    "schemaVersion": 1,
+                    "state": "${state}",
+                    "checkedAt": "${checked_at}",
+                    "staleAfterSeconds": {{ .Values.status.staleAfterSeconds }},
+                    "summary": "${edge_label} · ${gitops_label}",
+                    "signals": [
+                      {"id":"edge","label":"${edge_label}","state":"${edge_state}"},
+                      {"id":"gitops","label":"${gitops_label}","state":"${gitops_state}"}
+                    ]
+                  }
+                  EOF
+
+                  kubectl create configmap {{ include "cluster-status.fullname" . }}-public                     --namespace "${POD_NAMESPACE}"                     --from-file=status.json=/work/status.json                     --dry-run=client -o yaml | kubectl apply -f -
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+          volumes:
+            - name: work
+              emptyDir: {}

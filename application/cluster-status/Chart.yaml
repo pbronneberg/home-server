@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cluster-status
+description: Sanitized public cluster status endpoint
+version: 0.1.0
+appVersion: "0.1.0"
+type: application

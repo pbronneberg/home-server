@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-status-values
+  namespace: websites
+type: Opaque
+stringData:
+  values.yaml: |
+    ingress:
+      hosts:
+        - host: status.home.example
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: cluster-status-tls
+          hosts:
+            - status.home.example
+    checker:
+      edgeChecks:
+        - name: auth
+          label: Auth edge
+          url: https://auth.home.example/oauth2/sign_in
+          expectedCodes: [200]
+        - name: homepage
+          label: Homepage edge
+          url: https://www.home.example/
+          expectedCodes: [200]

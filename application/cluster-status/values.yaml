@@ -1,0 +1,96 @@
+replicaCount: 1
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+checker:
+  schedule: "*/2 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  curlImage:
+    repository: curlimages/curl
+    tag: "8.11.1"
+    pullPolicy: IfNotPresent
+  kubectlImage:
+    repository: alpine/k8s
+    tag: "1.35.4"
+    pullPolicy: IfNotPresent
+  automountServiceAccountToken: false
+  timeoutSeconds: 8
+  edgeChecks:
+    - name: auth
+      label: Auth edge
+      url: https://auth.home.example/oauth2/sign_in
+      expectedCodes: [200]
+    - name: homepage
+      label: Homepage edge
+      url: https://www.home.example/
+      expectedCodes: [200]
+
+status:
+  title: bronneberg.org status
+  staleAfterSeconds: 600
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 101
+
+checkerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  hosts:
+    - host: status.home.example
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: cluster-status-tls
+      hosts:
+        - status.home.example
+
+resources:
+  limits:
+    memory: 64Mi
+  requests:
+    cpu: 10m
+    memory: 32Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
