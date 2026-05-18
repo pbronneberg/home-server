@@ -71,12 +71,22 @@ service:
   port: 80
   targetPort: 8123
 
+oauth2Proxy:
+  enabled: false
+  serviceName: oauth2-proxy
+  endpointIP: 192.0.2.10
+  path: /oauth2
+  host: ""
+  tlsSecretName: ""
+  middlewares:
+    - default-redirect-https@kubernetescrd
+
 ingress:
   enabled: true
   className: "traefik"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,default-basic-auth@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth@kubernetescrd
   hosts:
     - host: homeassistant.home.example
       paths:

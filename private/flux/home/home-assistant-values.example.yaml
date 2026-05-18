@@ -20,3 +20,6 @@ stringData:
         - secretName: home-assistant-tls
           hosts:
             - homeassistant.home.example
+    oauth2Proxy:
+      enabled: true
+      endpointIP: 192.0.2.10

@@ -1,0 +1,33 @@
+{{- if .Values.oauth2Proxy.enabled }}
+{{- $host := .Values.oauth2Proxy.host | default ((index .Values.ingress.hosts 0).host) -}}
+{{- $tlsSecret := .Values.oauth2Proxy.tlsSecretName | default ((index .Values.ingress.tls 0).secretName) -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "home-assistant.fullname" . }}-oauth2
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," .Values.oauth2Proxy.middlewares }}
+    traefik.ingress.kubernetes.io/router.priority: "10000"
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+    - hosts:
+        - {{ $host }}
+      secretName: {{ $tlsSecret }}
+  rules:
+    - host: {{ $host }}
+      http:
+        paths:
+          - path: {{ .Values.oauth2Proxy.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.oauth2Proxy.serviceName }}
+                port:
+                  number: 80
+{{- end }}
