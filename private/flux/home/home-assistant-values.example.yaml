@@ -12,14 +12,21 @@ stringData:
       defaultMode: 511
     ingress:
       hosts:
-        - host: homeassistant.home.example
-          paths:
-            - path: /
-              pathType: ImplementationSpecific
+      - host: homeassistant.home.example
+        paths:
+        - path: /
+          pathType: ImplementationSpecific
       tls:
-        - secretName: home-assistant-tls
-          hosts:
-            - homeassistant.home.example
+      - secretName: home-assistant-tls
+        hosts:
+        - homeassistant.home.example
     oauth2Proxy:
       enabled: true
       endpointIP: 192.0.2.10
+      logout:
+        enabled: true
+    networkPolicy:
+      enabled: true
+    forwardedHeaders:
+      stripForHomeAssistant:
+        enabled: true

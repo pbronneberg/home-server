@@ -1,0 +1,16 @@
+{{- if .Values.forwardedHeaders.stripForHomeAssistant.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "home-assistant.fullname" . }}-strip-forwarded-headers
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+spec:
+  headers:
+    customRequestHeaders:
+      Forwarded: ""
+      X-Forwarded-For: ""
+      X-Forwarded-Host: ""
+      X-Forwarded-Port: ""
+      X-Forwarded-Proto: ""
+{{- end }}

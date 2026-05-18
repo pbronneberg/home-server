@@ -2,6 +2,13 @@
 {{- $fullName := .Values.resourceNames.ingress | default (include "home-assistant.fullname" .) -}}
 {{- $serviceName := .Values.resourceNames.service | default (include "home-assistant.fullname" .) -}}
 {{- $svcPort := .Values.service.port -}}
+{{- $annotations := deepCopy .Values.ingress.annotations -}}
+{{- if .Values.forwardedHeaders.stripForHomeAssistant.enabled -}}
+{{- $middlewareName := printf "%s-%s@kubernetescrd" .Release.Namespace (printf "%s-strip-forwarded-headers" (include "home-assistant.fullname" .)) -}}
+{{- $currentMiddlewares := index $annotations "traefik.ingress.kubernetes.io/router.middlewares" | default "" -}}
+{{- $middlewares := append (splitList "," $currentMiddlewares) $middlewareName -}}
+{{- $_ := set $annotations "traefik.ingress.kubernetes.io/router.middlewares" (join "," (compact $middlewares)) -}}
+{{- end -}}
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
 {{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
@@ -14,7 +21,7 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

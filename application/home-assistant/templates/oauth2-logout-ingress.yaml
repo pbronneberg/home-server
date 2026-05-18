@@ -1,0 +1,36 @@
+{{- if and .Values.oauth2Proxy.enabled .Values.oauth2Proxy.logout.enabled }}
+{{- $host := .Values.oauth2Proxy.host | default ((index .Values.ingress.hosts 0).host) -}}
+{{- $tlsSecret := .Values.oauth2Proxy.tlsSecretName | default ((index .Values.ingress.tls 0).secretName) -}}
+{{- $logoutPath := .Values.oauth2Proxy.logout.path | default "/logout" -}}
+{{- $logoutMiddleware := printf "%s-%s@kubernetescrd" .Release.Namespace (printf "%s-oauth2-logout" (include "home-assistant.fullname" .)) -}}
+{{- $middlewares := append .Values.oauth2Proxy.logout.middlewares $logoutMiddleware -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "home-assistant.fullname" . }}-oauth2-logout
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," $middlewares }}
+    traefik.ingress.kubernetes.io/router.priority: "10001"
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+    - hosts:
+        - {{ $host }}
+      secretName: {{ $tlsSecret }}
+  rules:
+    - host: {{ $host }}
+      http:
+        paths:
+          - path: {{ $logoutPath }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ .Values.resourceNames.service | default (include "home-assistant.fullname" .) }}
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}

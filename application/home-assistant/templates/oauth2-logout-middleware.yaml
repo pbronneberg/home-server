@@ -1,0 +1,15 @@
+{{- if and .Values.oauth2Proxy.enabled .Values.oauth2Proxy.logout.enabled }}
+{{- $host := .Values.oauth2Proxy.host | default ((index .Values.ingress.hosts 0).host) -}}
+{{- $logoutPath := .Values.oauth2Proxy.logout.path | default "/logout" -}}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "home-assistant.fullname" . }}-oauth2-logout
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+spec:
+  redirectRegex:
+    regex: ^https?://{{ $host }}{{ $logoutPath }}$
+    replacement: https://{{ $host }}{{ .Values.oauth2Proxy.path }}/sign_out?rd=https://{{ $host }}/
+    permanent: false
+{{- end }}

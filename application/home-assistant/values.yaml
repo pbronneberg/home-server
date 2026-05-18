@@ -71,6 +71,10 @@ service:
   port: 80
   targetPort: 8123
 
+forwardedHeaders:
+  stripForHomeAssistant:
+    enabled: false
+
 oauth2Proxy:
   enabled: false
   serviceName: oauth2-proxy
@@ -80,6 +84,11 @@ oauth2Proxy:
   tlsSecretName: ""
   middlewares:
     - default-redirect-https@kubernetescrd
+  logout:
+    enabled: false
+    path: /logout
+    middlewares:
+      - default-redirect-https@kubernetescrd
 
 ingress:
   enabled: true
