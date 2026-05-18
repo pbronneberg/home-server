@@ -247,44 +247,6 @@ data:
             backdrop-filter: blur(8px);
           }
 
-          .card-title {
-            display: grid;
-            grid-template-columns: minmax(42px, 1fr) auto minmax(42px, 1fr);
-            align-items: center;
-            gap: clamp(14px, 3vw, 26px);
-            margin-bottom: clamp(18px, 3vh, 24px);
-          }
-
-          .card-title h2 {
-            margin: 0;
-            font-size: clamp(1.45rem, 3vw, 1.9rem);
-            font-weight: 650;
-            line-height: 1;
-          }
-
-          .card-title span {
-            position: relative;
-            height: 1px;
-            background: var(--green);
-          }
-
-          .card-title span::before,
-          .card-title span::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            background: var(--green);
-            transform: translateY(-50%);
-          }
-
-          .card-title span:first-child::before { left: 0; }
-          .card-title span:first-child::after { display: none; }
-          .card-title span:last-child::before { display: none; }
-          .card-title span:last-child::after { right: 0; }
-
           .notice,
           .alert {
             margin: 0 0 16px;
@@ -501,11 +463,6 @@ data:
               border-radius: 10px;
             }
 
-            .card-title {
-              gap: 12px;
-              margin-bottom: 16px;
-            }
-
             .features {
               grid-template-columns: repeat(2, minmax(0, 1fr));
               gap: 16px 0;
@@ -541,7 +498,6 @@ data:
             .brand-name { font-size: clamp(1.8rem, 8vw, 2.45rem); }
             .tagline { margin-top: 6px; }
             .prompt { margin: 10px 0 12px; }
-            .card-title { margin-bottom: 12px; }
             .features { display: none; }
           }
         </style>
@@ -594,12 +550,10 @@ data:
               </svg>
               <h1 class="brand-name" id="brand-title">bronneberg<span class="domain">.org</span></h1>
               <p class="tagline">self-hosted identity platform</p>
-              <p class="prompt"><span>&gt;_</span> sign in to continue</p>
+              <p class="prompt"><span>&gt;_</span> secure session required</p>
             </section>
 
-            <section class="auth-card" aria-label="Sign in">
-              <div class="card-title"><span></span><h2>Sign in</h2><span></span></div>
-
+            <section class="auth-card" aria-label="Authentication">
               {{ if .SignInMessage }}
               <p class="notice">{{.SignInMessage}}</p>
               {{ end}}
@@ -621,7 +575,7 @@ data:
                   <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
                     <path d="M12 .5A12 12 0 0 0 8.2 23.9c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 .1.9 2.1 2.8 1.5.1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.3v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/>
                   </svg>
-                  <span>Sign in with {{.ProviderName}}</span>
+                  <span>Continue with {{.ProviderName}}</span>
                 </button>
               </form>
 
