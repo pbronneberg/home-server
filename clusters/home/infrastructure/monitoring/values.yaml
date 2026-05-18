@@ -217,6 +217,21 @@ grafana:
 
   adminPassword: change-me-use-sops
 
+  # Traefik protects the public Grafana ingress with oauth2-proxy. Grafana then
+  # trusts the identity headers copied from oauth2-proxy's /oauth2/auth response,
+  # so users do not see Grafana's own login page after the edge OAuth flow.
+  grafana.ini:
+    auth:
+      signout_redirect_url: "/oauth2/sign_out?rd=/oauth2/sign_in"
+    auth.proxy:
+      enabled: true
+      header_name: X-Auth-Request-Email
+      header_property: email
+      auto_sign_up: true
+      enable_login_token: true
+      sync_ttl: 60
+      headers: Name:X-Auth-Request-User Email:X-Auth-Request-Email Groups:X-Auth-Request-Groups
+
   ingress:
     ## If true, Grafana Ingress will be created
     ##
