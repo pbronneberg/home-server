@@ -309,7 +309,8 @@ make sops-edit SOPS_FILE=private/flux/home/oauth2-proxy-values.sops.yaml
 ```
 
 Replace the placeholder client ID, client secret, generated cookie secret,
-GitHub organization or team, auth callback host, and cookie domain. Generate
+GitHub organization, team, or user allowlist, auth callback host, and
+cookie domain. Generate
 the cookie secret with:
 
 ```bash

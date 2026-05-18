@@ -18,6 +18,8 @@ stringData:
         provider = "github"
         github_org = "example-org"
         # github_team = "platform"
+        # For personal accounts, use github_users instead of github_org.
+        # github_users = [ "example-user" ]
         reverse_proxy = true
         upstreams = [ "static://202" ]
         redirect_url = "https://auth.home.example/oauth2/callback"

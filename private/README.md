@@ -48,7 +48,8 @@ and commit the real Secret only as a SOPS-encrypted file.
 
 GitHub-backed ingress authentication uses
 `oauth2-proxy-values.sops.yaml` for the OAuth app credentials, allowed GitHub
-organization or team, auth callback hostname, and cookie domain. The committed
+organization, team, or user allowlist, auth callback hostname, and cookie
+domain. The committed
 example keeps `replicaCount: 0`; cluster runtime values enable one replica
 because protected ingresses depend on oauth2-proxy being available.
 
