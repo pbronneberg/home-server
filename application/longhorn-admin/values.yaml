@@ -4,7 +4,6 @@ ingress:
   middlewares:
     - default-redirect-https@kubernetescrd
     - auth-github-oauth@kubernetescrd
-    - default-basic-auth@kubernetescrd
 
 
 oauth2Proxy:
