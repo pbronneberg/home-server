@@ -5,7 +5,7 @@ fullnameOverride: oauth2-proxy
 replicaCount: 1
 
 podAnnotations:
-  oauth2-proxy.bronneberg.org/custom-templates-revision: "2026-05-18-4"
+  oauth2-proxy.bronneberg.org/custom-templates-revision: "2026-05-19-7"
 
 extraArgs:
   custom-templates-dir: /etc/oauth2-proxy/custom-templates
