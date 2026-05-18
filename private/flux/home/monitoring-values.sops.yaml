@@ -5,19 +5,19 @@ metadata:
   namespace: monitoring
 type: Opaque
 stringData:
-  values.yaml: ENC[AES256_GCM,data:7oTs/T2OWbX5vmyXwbAhNINNh6jFkEmMkZMH5UVsV+94AOoOoCdkM1qO0TMOyuLje9uk8O/jycEU6BDv39vIfEGpm0qQkm7tpSkThQju/t1ytvNCqW2EymbmliNG+ehWZmKK+qphhNXBRU+jUZEbD7ZWIOKC+oN6Uju8nQO3PSf5Ske5U5Oz6wKyIiXwYnUNQWHYAyg52yuCvkt3YRtxF0LfvBnalGWFC61PYqlRnTkqWBOsMVGLox/NijtrGH3ouU9B+B/SHMz7DpxXp+tUj12Izh5jongtpw+WArBG7eIAZ6SXbFmYuP79A5K4ufO35xWZHBS6Qp1DNU5Ljm77UHNsswX8NeMPLXhAbGw8j4mfG6/eVgTRGEfEs3EQw3jyvy+pHqjv1htE16EjWnt9o38sxpPNLvEGQYvSzT00sj4B9FvvgXavaP4irdGOMiJr9cLmRm3Dsk+eHYj7viS2uLCeWtpRlJSEIqJLOy8dzfFOnKzD7nfgfE1/GANKZcnaWoZchb9NlXPz15E4IAgWSbM3DIE+ut27DeEETFESNmqb4rtglZQasoaHDVTZjrsFkfrZetyapz7nkZcAZUD6qkpaYpTpNr6QABl03CcLxRsEIgrKLBkRloilk0WBG//ftEUJ7VOlshZbjEaq5btNze9yZ9n3TQzzcxhrNdjREQTUMoW2gtIt2BGOolCmtBSUIwxpcWjVhyq8tU/GuXSUNNlDDYOuHqs2n+oUHadc73hS+kmvel2KYWR0hh6KlPyqMgTEBaMrNlZ67sZxN8cL0l/f3LVbhwzffEclxROGmrf0T/j/A4PQxPA2otD73y1CXlX1zZ6i/6gcESY0apOMra41NcoSQlV4nx7U3mMtmpFnwAfBAxsn50I+Dyh3KPe5S40oYfOgHPAb8tKLaHFeCOx51LiWhOmpaFXnkNO1asnikkDvL3wJRALKBi9dO8Z6tT6rXKM6Ro7nwPfFpDlbxmaQaS8+zk/wdQNKHvJunTYRkfWr0c0=,iv:akM3nils+qShDO8sdpYs9A5+RTlVtBRqTFNG+hAnc6M=,tag:kpRh9eoJGzdx581JMxm1YA==,type:str]
+  values.yaml: ENC[AES256_GCM,data:4jJZe0aV5wuMmuW9Vfqo/bSXBeN3pex5E3eE6qMWygh5ltXeWBw1RVx2Ze/+hpxqaX6rfzauVSikbKwuQ5NeS+oIopBxz49QiMbn+hZC0UaADe4zH3DwNTh71C49OSg2t2JeLEJulfTr3QdF5qoNnzYYw1KubKI7DwGWNgCwH8TYc6NCLHj8KPA5zt8xE3ELxhXj7dvOLWUX59gXvfJeC6YgFNB0hXsvDtfIiovfq2XYwaRo7tGON9UNiv8uje9H8fehDnbr6CdO6TaVtGr9xZKUu/leN0JNppB44cVZiFOazE98niSOhVlMKT91FWMhE6XEbsgRtXoJb4LaC0d4JO1sDYO1NPogfIekIjZ3IEMUh3Vc9xMPgfpvNCUe2bz2QDrB2kzU8EZ0+ieMJ1NmsRPQKy4X5hakFl+ql+Ze+1+PFVqruiz9m+jjmOABEQGHPsLmeZEckIYp0kZ4bxSTDUMc7xeh4UM6SFnLcVxkAhWAQBJV2sTOfoblG5SQREKW8jKCEyloU7nKKiHJZ3jV+CN9gsotA4268eItQIbIxlxopX8+ivFU4+RoTAWiCnDvlprNKGayL57zX97G1bH0gJ2Q0l9/rp0AHPj2iNJBomL4pDPwurEw3KCN69Oe58lXyj1KAlW0gtwW2bvpk9Ua5gCdF2Fry1xzk8TpbFLsh8ec5YoonPuADr+Os8vlrEJ4bf9+TeevCrFJIILW8NPwfcw7vesYpjNRvIhnk4b79QhW637e+KZh/vntCXcCcE5/iNGCQP22QrlZSBzaQtXgGoWrD0ZM+YhQVyoQ2fph7sqc/OV7qV2K7TwRTF1NiUOY3LN1FnCkT+0WddH3nfMTD3oHHwi/yOQ88tHiGA7YFPvqWS3+/Nvsn1TSBa5Jtaw0V4mJfE1PQqvWJ8EYZ2vhXlOYk/NFdknZS0tLTcMcu7n+FONBKCpVhWODcOTRmuo0HGnJstr67C6hqNp1jT1fO/QEGgBYEQ6apnFJ+WwNPy1kDy7i1qR0Yxyrgy/OmV+Wgashs22WkRbtCJztfr4=,iv:uX/3MYQ/38Gt6MRJhBGXD1/Z1NDE5wmgjfFfo+9bdXc=,tag:qx0BYnL0HAZW/IFaWmXHtw==,type:str]
 sops:
   age:
-    - recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
-      enc: |
+    - enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBFZ1FNZG5vTmlhcFcxemFz
-        Y2s3TUpHMTU1b3NicXZ0OWxhQlowUDJlNWtVCnpNTEtsSGQzaGY2YkdRTzRRNEdC
-        eXMwWWFKcWxNQ3dkVmsvSTJYZUVZVk0KLS0tIElaSUNTMCtNUDF0a2paUElnWG9X
-        NnNTTXlnMjRHQWZFWExzWDZFenlHSzAKOZPkvxcE0N5Rg1ampALH3pukBll1pL8w
-        a85yiOB3hKU3euE2sW6nP/7DOcc+l0S+busMtZvT+YvKq+JV6dYDUQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBNdU13MGtzb05JYloxY3JY
+        OWtXZ20vVnFVUGlnVk1tUndXVE16bFpnaFhVCitBdUlVYURranZnMzdEb2RFdWRD
+        eWxqNnRhTEZJajJDRk50aFRLQ0w0TlUKLS0tIDc5b3FCcGV1SUkra0ZHTHliSzBX
+        WWdhZW9sSm42WTlqdTk1V2Vnek5DR2MKhVNS1OPzWu5fUggv4VKMc/MjIgSfe7DX
+        Iv9zLt1rR2qaSg8oVtR23MbGHTFw/9O6lstvKTnXBFuP2sux8RXRjQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-05-14T16:28:34Z"
-  mac: ENC[AES256_GCM,data:uW0vBCbsCpN9h1cQSO+JHUURgdn6FbU4u9AIlNhBNCy+Y0A0OT54Jv1YZQ7ElWJ+Z0xf2AGWKfMPv/T2pYHJiXMQLyYxNOicuAfwi4IHPinMEV590UQrGzMahWLwrojEYulzPZaeIuJuo8gwQzYXMTZ3hk/wFEQCXeq43sZB4EY=,iv:hk6DotK82phNxT6okYD/rtnGXzm39pn3cG5WHNfQcww=,tag:pimUVaFdWgjFMsz8hmhoPw==,type:str]
+      recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
   encrypted_regex: ^(data|stringData)$
-  version: 3.11.0
+  lastmodified: "2026-05-18T22:28:13Z"
+  mac: ENC[AES256_GCM,data:Rq/1zlOhzxyuVoHX/wHuTT/uJUqx92M079S2DkhXe4v6zvIL8ReJaqSXcnmrVOiAsmJy3L3UZMKEJx5kSy9mzAX5MWsBy8EZES6wuZnOzz1VXS+8MYThQOO0Z4LGPJkeH+Z/Ud1BILki+IVkgvRjATvQkW7TzxGNXnbKSFaREq0=,iv:ur0yLpvj0h+aP7BMP+hZuLteFwxPmI4fadaMGO60EJM=,tag:na/OJFXc9j4w6dr8barBLQ==,type:str]
+  version: 3.13.0

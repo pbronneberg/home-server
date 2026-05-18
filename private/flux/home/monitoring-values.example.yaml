@@ -15,6 +15,9 @@ stringData:
           - secretName: alertmanager-general-tls
             hosts:
               - alertmanager.home.example
+    grafanaOauth2Proxy:
+      enabled: true
+      endpointIP: 192.0.2.10
     grafana:
       ingress:
         enabled: true
