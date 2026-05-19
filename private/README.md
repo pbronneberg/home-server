@@ -49,8 +49,10 @@ and commit the real Secret only as a SOPS-encrypted file.
 GitHub-backed ingress authentication uses
 `oauth2-proxy-values.sops.yaml` for the OAuth app credentials, allowed GitHub
 organization, team, or user allowlist, auth callback hostname, and cookie
-domain. The committed
-example keeps `replicaCount: 0`; cluster runtime values enable one replica
+domain. Keep `github_org` or `github_users` configured, and use `github_team`
+only to narrow a configured organization, so wildcard email domains cannot
+authenticate every GitHub account.
+The committed example keeps `replicaCount: 0`; cluster runtime values enable one replica
 because protected ingresses depend on oauth2-proxy being available.
 
 After restoring the age identity on a workstation, run `make

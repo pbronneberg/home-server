@@ -310,7 +310,10 @@ make sops-edit SOPS_FILE=private/flux/home/oauth2-proxy-values.sops.yaml
 
 Replace the placeholder client ID, client secret, generated cookie secret,
 GitHub organization, team, or user allowlist, auth callback host, and
-cookie domain. Generate
+cookie domain. Keep `github_org` or `github_users` in the oauth2-proxy
+config; use `github_team` only to narrow a configured organization. With
+`email_domains = [ "*" ]` and no GitHub allowlist, any GitHub account could
+authenticate. Generate
 the cookie secret with:
 
 ```bash
