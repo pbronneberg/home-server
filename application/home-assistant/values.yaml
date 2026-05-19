@@ -87,6 +87,7 @@ oauth2Proxy:
   logout:
     enabled: false
     path: /logout
+    redirectUrl: ""
     middlewares:
       - default-redirect-https@kubernetescrd
 

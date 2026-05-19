@@ -328,16 +328,20 @@ traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kuberne
 ```
 
 The middleware forward-auth URL is an in-cluster Kubernetes service address
-called by Traefik, not a browser-facing redirect target. Browsers only need to
-resolve the auth callback host configured in `redirect_url`.
+called by Traefik, not a browser-facing redirect target. Unauthenticated browser
+requests are sent to oauth2-proxy's `/oauth2/start` endpoint so the GitHub OAuth
+flow begins directly, and browsers need to resolve the auth callback host
+configured in `redirect_url`.
 
 Protected hosts must be covered by the oauth2-proxy `cookie_domains` and
-`whitelist_domains` values. Apps that expose the same-host oauth2-proxy path
-can log out through:
+`whitelist_domains` values. Apps can log out through the auth host:
 
 ```text
-https://<protected-host>/oauth2/sign_out?rd=https%3A%2F%2Fstatus.home.example%2F
+https://auth.home.example/oauth2/sign_out?rd=https%3A%2F%2Fstatus.home.example%2F
 ```
+
+Apps that expose the same-host oauth2-proxy path can use the same path on their
+protected host instead.
 
 That clears the oauth2-proxy session cookie for the configured cookie domain and
 returns the browser to an unprotected page. The `rd` target must be URL-encoded

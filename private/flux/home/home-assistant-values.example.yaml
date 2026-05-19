@@ -25,6 +25,7 @@ stringData:
       endpointIP: 192.0.2.10
       logout:
         enabled: true
+        redirectUrl: https://status.home.example/
     networkPolicy:
       enabled: true
     forwardedHeaders:
