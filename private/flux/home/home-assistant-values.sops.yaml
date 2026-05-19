@@ -5,7 +5,7 @@ metadata:
   namespace: homeassistant
 type: Opaque
 stringData:
-  values.yaml: ENC[AES256_GCM,data:2nbbpUZun+2JKugg5BKJMd5nWj2aCRNNSJN7wpKJ6t7dlI5Ke1YXdsyXR2FL3BF6Vh7+QYA8OUWPLU1ym/bZhpeVMZuyDgLWkqPUAfwe53HD0Y95iL8qLiULmf5XzbFBzjkysS8LikkFGTBFr4Ws8Gs5+vTZlU16y6e274mKyPvzMNrKwHUKW143TUcGmHxlr729Mo16ZVIJc3iipLcWMaMd1uujWomJRcA44qO/6Khirxv2aQQ7GIaWK4QR1IpjgU0n7jsLOABFhF7xDZJH6KFvCcTG3PfmN3rFH1w18cWfV0LaBiPGBFWRE8uM0QBNnuZYcnRq/CakfuW0QYpKWgi7tY8bZyPE3LgxMwC6rBWQ1RRHXtrLACDXzkTtx0icvxDvKSjz9vTVEEO7gVywPXFfmJop6MW3yayTPydurMJsTTZ4K8zy8NNvaE9+eDuG0leZZ8BuS1we7kVc1IkeaUTniEYFtj/JqhUq9QFHDuqhtb7Hk9oGBDA=,iv:ZmXul3WotmoXt8rwAZu4KpvcaxTQsv/ZjnvJ01CQjhw=,tag:gTq5yib/j6OEiBKKtU0Nxw==,type:str]
+  values.yaml: ENC[AES256_GCM,data:uW7wy5vNxC8DoP/Lp0wuRn5VcemyNxd2YTnuZiRSuNLeitSBHow+S2/Svoum6B822Vq4NuMLSC8UxuqM+PWC/8kFLjo8x2Ta0MEkediCJiZpknsPz40sX5RkrejRea/EbLqAVEX/JwP5KF2hE2OcfmxfpIbGLYTUImWGJjCer3NrBmuEIZ3GrMS0wrCrLf4AYNquGe8/p767R5IfXWmyR/XejtU5pCRmQderwlK9B4HOv3dbtRID7sCCBEa1O67/gBslk9V7PiwLrR2LdCn+Hz9sAzXyjh6TpSpVUcSsBSu6MC74/sAd/+jYokalf5aDQqCP7y+0SeBKhoVBYskXk8BHNSOGXKxVrVuCwgr+wV0DvW2UjW9tGswQniBTrtSRHbfX1evOni509n6NS1oDzqMKXDy2MFQOx6RJ/l6KVswGPwouWXKq6pzzieNESNHAjvKZrGqcH+YYAJawJ8iiiIIQIsk7W+bjQajKOMzcARX2fGoAcI45CPoYjs7q0TgpVH4I2UacoznZ8t8Nj1hUBtf/hlENQ1sK+CGPFH4L+sHGss5M74CxDcc=,iv:sZ/02zdszC94MRt6UTYUIuZbD3rJAx73eaUkW7SnnDg=,tag:P05O2mAJ2jxTe/v9ibq8sw==,type:str]
 sops:
   age:
     - enc: |
@@ -18,6 +18,6 @@ sops:
         -----END AGE ENCRYPTED FILE-----
       recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
   encrypted_regex: ^(data|stringData)$
-  lastmodified: "2026-05-18T23:54:44Z"
-  mac: ENC[AES256_GCM,data:Pj8AzMpwDNBREhd0arnHt+b3uqS+7C54TBkuhLm+HWasFQhp7wZrUPYcg7cWAosqVG/ch72MuKlxCKHjdF1Zjm9h+r6Pcmon+xCFdBVeqBhSOsppkzsAM1C27v6Wk72Vo10ynN5jRa8VTe24HrEzRj+urtR3dk+SRA915aZZZI8=,iv:3X16Cx3g4BDwa6qfuQz5kJ51lQRXa0ZPxMBpCJNq1Y8=,tag:tVWBCtA/1q2nkOHbVFEB9A==,type:str]
+  lastmodified: "2026-05-19T06:05:30Z"
+  mac: ENC[AES256_GCM,data:Kk4Ngjqj+pliDIRj5w/65Z8T9fPUsgpqLWlkX6/vzf6QiPRu4aniZtmnfdIoND6rT4gAP3ambpWyIYgWABCVQSrukM3c9Symkkmo6l85wBJyt+WNFwPXDuk844QQuVEoQZzA4ZC8CzXmhkZs7GJFvnXLOnstPMRvgi146B0tr0M=,iv:HMZ03X9RLyQPUaX+yacf6bwsXKPdTCOz1jgWKwxlwFE=,tag:jTxID4QkC4Zzkywj42P0mw==,type:str]
   version: 3.13.0
