@@ -66,9 +66,56 @@ check_traefik_error_middleware() {
   fi
 }
 
+check_grafana_auth_proxy() {
+  local path="clusters/home/infrastructure/monitoring/values.yaml"
+
+  if grep -Eq '^[[:space:]]*enable_login_token:[[:space:]]*true[[:space:]]*$' "$path"; then
+    printf '[fail] %s must keep Grafana auth.proxy enable_login_token disabled behind oauth2-proxy\n' "$path"
+    printf '[hint] Login tokens make Grafana call /api/user/auth-tokens/rotate, which can re-enter the edge auth flow.\n'
+    status=1
+    return
+  fi
+
+  if grep -Eq '^[[:space:]]*enable_login_token:[[:space:]]*false[[:space:]]*$' "$path"; then
+    printf '[ok] %s keeps Grafana auth.proxy login tokens disabled\n' "$path"
+  else
+    printf '[fail] %s must explicitly set Grafana auth.proxy enable_login_token: false\n' "$path"
+    status=1
+  fi
+
+  if grep -Eq '^[[:space:]]*login_cookie_name:[[:space:]]*grafana_auth_proxy_session[[:space:]]*$' "$path"; then
+    printf '[ok] %s keeps Grafana on the auth-proxy cookie name\n' "$path"
+  elif grep -Eq '^[[:space:]]*login_cookie_name:' "$path"; then
+    printf '[fail] %s must keep Grafana login_cookie_name at grafana_auth_proxy_session\n' "$path"
+    status=1
+  else
+    printf '[fail] %s must set Grafana login_cookie_name to grafana_auth_proxy_session\n' "$path"
+    status=1
+  fi
+
+  if awk '
+    /^[[:space:]]*name:[[:space:]]*grafana-auth-token-rotate[[:space:]]*$/ { in_route=1 }
+    in_route && /traefik.ingress.kubernetes.io\/router.middlewares:/ {
+      if ($0 ~ /auth-github-oauth-forward-auth@kubernetescrd/ && $0 !~ /auth-github-oauth@kubernetescrd/) {
+        found=1
+      } else {
+        bad=1
+      }
+    }
+    in_route && /^[[:space:]]*\{\{- end \}\}/ { in_route=0 }
+    END { exit found && !bad ? 0 : 1 }
+  ' "$path"; then
+    printf '[ok] %s keeps Grafana token rotation on forward auth only\n' "$path"
+  else
+    printf '[fail] %s must route Grafana /api/user/auth-tokens/rotate through forward auth without the OAuth error middleware\n' "$path"
+    status=1
+  fi
+}
+
 printf '%s\n' 'OAuth2 GitHub authorization policy check'
 
 check_traefik_error_middleware
+check_grafana_auth_proxy
 check_file clusters/home/infrastructure/oauth2-proxy/values.yaml
 check_file private/flux/home/oauth2-proxy-values.example.yaml
 

@@ -77,6 +77,15 @@ and understandable.
   an unauthenticated protected host and confirm it returns the identity gateway
   HTML rather than `Found`, then curl the same-host `/oauth2/start?...` URL and
   confirm it returns a real 302 to GitHub.
+- For Grafana behind oauth2-proxy, keep
+  `grafana.auth.proxy.enable_login_token: false` and
+  `grafana.auth.login_cookie_name: grafana_auth_proxy_session`. This avoids
+  reusing stale `grafana_session` login-token cookies from earlier auth-flow
+  experiments.
+- Keep Grafana's `/api/user/auth-tokens/rotate` route on forward auth only,
+  without the OAuth error-page middleware. Grafana can return backend 401s for
+  stale local session tokens; rewriting those 401s into sign-in pages causes
+  redirect loops.
 
 ## Review Checklist
 

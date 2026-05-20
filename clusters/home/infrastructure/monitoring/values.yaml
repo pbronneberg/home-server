@@ -92,6 +92,35 @@ extraManifests:
                     name: {{ .Values.grafanaOauth2Proxy.serviceName }}
                     port:
                       number: 80
+    ---
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: grafana-auth-token-rotate
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        # Keep forward auth for this API, but do not attach the OAuth error
+        # middleware. Grafana returns 401 here for stale local session tokens;
+        # converting that backend 401 into an OAuth sign-in page causes loops.
+        traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth-forward-auth@kubernetescrd
+        traefik.ingress.kubernetes.io/router.priority: "10001"
+    spec:
+      ingressClassName: {{ .Values.grafana.ingress.ingressClassName }}
+      tls:
+        - hosts:
+            - {{ $host }}
+          secretName: {{ $tlsSecret }}
+      rules:
+        - host: {{ $host }}
+          http:
+            paths:
+              - path: /api/user/auth-tokens/rotate
+                pathType: Exact
+                backend:
+                  service:
+                    name: {{ include "grafana.fullname" (index .Subcharts "grafana") }}
+                    port:
+                      number: 80
     {{- end }}
 
 
@@ -224,12 +253,18 @@ grafana:
     auth:
       # Override this in private values when the public status host differs.
       signout_redirect_url: "/oauth2/sign_out?rd=https%3A%2F%2Fstatus.home.example%2F"
+      # Ignore stale grafana_session cookies issued before auth.proxy login
+      # tokens were disabled.
+      login_cookie_name: grafana_auth_proxy_session
     auth.proxy:
       enabled: true
       header_name: X-Auth-Request-Email
       header_property: email
       auto_sign_up: true
-      enable_login_token: true
+      # Keep login tokens disabled when Grafana is behind oauth2-proxy auth
+      # headers. Enabling them makes Grafana depend on
+      # /api/user/auth-tokens/rotate, which can re-enter the edge auth flow.
+      enable_login_token: false
       sync_ttl: 60
       headers: Name:X-Auth-Request-User Email:X-Auth-Request-Email Groups:X-Auth-Request-Groups
 
