@@ -48,8 +48,27 @@ check_file() {
   fi
 }
 
+check_traefik_error_middleware() {
+  local path="clusters/home/infrastructure/oauth2-proxy/github-oauth.yaml"
+
+  if grep -Eq '^[[:space:]]*query:[[:space:]]*/oauth2/start\?rd=\{url\}[[:space:]]*$' "$path"; then
+    printf '[fail] %s must not use /oauth2/start as the Traefik error middleware query\n' "$path"
+    printf '[hint] Keep github-oauth-errors on /oauth2/sign_in?rd={url}; /oauth2/start returns a redirect body under Traefik-preserved 401/403 responses.\n'
+    status=1
+    return
+  fi
+
+  if grep -Eq '^[[:space:]]*query:[[:space:]]*/oauth2/sign_in\?rd=\{url\}[[:space:]]*$' "$path"; then
+    printf '[ok] %s keeps Traefik OAuth errors on /oauth2/sign_in\n' "$path"
+  else
+    printf '[fail] %s must keep github-oauth-errors query at /oauth2/sign_in?rd={url}\n' "$path"
+    status=1
+  fi
+}
+
 printf '%s\n' 'OAuth2 GitHub authorization policy check'
 
+check_traefik_error_middleware
 check_file clusters/home/infrastructure/oauth2-proxy/values.yaml
 check_file private/flux/home/oauth2-proxy-values.example.yaml
 

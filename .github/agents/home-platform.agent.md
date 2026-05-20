@@ -61,6 +61,23 @@ and understandable.
 - Before making the repository public, run `make public-check` and follow
   `docs/publication-runbook.md`.
 
+## OAuth2 And Traefik Auth Invariant
+
+- Keep `clusters/home/infrastructure/oauth2-proxy/github-oauth.yaml` on
+  `github-oauth-errors.spec.errors.query: /oauth2/sign_in?rd={url}`.
+- Do not change that Traefik error middleware query to `/oauth2/start?rd={url}`.
+  Traefik preserves the original 401/403 status for error middleware responses;
+  oauth2-proxy's `/oauth2/start` returns a redirect body under that preserved
+  401, which makes browsers show the small `Found` page instead of the login
+  page.
+- The oauth2-proxy sign-in template can submit to `/oauth2/start`; the Traefik
+  error middleware itself must stay on `/oauth2/sign_in`.
+- Any future shared auth-flow change must be explicitly requested by the user
+  and verified against every protected host class it affects. At minimum, curl
+  an unauthenticated protected host and confirm it returns the identity gateway
+  HTML rather than `Found`, then curl the same-host `/oauth2/start?...` URL and
+  confirm it returns a real 302 to GitHub.
+
 ## Review Checklist
 
 - Does `make ci` pass?
