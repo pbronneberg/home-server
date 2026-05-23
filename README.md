@@ -102,6 +102,7 @@ them current:
 * `kubectl`
 * `flux`
 * `kustomize`
+* `virtctl`
 * `yamllint`
 * `actionlint`
 * `gitleaks`
@@ -141,6 +142,10 @@ go install github.com/cli/cli/v2/cmd/gh@v2.92.0
 go install sigs.k8s.io/kustomize/kustomize/v5@v5.8.1
 npm install -g @openai/codex@0.130.0
 ```
+
+Install `virtctl` from the KubeVirt release that matches the cluster KubeVirt
+manifests when running VM console or start/stop commands outside the
+devcontainer.
 
 For SOPS/age private overlays, the local private age identity is stored in
 `.sops/age/keys.txt`, is ignored by git, and must be backed up outside this

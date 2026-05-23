@@ -16,6 +16,8 @@ ARG GIT_FILTER_REPO_VERSION=2.47.0
 ARG HELM_VERSION=4.2.0
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
 ARG KUBECTL_VERSION=1.36.1
+# renovate: datasource=github-releases depName=kubevirt/kubevirt extractVersion=^v(?<version>.*)$
+ARG KUBEVIRT_VERSION=1.8.2
 # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/v(?<version>.*)$
 ARG KUSTOMIZE_VERSION=5.8.1
 # renovate: datasource=github-releases depName=getsops/sops extractVersion=^v(?<version>.*)$
@@ -77,11 +79,12 @@ RUN set -eux; \
     mv "/tmp/gh_${GH_VERSION}_linux_${gh_arch}/bin/gh" /usr/local/bin/gh; \
     rm -rf "/tmp/gh_${GH_VERSION}_linux_${gh_arch}"; \
     curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl"; \
+    curl -fsSL -o /usr/local/bin/virtctl "https://github.com/kubevirt/kubevirt/releases/download/v${KUBEVIRT_VERSION}/virtctl-v${KUBEVIRT_VERSION}-linux-${TARGETARCH}"; \
     curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_${kustomize_arch}.tar.gz" \
       | tar -xz -C /tmp kustomize; \
     mv /tmp/kustomize /usr/local/bin/kustomize; \
     curl -fsSL -o /usr/local/bin/sops "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${sops_arch}"; \
-    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/kustomize /usr/local/bin/sops
+    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/virtctl /usr/local/bin/kustomize /usr/local/bin/sops
 
 RUN actionlint --version \
     && codex --version \
@@ -90,6 +93,7 @@ RUN actionlint --version \
     && gh --version \
     && helm version --short \
     && kubectl version --client \
+    && virtctl version --client \
     && kustomize version \
     && sops --version \
     && yamllint --version \

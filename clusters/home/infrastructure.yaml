@@ -259,3 +259,21 @@ spec:
     name: flux-system
   timeout: 10m
   wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: evaluation-kairos-kubevirt
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-virtualization
+  interval: 10m
+  path: ./clusters/home/evaluation/kairos-kubevirt
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  suspend: true
+  timeout: 10m
+  wait: true

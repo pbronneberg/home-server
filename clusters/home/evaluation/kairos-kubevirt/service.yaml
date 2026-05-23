@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-kubevirt-evaluation
+    example.com/evaluation: kairos
+  name: kairos-k3s-api
+  namespace: vms
+spec:
+  ports:
+    - name: k3s-api
+      port: 6443
+      protocol: TCP
+      targetPort: 6443
+  selector:
+    kubevirt.io/domain: kairos-server
+  type: ClusterIP

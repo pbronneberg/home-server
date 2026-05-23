@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-kubevirt-evaluation
+    example.com/evaluation: kairos
+  name: kairos-evaluation-deny-egress
+  namespace: vms
+spec:
+  podSelector:
+    matchLabels:
+      example.com/evaluation: kairos
+  policyTypes:
+    - Egress

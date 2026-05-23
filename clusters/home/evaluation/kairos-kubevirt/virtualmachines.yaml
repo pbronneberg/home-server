@@ -1,0 +1,181 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-kubevirt-evaluation
+    app.kubernetes.io/part-of: kairos-evaluation
+    example.com/evaluation: kairos
+    example.com/evaluation-role: server
+  name: kairos-server
+  namespace: vms
+spec:
+  runStrategy: Halted
+  dataVolumeTemplates:
+    - metadata:
+        labels:
+          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          example.com/evaluation: kairos
+        name: kairos-server-installer
+      spec:
+        source:
+          http:
+            url: https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+          storageClassName: longhorn-virtualization
+          volumeMode: Filesystem
+    - metadata:
+        labels:
+          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          example.com/evaluation: kairos
+        name: kairos-server-root
+      spec:
+        source:
+          blank: {}
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 32Gi
+          storageClassName: longhorn-virtualization
+          volumeMode: Block
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kairos-kubevirt-evaluation
+        example.com/evaluation: kairos
+        example.com/evaluation-role: server
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+            - bootOrder: 1
+              cdrom:
+                bus: sata
+              name: installer
+            - bootOrder: 2
+              disk:
+                bus: virtio
+              name: rootdisk
+            - cdrom:
+                bus: sata
+              name: cloudinitdisk
+          interfaces:
+            - masquerade: {}
+              name: default
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+        - name: default
+          pod: {}
+      terminationGracePeriodSeconds: 120
+      volumes:
+        - dataVolume:
+            name: kairos-server-installer
+          name: installer
+        - dataVolume:
+            name: kairos-server-root
+          name: rootdisk
+        - cloudInitNoCloud:
+            secretRef:
+              name: kairos-server-user-data
+          name: cloudinitdisk
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-kubevirt-evaluation
+    app.kubernetes.io/part-of: kairos-evaluation
+    example.com/evaluation: kairos
+    example.com/evaluation-role: agent
+  name: kairos-agent
+  namespace: vms
+spec:
+  runStrategy: Halted
+  dataVolumeTemplates:
+    - metadata:
+        labels:
+          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          example.com/evaluation: kairos
+        name: kairos-agent-installer
+      spec:
+        source:
+          http:
+            url: https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+          storageClassName: longhorn-virtualization
+          volumeMode: Filesystem
+    - metadata:
+        labels:
+          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          example.com/evaluation: kairos
+        name: kairos-agent-root
+      spec:
+        source:
+          blank: {}
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 32Gi
+          storageClassName: longhorn-virtualization
+          volumeMode: Block
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kairos-kubevirt-evaluation
+        example.com/evaluation: kairos
+        example.com/evaluation-role: agent
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+            - bootOrder: 1
+              cdrom:
+                bus: sata
+              name: installer
+            - bootOrder: 2
+              disk:
+                bus: virtio
+              name: rootdisk
+            - cdrom:
+                bus: sata
+              name: cloudinitdisk
+          interfaces:
+            - masquerade: {}
+              name: default
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+        - name: default
+          pod: {}
+      terminationGracePeriodSeconds: 120
+      volumes:
+        - dataVolume:
+            name: kairos-agent-installer
+          name: installer
+        - dataVolume:
+            name: kairos-agent-root
+          name: rootdisk
+        - cloudInitNoCloud:
+            secretRef:
+              name: kairos-agent-user-data
+          name: cloudinitdisk

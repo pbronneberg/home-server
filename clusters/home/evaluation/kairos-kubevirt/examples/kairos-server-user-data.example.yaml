@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-kubevirt-evaluation
+    example.com/evaluation: kairos
+  name: kairos-server-user-data
+  namespace: vms
+stringData:
+  userdata: |
+    #cloud-config
+    hostname: kairos-server
+    install:
+      auto: true
+      device: /dev/vda
+      reboot: true
+    k3s:
+      enabled: true
+      args:
+        - server
+        - --node-name=kairos-server
+        - --token=${KAIROS_K3S_TOKEN}
+        - --write-kubeconfig-mode=0600
+    users:
+      - name: kairos
+        lock_passwd: true
+        groups:
+          - admin
+        ssh_authorized_keys:
+          - ${PUBLIC_SSH_KEY}
+type: Opaque
