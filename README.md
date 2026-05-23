@@ -50,8 +50,9 @@ make public-check
 
 The CI workflow in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 checks GitHub Actions syntax, YAML files, Helm dependencies, Helm linting, and
-Helm rendering. It also scans the current working tree with Gitleaks and checks
-for public-unsafe topology.
+Helm rendering. It also scans the current working tree with Gitleaks. Public
+redaction checks stay in `make public-check` because they are intended for
+repository publication readiness.
 
 Dependency maintenance is split between GitHub-native Dependabot and Renovate:
 

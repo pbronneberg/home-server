@@ -90,6 +90,3 @@ jobs:
 
       - name: Scan working tree for secrets
         run: make scan-secrets
-
-      - name: Check public redactions
-        run: make check-public-redactions
