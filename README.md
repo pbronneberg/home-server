@@ -104,6 +104,7 @@ them current:
 * `flux`
 * `kustomize`
 * `virtctl`
+* `kubectl virt`
 * `yamllint`
 * `actionlint`
 * `gitleaks`
