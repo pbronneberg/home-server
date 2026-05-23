@@ -32,6 +32,10 @@ need a manual `helm repo add` first. It also builds the Flux/Kustomize cluster
 entrypoints under `clusters/`, `private/flux/`, and application paths
 referenced by Flux.
 
+It also fails if the generated Flux controller manifests regress to the default
+`svc.cluster.local` service suffix instead of the K3s cluster domain
+`svc.home-server.bronneberg.local`.
+
 To check only the Flux and Kustomize cluster overlays, run:
 
 ```bash

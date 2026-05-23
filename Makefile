@@ -24,7 +24,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check
 
 help:
 	@printf '%s\n' \
@@ -56,7 +56,7 @@ help:
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
 		'  check-history-redactions Check Git history for public unsafe topology.'
 
-ci: lint auth-policy-check helm-lint helm-template flux-build security-audit
+ci: lint auth-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -71,6 +71,9 @@ lint-actions:
 
 lint-yaml:
 	$(YAMLLINT) .
+
+flux-cluster-domain-check:
+	@bash scripts/check-flux-cluster-domain.sh
 
 flux-build:
 	@if [ -n "$(FLUX_KUSTOMIZATION_DIRS)" ]; then \
