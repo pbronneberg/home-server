@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 # renovate: datasource=github-releases depName=rhysd/actionlint extractVersion=^v(?<version>.*)$
 ARG ACTIONLINT_VERSION=1.7.12
 # renovate: datasource=npm depName=@openai/codex
-ARG CODEX_VERSION=0.130.0
+ARG CODEX_VERSION=0.132.0
 # renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.*)$
 ARG FLUX_VERSION=2.8.7
 # renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.*)$
