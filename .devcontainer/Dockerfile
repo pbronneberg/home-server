@@ -8,6 +8,8 @@ ARG CODEX_VERSION=0.132.0
 ARG FLUX_VERSION=2.8.7
 # renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.*)$
 ARG GITLEAKS_VERSION=8.30.1
+# renovate: datasource=github-releases depName=cli/cli extractVersion=^v(?<version>.*)$
+ARG GH_VERSION=2.92.0
 # renovate: datasource=pypi depName=git-filter-repo
 ARG GIT_FILTER_REPO_VERSION=2.47.0
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.*)$
@@ -53,8 +55,8 @@ RUN python3 -m venv /opt/home-server-tools \
 
 RUN set -eux; \
     case "${TARGETARCH}" in \
-      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64" ;; \
-      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64" ;; \
+      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; gh_arch="amd64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64" ;; \
+      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; gh_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64" ;; \
       *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
     esac; \
     curl -fsSL "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_${flux_arch}.tar.gz" \
@@ -70,17 +72,22 @@ RUN set -eux; \
     curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_${gitleaks_arch}.tar.gz" \
       | tar -xz -C /tmp gitleaks; \
     mv /tmp/gitleaks /usr/local/bin/gitleaks; \
+    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${gh_arch}.tar.gz" \
+      | tar -xz -C /tmp "gh_${GH_VERSION}_linux_${gh_arch}/bin/gh"; \
+    mv "/tmp/gh_${GH_VERSION}_linux_${gh_arch}/bin/gh" /usr/local/bin/gh; \
+    rm -rf "/tmp/gh_${GH_VERSION}_linux_${gh_arch}"; \
     curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl"; \
     curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_${kustomize_arch}.tar.gz" \
       | tar -xz -C /tmp kustomize; \
     mv /tmp/kustomize /usr/local/bin/kustomize; \
     curl -fsSL -o /usr/local/bin/sops "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${sops_arch}"; \
-    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/kubectl /usr/local/bin/kustomize /usr/local/bin/sops
+    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/kustomize /usr/local/bin/sops
 
 RUN actionlint --version \
     && codex --version \
     && flux --version \
     && gitleaks version \
+    && gh --version \
     && helm version --short \
     && kubectl version --client \
     && kustomize version \
