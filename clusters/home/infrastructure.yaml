@@ -172,6 +172,40 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: infrastructure-virtualization-operators
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-longhorn-storageclasses
+  interval: 10m
+  path: ./clusters/home/infrastructure/virtualization-operators
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 10m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-virtualization
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-virtualization-operators
+  interval: 10m
+  path: ./clusters/home/infrastructure/virtualization
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 10m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: infrastructure-oauth2-proxy
   namespace: flux-system
 spec:

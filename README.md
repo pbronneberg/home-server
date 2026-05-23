@@ -70,6 +70,11 @@ Rancher's System Upgrade Controller, Ubuntu package updates through host
 `unattended-upgrades`, and Kubernetes-aware reboots through kured. The runbook
 is [docs/node-update-strategy.md](docs/node-update-strategy.md).
 
+KubeVirt is managed as cluster infrastructure for Linux, Windows, and staging
+K3s VMs. The version choice, Longhorn virtualization storage default, node
+requirements, and staging guidance are documented in
+[docs/kubevirt.md](docs/kubevirt.md).
+
 Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).
 Publication steps live in [docs/publication-runbook.md](docs/publication-runbook.md).
@@ -283,12 +288,42 @@ dependencies in
 * cert-manager and cert-manager issuers
 * Rancher System Upgrade Controller and K3s upgrade plans
 * kured node reboot orchestration
-* Longhorn and the retained Longhorn storage class
+* Longhorn and the Longhorn storage classes
 * kube-prometheus-stack monitoring
 * oauth2-proxy for opt-in GitHub-backed ingress authentication
 * Traefik middlewares used by existing ingresses
 * Home Assistant, Bronneberg, Photobooth, My English Playground, TLS proxy, and
   Longhorn admin workload releases
+
+### Longhorn data disk preparation
+
+Longhorn standard storage uses the host-mounted data disk at `/data/longhorn`.
+Prepare that directory on the node before adding or tagging the disk in
+Longhorn:
+
+```bash
+findmnt /data
+df -hT /data
+mountpoint /data
+sudo mkdir -p /data/longhorn
+sudo chown root:root /data/longhorn
+sudo chmod 700 /data/longhorn
+sudo touch /data/longhorn/.longhorn-write-test
+sudo rm /data/longhorn/.longhorn-write-test
+findmnt -T /data/longhorn
+```
+
+In Longhorn, tag `/data/longhorn` with `longhorn-data`. Keep the existing
+OS-disk Longhorn path in place and tag it `longhorn-osdisk` so existing volumes
+remain available and an explicit OS-disk StorageClass is available when needed.
+Do not delete PVCs, PVs, Longhorn volumes, or Longhorn disks as part of this
+change.
+
+StorageClass parameters are immutable in Kubernetes. During a maintenance
+window, pause new PVC creation, delete only the `longhorn` and
+`longhorn-retain` StorageClass objects, and let Flux recreate them with the
+same names. Existing PVs/PVCs are not deleted by removing those StorageClass
+objects, but new PVC provisioning should wait until Flux has recreated them.
 
 ### GitHub-backed ingress authentication
 

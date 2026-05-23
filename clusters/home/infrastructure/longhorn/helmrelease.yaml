@@ -23,3 +23,11 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  values:
+    defaultSettings:
+      defaultDataPath: /data/longhorn
+    persistence:
+      defaultClassReplicaCount: 2
+      defaultDiskSelector:
+        enable: true
+        selector: longhorn-data

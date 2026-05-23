@@ -3,11 +3,56 @@ kind: StorageClass
 metadata:
   name: longhorn-retain
 parameters:
+  diskSelector: longhorn-data
   fromBackup: ""
   numberOfReplicas: "2"
   staleReplicaTimeout: "2880"
   recurringJobs: '[{"name":"snap", "task":"snapshot", "cron":"*/30 * * * *", "retain":10},
                    {"name":"backup", "task":"backup", "cron":"0 * * * *", "retain":20}]'
+provisioner: driver.longhorn.io
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-single
+parameters:
+  diskSelector: longhorn-data
+  fromBackup: ""
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+provisioner: driver.longhorn.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-retain-single
+parameters:
+  diskSelector: longhorn-data
+  fromBackup: ""
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+  recurringJobs: '[{"name":"snap", "task":"snapshot", "cron":"*/30 * * * *", "retain":10},
+                   {"name":"backup", "task":"backup", "cron":"0 * * * *", "retain":20}]'
+provisioner: driver.longhorn.io
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-osdisk
+parameters:
+  diskSelector: longhorn-osdisk
+  fromBackup: ""
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
 provisioner: driver.longhorn.io
 reclaimPolicy: Retain
 volumeBindingMode: Immediate

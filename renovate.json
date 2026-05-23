@@ -71,6 +71,17 @@
     },
     {
       "customType": "regex",
+      "description": "Update KubeVirt release manifests",
+      "managerFilePatterns": [
+        "/^clusters\\/home\\/infrastructure\\/virtualization-operators\\/kustomization\\.yaml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\s+\\s- https:\\/\\/github\\.com\\/\\S+\\/releases\\/download\\/v(?<currentValue>[^/]+)\\/"
+      ],
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
       "description": "Update Rancher System Upgrade Controller release assets",
       "managerFilePatterns": [
         "/^clusters\\/home\\/infrastructure\\/system-upgrade-controller\\/kustomization\\.yaml$/"
@@ -153,6 +164,26 @@
         "infrastructure"
       ],
       "automerge": false
+    },
+    {
+      "description": "Keep KubeVirt and CDI updates reviewable before Flux reconciles them",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "kubevirt/kubevirt",
+        "kubevirt/containerized-data-importer"
+      ],
+      "matchFileNames": [
+        "clusters/home/infrastructure/virtualization-operators/kustomization.yaml"
+      ],
+      "addLabels": [
+        "cluster",
+        "infrastructure",
+        "virtualization"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
     },
     {
       "description": "Ignore removed Bitnami Shell image from disabled legacy WordPress volume permissions",

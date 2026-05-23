@@ -15,7 +15,7 @@ Flux reconciles the cluster entrypoint under `clusters/home`.
 | cert-manager | `clusters/home/infrastructure/cert-manager` | Installs CRDs through the Flux `HelmRelease`. |
 | cert-manager issuers | `clusters/home/infrastructure/cert-manager-issuers` | Uses public-safe example contact values in committed files. |
 | Longhorn | `clusters/home/infrastructure/longhorn` | Preserves the `longhorn` release in `longhorn-system`. |
-| Longhorn storage class | `clusters/home/infrastructure/longhorn-storageclasses` | Preserves `longhorn-retain`. |
+| Longhorn storage classes | `clusters/home/infrastructure/longhorn-storageclasses` | Preserves retained classes and adds data-disk, single-replica, and OS-disk choices. |
 | Monitoring | `clusters/home/infrastructure/monitoring` | Installs `kube-prometheus-stack` as release `prometheus-stack` in `monitoring`. |
 | Traefik middlewares | `clusters/home/infrastructure/traefik-middlewares` | Preserves `redirect-https` and `basic-auth` middleware names. |
 | Workloads | `clusters/home/workloads.yaml` | Reconciles TLS proxies and Longhorn admin after their dependencies are ready. |
@@ -30,7 +30,7 @@ Flux reconciles the cluster entrypoint under `clusters/home`.
 4. cert-manager
 5. cert-manager issuers
 6. Longhorn
-7. retained Longhorn storage class
+7. Longhorn storage classes
 8. Traefik middlewares
 9. monitoring
 

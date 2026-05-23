@@ -58,8 +58,12 @@ make security-audit
 - The current storage layout is not migrated by this hardening pass.
 - Treat `local-path` PVCs as node-local data until deliberately moved or backed
   up.
-- Multiple default StorageClasses should be resolved in a storage-focused PR so
-  new PVC placement is predictable.
+- Longhorn standard storage is `/data/longhorn` with the `longhorn-data` disk
+  tag. Existing OS-disk volumes should stay in place unless a separate
+  backup-backed migration is planned.
+- StorageClass parameter changes require deleting and recreating only the
+  StorageClass objects during a maintenance window; do not delete PVCs, PVs,
+  Longhorn volumes, or Longhorn disks.
 - Watch image filesystem pressure during upgrades and after large image churn.
 - Keep Longhorn backup target health and restore drills on the recovery backlog;
   do not rely on snapshots as the only copy of important data.
