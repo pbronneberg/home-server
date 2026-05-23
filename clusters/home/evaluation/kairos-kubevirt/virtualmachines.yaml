@@ -43,7 +43,7 @@ spec:
             requests:
               storage: 32Gi
           storageClassName: longhorn-virtualization
-          volumeMode: Block
+          volumeMode: Filesystem
   template:
     metadata:
       labels:
@@ -134,7 +134,7 @@ spec:
             requests:
               storage: 32Gi
           storageClassName: longhorn-virtualization
-          volumeMode: Block
+          volumeMode: Filesystem
   template:
     metadata:
       labels:

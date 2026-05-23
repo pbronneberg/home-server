@@ -119,7 +119,9 @@ sudo k3s kubectl get nodes -o wide
 ```
 
 For agent rejoin testing, stop the agent, delete only its root DataVolume/PVC,
-let Flux recreate it, then start the agent again:
+let Flux recreate it, then start the agent again. The committed root disk
+DataVolumes use filesystem PVCs so CDI does not need block-device access while
+creating the blank disk image:
 
 ```bash
 virtctl -n vms stop kairos-agent
@@ -202,7 +204,9 @@ kubectl -n vms delete secret kairos-server-user-data kairos-agent-user-data
 
 Because `longhorn-virtualization` retains volumes, verify that no retained PVs
 or Longhorn volumes remain for the evaluation PVCs before considering cleanup
-complete.
+complete. If the earlier block-mode root DataVolumes were created, delete the
+failed `kairos-*-root` DataVolumes and their `prime-*` PVCs before reconciling
+this fixed manifest.
 
 ## Pilot Log
 
@@ -215,8 +219,8 @@ Current status as of 2026-05-23:
 - KubeVirt phase: `Deployed`.
 - CDI phase: `Deployed`.
 - `vms` namespace had no `vm`, `vmi`, `dv`, or `pvc` resources.
-- Node `deepthought` reported `devices.kubevirt.io/kvm: 1k`, `cpu: 6`, and
-  `memory: 65712296Ki`.
+- At least one node reported allocatable KVM; node name and capacity are
+  intentionally omitted from committed notes.
 - No production node was migrated and no evaluation VM was created during this
   read-only preflight.
 
