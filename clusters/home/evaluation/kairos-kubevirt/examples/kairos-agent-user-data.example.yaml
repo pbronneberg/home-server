@@ -14,12 +14,11 @@ stringData:
       auto: true
       device: /dev/vda
       reboot: true
-    k3s:
+    k3s-agent:
       enabled: true
       args:
-        - agent
         - --node-name=kairos-agent
-        - --server=https://kairos-k3s-api.vms.svc:6443
+        - --server=https://kairos-k3s-api.vms.svc.cluster.local:6443
         - --token=${KAIROS_K3S_TOKEN}
     users:
       - name: kairos
@@ -27,5 +26,5 @@ stringData:
         groups:
           - admin
         ssh_authorized_keys:
-          - ${PUBLIC_SSH_KEY}
+          - github:${GITHUB_USERNAME}
 type: Opaque

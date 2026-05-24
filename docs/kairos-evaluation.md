@@ -15,7 +15,7 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 - Target namespace: `vms`
 - Resource label: `home-server.dev/evaluation=kairos`
 - VMs: `kairos-server` and `kairos-agent`
-- Nested K3s API Service: `kairos-k3s-api.vms.svc:6443`
+- Nested K3s API Service: `kairos-k3s-api.vms.svc.cluster.local:6443`
 - StorageClass: `longhorn-virtualization`
 - Kairos artifact:
   `kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso`
@@ -61,8 +61,12 @@ cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-server-user-data.exa
 cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-agent-user-data.example.yaml /tmp/kairos-agent-user-data.yaml
 ```
 
-Replace `${KAIROS_K3S_TOKEN}` with a temporary token and `${PUBLIC_SSH_KEY}`
-with a public SSH key. Keep the rendered files outside the repository.
+Replace `${KAIROS_K3S_TOKEN}` with a temporary token and `${GITHUB_USERNAME}`
+with the GitHub account whose public SSH keys Kairos should import at provisioning
+time, for example `github:example-user`. Keep the rendered files outside the
+repository. Clean installs need outbound HTTPS access to GitHub for SSH bootstrap;
+installed nodes keep their previously rendered authorized keys if that path is
+unavailable later.
 
 ## Preflight
 

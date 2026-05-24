@@ -17,7 +17,6 @@ stringData:
     k3s:
       enabled: true
       args:
-        - server
         - --node-name=kairos-server
         - --token=${KAIROS_K3S_TOKEN}
         - --write-kubeconfig-mode=0600
@@ -27,5 +26,5 @@ stringData:
         groups:
           - admin
         ssh_authorized_keys:
-          - ${PUBLIC_SSH_KEY}
+          - github:${GITHUB_USERNAME}
 type: Opaque

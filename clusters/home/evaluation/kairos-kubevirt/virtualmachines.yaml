@@ -68,8 +68,15 @@ spec:
                 bus: sata
               name: cloudinitdisk
           interfaces:
-            - masquerade: {}
+            - bridge: {}
               name: default
+              ports:
+                - name: ssh
+                  port: 22
+                  protocol: TCP
+                - name: k3s-api
+                  port: 6443
+                  protocol: TCP
         resources:
           requests:
             memory: 4Gi
@@ -159,7 +166,7 @@ spec:
                 bus: sata
               name: cloudinitdisk
           interfaces:
-            - masquerade: {}
+            - bridge: {}
               name: default
         resources:
           requests:

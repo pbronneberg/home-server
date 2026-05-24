@@ -2,6 +2,9 @@
 .idea/
 node_modules/
 
+# Local scratch artifacts, including extracted kubeconfigs and test keys.
+.local/
+
 # Local personal exports/configs
 .public-denylist.local
 .public-replacements.local

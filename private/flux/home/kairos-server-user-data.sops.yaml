@@ -7,20 +7,20 @@ metadata:
   name: kairos-server-user-data
   namespace: vms
 stringData:
-  userdata: ENC[AES256_GCM,data:wsTIoBUzf4nsN/7KGY43Ed6/WN+rjaU3/JgicPAogLfF1cs3+AZ2cSc7Pq1wN/jgw4f5SLX4NCASKsR0R5CEKasuftH++R7Ck+kJLAqNll0Zm90xY4qUNT1eArBD7lCu72NRup9iJvIk8IGaEOPKgxMJqvpodAia9eC1N9d/PdpT15lzBkUx55Yjn40ne1Pyn5nJ0tjXC7Vg7BgNBHaRB4NSPUrexPY+LXx9qPKvOdGdG4VeLiBJw1GFv0P1NGwiEDtpwOXmRgQ6XptQzTtn3hPDQCxxgarFgcz9Y7EKKJ07FGh4OKZde1We2KDfrVwAKRlZLGJ3f+ErWLosQnOZQaGOa1QFZLfZTzgCgp39xnSvAXPD+1JcnBp1zCUSR/mH5l5b6ssZq1tYHl2Ihsm6VNKLtCqGz3vqhzky9DMOWR6UfSRzJIPM1vD919EqYkJ+wVZAudva43wL60cMDsk/pPMaRchwxK8kIk70d1BtnSht7vAdBNmYY7XkQd6nOPr6xHGCXWQqi+rlEgJfHDV/HvmUmWfqmjbgUmPgZMAZOTLSgDfLKP76lZ+wv5maB6opxrYkHN0CIF+01m7K8vAPNPLy374JRsI9ysF30JGnWnV/DbEyJwbs/uWQ5AKd2ynfF114BgGgkw==,iv:qPuc6q3mFjN1h3qNzCiD0e3LDzDsmJYWVpmiJk0vaiY=,tag:tTwJSEalsld6VTI7BO4n8w==,type:str]
+  userdata: ENC[AES256_GCM,data:Foo9RaOHn5145RmQRvvsEFqoIFfsdcZ0+G7Ob9pDUmCnlsRT7Ji4Vo7mhZhBgCFaM9+AXEA648WIbM2rKHCR6uwR9hssxP0iEXmBdA0gigsMlB5wCVLEMdZ8rst5EE5+mD5juK4NSOFB/QL+RKhMOIJgCbxWggMU4yEoCYAb5vdhQnQlyOkv5fzcARLPBtmQ1baijM4QZx+a5jF7j0cM8g39fxi9lixs0pyWlKKD4jUZb/BKCKqLhZ7iUR5MWC5EQd7HyUMq/evCdLN8pyoOKUIQz6NEVOIS9c4eXIMcK4U86vXGlaL2EeL2kAr9P5ue9t949Agp7pa6U4cMvwVMlJsmjIQyFEtpQzorclRnLKA6/T8ei3odBO0KP2lcDVCiPjBxzMaTV+TftnEsoUXV1Ptar9dyUrKmBpTaHeSnIgQ0EiuXhhbi8TuajZFtYhMTJtOuMQ0lHjuRjiqm7mNVujV2VScyohj6UjSpaF4nodY4p4jQJAOAC6yZgK+mfpFlAiEc5sdl+KmK,iv:zt97e3EQT9QewNNHH7HEox8+g6Li5KOUp74BHadXW/I=,tag:7gW5xp/DcjXiymsZmXUhqQ==,type:str]
 type: Opaque
 sops:
   age:
     - enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBuTkZvNzVMVGhrQjNvY1NC
-        SW9BdHFyQWk2YlhHNWQ0cS9HNTZJWnNRUDJVCk5jQlBtL1hkUGNQSnlRcmZpeE1O
-        VWdxcVI0SjJLdjJYSUVaMUlwRzlHdEEKLS0tIDhVUFdoUHRpNGxqUnpMV08yT2tl
-        azFiZ3lLSjlIT2pEaExpMXcwVmFma0UKSTXG+j8Q85Cn7/MOWyeXoNe8i3t8gxvN
-        AJ54RJsNhaW6N2Ujdst1yqoqJ0W+Xxe+Mqxqp600K/oseM8GY3IEuQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjZTRoZ25Gazh3ZzdMUDBF
+        NWNVb0FMc1NBd2IxRmlPWktMWUx4eGpqYXhRCjBOTS9yZTl6ZUh4WEtpb25raElq
+        S0Z2WmxpNlF2QTNYdXNVdDVSKzhRblEKLS0tIDc3emlTUE5jc3VGZlV1dDlVRkFw
+        cDFDL2dtN2Y0VnhIL3FyMFdEWC8wRVUKycvQJR9NnSpIv2Dj5KalDBgR70Bzrxov
+        fM9lGVjd3ZJfFlV6/rUrx9AatJ6/CfWf5Dq5F4nMa4znay4lDGvm6w==
         -----END AGE ENCRYPTED FILE-----
       recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
   encrypted_regex: ^(data|stringData)$
-  lastmodified: "2026-05-23T20:10:43Z"
-  mac: ENC[AES256_GCM,data:GqmArHkpU8i6rez9pyGGjogOiojPghnLRbNAzmPykearWb1At17UiNBF97wFZEIKmY2BNbHYezU7U+Sl6yOQ60O4phorUXrzSBtooc+qCDtzA8AXjYjQXyWHVIzaaZO0nFDJ6Eitc8F2GvTAbPT7nCWusAY09XXtXuQ/dAi/Hn8=,iv:McwhtfCpz9+de6AaBzMQ7xHepM+bg2qk/nnAIZbsiQc=,tag:4V/vCwkGwPDfI82bFw8mUA==,type:str]
+  lastmodified: "2026-05-24T09:27:46Z"
+  mac: ENC[AES256_GCM,data:4JINZKeJiNQa5VSNVsqTL/o+1wwsK8ONBAhPfA5YA7Z/JgVrD2IjD3FZBUolKsxYWu5X0TyLkapgGYostvkNHuxRViGiqWxMSwHRs48YZmVjz4KbaDZQgqh248GGVNus2uoHbEs3/7VrWRnc0u715hVI5zgbBalYYKa0MBBfOEI=,iv:zhc/wm1YY8CALsKYLUihgqNaI6u1U/wfSL2ew877VAE=,tag:9sINuS9BVqsXAYoCk16ing==,type:str]
   version: 3.13.1
