@@ -65,9 +65,9 @@ cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-agent-user-data.exam
 Replace `${KAIROS_K3S_TOKEN}` with a temporary token and `${GITHUB_USERNAME}`
 with the GitHub account whose public SSH keys Kairos should import at provisioning
 time, for example `example-user`. The user-data keeps the standard
-`users.ssh_authorized_keys` form, an explicit Kairos `network` stage
-`authorized_keys` entry, and a retrying systemd oneshot that fetches
-`https://github.com/${GITHUB_USERNAME}.keys` after `network-online.target`.
+`users.ssh_authorized_keys` form and an explicit Kairos `network` stage command
+that fetches `https://github.com/${GITHUB_USERNAME}.keys` before enabling
+`sshd.service`.
 Keep the rendered files outside the repository. Clean installs need outbound
 HTTPS access to GitHub for SSH bootstrap; installed nodes keep their previously
 rendered authorized keys if that path is unavailable later.
@@ -353,9 +353,9 @@ Current status as of 2026-05-24:
   non-overlapping private-overlay pod and Service ranges kept the KubeVirt
   bridge path reachable after reboot.
 - The live cloud-init Secret uses GitHub public SSH key import with
-  `github:<operator>`, an explicit Kairos `network` stage, and a retrying
-  `kairos-github-ssh-keys.service` oneshot; no SSH public key material is
-  copied into the user-data template.
+  `github:<operator>` plus an explicit Kairos `network` stage command that
+  fetches the operator's GitHub keys before enabling `sshd.service`; no SSH
+  public key material is copied into the user-data template.
 - OIDC has been added for the next clean server install through the shared Dex
   infrastructure service that reuses the existing GitHub OAuth app credentials
   from oauth2-proxy.
