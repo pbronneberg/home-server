@@ -22,12 +22,6 @@ stringData:
         - "--cluster-cidr=198.18.0.0/16"
         - "--service-cidr=198.19.0.0/16"
         - "--cluster-dns=198.19.0.10"
-        - "--kube-apiserver-arg=oidc-issuer-url=${DEX_ISSUER_URL}"
-        - "--kube-apiserver-arg=oidc-client-id=kairos-kubernetes"
-        - "--kube-apiserver-arg=oidc-username-claim=preferred_username"
-        - "--kube-apiserver-arg=oidc-username-prefix=github:"
-        - "--kube-apiserver-arg=oidc-groups-claim=groups"
-        - "--kube-apiserver-arg=oidc-groups-prefix=github:"
         - "--write-kubeconfig-mode=0600"
     users:
       - name: kairos
