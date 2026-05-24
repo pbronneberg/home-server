@@ -102,6 +102,7 @@ them current:
 * `helm`
 * `kubectl`
 * `flux`
+* `cosign`
 * `kustomize`
 * `virtctl`
 * `kubectl virt`
@@ -139,6 +140,7 @@ equivalent versions on your workstation:
 ```bash
 python3 -m pip install --user yamllint==1.38.0
 go install github.com/fluxcd/flux2/v2/cmd/flux@v2.8.6
+go install github.com/sigstore/cosign/v3/cmd/cosign@v3.0.2
 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 go install github.com/zricethezav/gitleaks/v8@v8.30.1
 go install github.com/cli/cli/v2/cmd/gh@v2.92.0

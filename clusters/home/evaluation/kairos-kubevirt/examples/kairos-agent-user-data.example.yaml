@@ -21,6 +21,8 @@ stringData:
         K3S_URL: "https://kairos-k3s-api.vms.svc.cluster.local:6443"
       args:
         - "--node-name=kairos-agent"
+        - "--kubelet-arg=anonymous-auth=false"
+        - "--kubelet-arg=read-only-port=0"
     users:
       - name: kairos
         lock_passwd: true

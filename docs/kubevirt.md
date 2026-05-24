@@ -20,18 +20,37 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 - Kairos artifact:
   `kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso`
 
+This pilot uses the standard Kairos ISO path and does not enable Kairos Trusted
+Boot by default. Trusted Boot requires signed UKI media plus Secure Boot and TPM
+support in the VM firmware. Keep that as an explicit opt-in track and use
+the [trusted boot VM options example][trusted-boot-vm-options-example] only when
+you are testing Trusted Boot media.
+
 The selected artifact keeps the pilot on the K3s `v1.35` minor used by the
 home-cluster lifecycle at the time this evaluation path was added. Verify the
 artifact before use:
 
 ```bash
-curl -LO https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
-curl -LO https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso.sha256
-sha256sum -c kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso.sha256
+VERSION=v4.0.3
+ISO=kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
+BASE=https://github.com/kairos-io/kairos/releases/download/${VERSION}
+
+curl -fLO "${BASE}/${ISO}"
+curl -fLO "${BASE}/${ISO}.sha256"
+curl -fLO "${BASE}/${ISO}.sha256.pem"
+curl -fLO "${BASE}/${ISO}.sha256.sig"
+
+cosign verify-blob \
+  --cert "${ISO}.sha256.pem" \
+  --signature "${ISO}.sha256.sig" \
+  --certificate-identity "https://github.com/kairos-io/kairos/.github/workflows/reusable-release.yaml@refs/tags/${VERSION}" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  "${ISO}.sha256"
+
+sha256sum -c "${ISO}.sha256"
 ```
 
-The upstream Kairos release also publishes signature material for the checksum
-file. Use `cosign verify-blob` when validating install media outside CDI.
+If either verification fails, do not resume the evaluation Kustomization.
 
 ## Public And Private Boundaries
 
@@ -78,6 +97,11 @@ The nested K3s server also pins public-safe example ranges
 `--cluster-dns=198.19.0.10`. The private SOPS overlay may use different
 non-overlapping ranges chosen for the live host cluster. Keep those live
 ranges encrypted if they reveal local topology.
+
+The nested pilot intentionally keeps K3s' bundled `traefik` and `servicelb`
+components enabled. This evaluation doubles as the recipe for future node
+upgrades, so those defaults should stay visible unless a later production plan
+explicitly disables them.
 
 The nested K3s server also enables OIDC authentication against the shared Dex
 service in `clusters/home/infrastructure/dex`. GitHub OAuth is not itself
@@ -378,3 +402,5 @@ Still to capture after this baseline:
 - Agent wipe/rejoin result.
 - Upgrade and rollback result.
 - Management-path unavailable behavior.
+
+[trusted-boot-vm-options-example]: ../clusters/home/evaluation/kairos-kubevirt/examples/trusted-boot-vm-options.example.yaml

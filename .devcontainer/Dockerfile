@@ -4,6 +4,8 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 ARG ACTIONLINT_VERSION=1.7.12
 # renovate: datasource=npm depName=@openai/codex
 ARG CODEX_VERSION=0.132.0
+# renovate: datasource=github-releases depName=sigstore/cosign extractVersion=^v(?<version>.*)$
+ARG COSIGN_VERSION=3.0.2
 # renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.*)$
 ARG FLUX_VERSION=2.8.7
 # renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.*)$
@@ -60,13 +62,14 @@ RUN python3 -m venv /opt/home-server-tools \
 
 RUN set -eux; \
     case "${TARGETARCH}" in \
-      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; gh_arch="amd64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64"; kubelogin_arch="amd64" ;; \
-      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; gh_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64"; kubelogin_arch="arm64" ;; \
+      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; gh_arch="amd64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64"; kubelogin_arch="amd64"; cosign_arch="amd64" ;; \
+      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; gh_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64"; kubelogin_arch="arm64"; cosign_arch="arm64" ;; \
       *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
     esac; \
     curl -fsSL "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_${flux_arch}.tar.gz" \
       | tar -xz -C /tmp flux; \
     mv /tmp/flux /usr/local/bin/flux; \
+    curl -fsSL -o /usr/local/bin/cosign "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-${cosign_arch}"; \
     curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-${helm_arch}.tar.gz" \
       | tar -xz -C /tmp; \
     mv "/tmp/linux-${helm_arch}/helm" /usr/local/bin/helm; \
@@ -93,10 +96,11 @@ RUN set -eux; \
     ln -s /usr/local/bin/kubectl-oidc_login /usr/local/bin/kubelogin; \
     rm -rf /tmp/kubelogin /tmp/kubelogin.zip; \
     curl -fsSL -o /usr/local/bin/sops "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${sops_arch}"; \
-    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/virtctl /usr/local/bin/kubectl-virt /usr/local/bin/kubectl-oidc_login /usr/local/bin/kustomize /usr/local/bin/sops
+    chmod +x /usr/local/bin/flux /usr/local/bin/cosign /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/virtctl /usr/local/bin/kubectl-virt /usr/local/bin/kubectl-oidc_login /usr/local/bin/kustomize /usr/local/bin/sops
 
 RUN actionlint --version \
     && codex --version \
+    && cosign version --json \
     && flux --version \
     && gitleaks version \
     && gh --version \
