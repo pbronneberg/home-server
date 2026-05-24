@@ -19,6 +19,9 @@ stringData:
       args:
         - --node-name=kairos-server
         - --token=${KAIROS_K3S_TOKEN}
+        - --cluster-cidr=198.18.0.0/16
+        - --service-cidr=198.19.0.0/16
+        - --cluster-dns=198.19.0.10
         - --write-kubeconfig-mode=0600
     users:
       - name: kairos

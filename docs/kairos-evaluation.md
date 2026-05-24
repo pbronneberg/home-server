@@ -68,6 +68,12 @@ repository. Clean installs need outbound HTTPS access to GitHub for SSH bootstra
 installed nodes keep their previously rendered authorized keys if that path is
 unavailable later.
 
+The nested K3s server also pins public-safe example ranges
+`--cluster-cidr=198.18.0.0/16`, `--service-cidr=198.19.0.0/16`, and
+`--cluster-dns=198.19.0.10`. The private SOPS overlay may use different
+non-overlapping ranges chosen for the live host cluster. Keep those live
+ranges encrypted if they reveal local topology.
+
 ## Preflight
 
 Run these checks from the devcontainer or another trusted workstation with the
@@ -275,6 +281,28 @@ Sanitized observations still to capture during the live pilot:
 - Install media checksum result.
 - First boot and post-install boot result.
 - Nested `kubectl get nodes` output with private addresses redacted if needed.
+- Agent wipe/rejoin result.
+- Upgrade and rollback result.
+- Management-path unavailable behavior.
+
+Current status as of 2026-05-24:
+
+- Clean root DataVolumes for `kairos-server` and `kairos-agent` imported
+  successfully after removing retained Longhorn/CDI evaluation volumes from
+  earlier failed attempts.
+- The server initially became unreachable after K3s CNI startup when nested
+  K3s used the default pod and Service ranges. Pinning the nested cluster to
+  non-overlapping private-overlay pod and Service ranges kept the KubeVirt
+  bridge path reachable after reboot.
+- The live cloud-init Secret uses GitHub public SSH key import with
+  `github:<operator>`; no SSH public key material is copied into the user-data
+  template.
+- The nested API answered `/ping` after the post-CNI settle period.
+- `kairos-server` and `kairos-agent` both appeared in the nested API with
+  `Ready=True`; private node addresses are intentionally omitted.
+
+Still to capture after this baseline:
+
 - Agent wipe/rejoin result.
 - Upgrade and rollback result.
 - Management-path unavailable behavior.
