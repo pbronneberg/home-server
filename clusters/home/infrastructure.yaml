@@ -276,4 +276,4 @@ spec:
     name: flux-system
   suspend: true
   timeout: 10m
-  wait: true
+  wait: false

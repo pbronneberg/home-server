@@ -5,9 +5,10 @@ main home cluster on the critical path. It uses the existing KubeVirt and CDI
 installation to run disposable VMs in the `vms` namespace.
 
 The Flux Kustomization `evaluation-kairos-kubevirt` is committed suspended by
-default. Resuming it is a live-cluster action that imports VM media, creates
-Longhorn volumes, and can start disposable VMs only after local-only Secrets are
-created.
+default and does not wait for VM readiness, because the pilot VMs are
+intentionally created halted. Resuming it is a live-cluster action that imports
+VM media and creates Longhorn volumes; starting disposable VMs remains an
+explicit `virtctl start` step after the cloud-init Secrets exist.
 
 ## Pilot Scope
 
@@ -84,13 +85,30 @@ available.
 ## First Boot And Install
 
 Reconcile the private SOPS overlay so the VM cloud-init Secrets exist before
-starting either VM, then resume the suspended Flux Kustomization:
+starting either VM:
 
 ```bash
 flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
 kubectl -n vms get secret kairos-server-user-data kairos-agent-user-data
-flux resume kustomization evaluation-kairos-kubevirt -n flux-system
-flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system --with-source
+```
+
+For a persistent GitOps pilot, change `evaluation-kairos-kubevirt` to
+`suspend: false` in `clusters/home/infrastructure.yaml`, commit and push that
+change, then reconcile the root and evaluation Kustomizations:
+
+```bash
+flux reconcile kustomization flux-system -n flux-system --with-source
+flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+```
+
+For a temporary live pilot without committing `suspend: false`, patch the child
+Kustomization after the root `flux-system` Kustomization has reconciled. The
+root Kustomization manages this child object and can restore the committed
+`suspend: true` value on its next run:
+
+```bash
+kubectl -n flux-system patch kustomization evaluation-kairos-kubevirt --type=merge -p '{"spec":{"suspend":false,"wait":false}}'
+flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
 ```
 
 If you are using the ad hoc local Secret path instead of Flux, apply the
