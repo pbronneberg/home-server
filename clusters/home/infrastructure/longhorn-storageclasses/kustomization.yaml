@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - storageclass-longhorn.yaml
   - storageclass-longhorn-virtualization.yaml
+  - storageclass-longhorn-virtualization-test.yaml

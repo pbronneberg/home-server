@@ -1,0 +1,14 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-virtualization-test
+parameters:
+  diskSelector: longhorn-data
+  fromBackup: ""
+  migratable: "true"
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+provisioner: driver.longhorn.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true

@@ -1,58 +1,369 @@
-# KubeVirt
+# Kairos Evaluation With KubeVirt
 
-KubeVirt is installed through Flux from pinned upstream release manifests:
+This runbook evaluates Kairos as an immutable K3s node OS without placing the
+main home cluster on the critical path. It uses the existing KubeVirt and CDI
+installation to run disposable VMs in the `vms` namespace.
 
-- KubeVirt `v1.8.2`
-- Containerized Data Importer (CDI) `v1.65.0`
+The Flux Kustomization `evaluation-kairos-kubevirt` is committed suspended by
+default and does not wait for VM readiness, because the pilot VMs are
+intentionally created halted. Resuming it is a live-cluster action that imports
+VM media and creates Longhorn volumes; starting disposable VMs remains an
+explicit `virtctl start` step after the cloud-init Secrets exist.
 
-KubeVirt `v1.8` is built for Kubernetes `v1.35` and supports Kubernetes
-`v1.33` through `v1.35`. This matches the K3s stable channel used by the
-System Upgrade Controller plans at the time this was added.
+## Pilot Scope
 
-## Storage
+- Target namespace: `vms`
+- Resource label: `home-server.dev/evaluation=kairos`
+- VMs: `kairos-server` and `kairos-agent`
+- Nested K3s API Service: `kairos-k3s-api.vms.svc.cluster.local:6443`
+- StorageClass: `longhorn-virtualization-test`
+- Kairos artifact:
+  `kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso`
 
-VM disk imports use Longhorn by default through the
-`longhorn-virtualization` StorageClass. It is annotated with
-`storageclass.kubevirt.io/is-default-virt-class: "true"`, which makes it the
-default virtualization storage class without changing the Kubernetes-wide
-default StorageClass.
-
-The class sets `migratable: "true"` and selects the `longhorn-data` disk tag so
-VM DataVolumes use the standard `/data/longhorn` Longhorn disk. CDI's Longhorn
-storage profile defaults those DataVolumes to `ReadWriteMany` block volumes.
-That is the Longhorn mode intended for KubeVirt live migration and future
-multi-node maintenance.
-
-Use the `vms` namespace for guest workloads. It is privileged because KubeVirt
-launcher pods need access to host virtualization devices such as `/dev/kvm`.
-
-## Node Requirements
-
-Every physical node expected to run VMs needs hardware virtualization enabled
-in firmware and exposed to Linux:
+The selected artifact keeps the pilot on the K3s `v1.35` minor used by the
+home-cluster lifecycle at the time this evaluation path was added. Verify the
+artifact before use:
 
 ```bash
-ls -l /dev/kvm
+curl -LO https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
+curl -LO https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso.sha256
+sha256sum -c kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso.sha256
 ```
 
-KubeVirt can schedule VMs only onto nodes that expose KVM. New nodes do not
-need a repository change if they join the K3s cluster normally, run Linux, have
-compatible CPU virtualization enabled, and can attach Longhorn volumes.
+The upstream Kairos release also publishes signature material for the checksum
+file. Use `cosign verify-blob` when validating install media outside CDI.
 
-For live migration between physical nodes, keep CPU models reasonably
-compatible across the migration pool. If you later mix very different CPU
-generations, add node labels and VM node selectors so each VM family stays on
-compatible hosts.
+## Public And Private Boundaries
 
-## Staging K3s VMs
+Committed examples use placeholders only. Do not commit generated user-data,
+K3s tokens, kubeconfigs, SSH private keys, real hostnames, LAN IPs, or console
+logs that include private values.
 
-For a multi-VM K3s staging cluster, create the VMs in the `vms` namespace and
-use DataVolumes without an explicit `storageClassName` so they land on
-`longhorn-virtualization`.
+The home private overlay supplies the live pilot Secrets as SOPS-encrypted
+Kubernetes Secrets:
 
-The simplest networking model is KubeVirt's default pod network with masquerade
-interfaces and Kubernetes Services for the K3s API endpoint. If the guest K3s
-nodes need to look like first-class LAN machines, add Multus later and attach a
-bridge or macvlan network; that is intentionally not enabled by default here.
+- `private/flux/home/kairos-server-user-data.sops.yaml`
+- `private/flux/home/kairos-agent-user-data.sops.yaml`
+- `private/flux/home/dex-substitutions.sops.yaml`
 
-For Windows guests, use virtio storage and network drivers during installation.
+Rotate the embedded pilot K3s token for each evaluation run, and set the
+placeholder GitHub username before relying on SSH access:
+
+```bash
+make sops-edit SOPS_FILE=private/flux/home/kairos-server-user-data.sops.yaml
+make sops-edit SOPS_FILE=private/flux/home/kairos-agent-user-data.sops.yaml
+```
+
+For ad hoc testing outside Flux, create real pilot Secrets from the examples
+into ignored local files or apply them directly from a private shell session:
+
+```bash
+cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-server-user-data.example.yaml /tmp/kairos-server-user-data.yaml
+cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-agent-user-data.example.yaml /tmp/kairos-agent-user-data.yaml
+```
+
+Replace `${KAIROS_K3S_TOKEN}` with a temporary token and `${GITHUB_USERNAME}`
+with the GitHub account whose public SSH keys Kairos should import at provisioning
+time, for example `example-user`. The user-data keeps the standard
+`users.ssh_authorized_keys` form, an explicit Kairos `network` stage
+`authorized_keys` entry, and a retrying systemd oneshot that fetches
+`https://github.com/${GITHUB_USERNAME}.keys` after `network-online.target`.
+Keep the rendered files outside the repository. Clean installs need outbound
+HTTPS access to GitHub for SSH bootstrap; installed nodes keep their previously
+rendered authorized keys if that path is unavailable later.
+
+The nested K3s server also pins public-safe example ranges
+`--cluster-cidr=198.18.0.0/16`, `--service-cidr=198.19.0.0/16`, and
+`--cluster-dns=198.19.0.10`. The private SOPS overlay may use different
+non-overlapping ranges chosen for the live host cluster. Keep those live
+ranges encrypted if they reveal local topology.
+
+The nested K3s server also enables OIDC authentication against the shared Dex
+service in `clusters/home/infrastructure/dex`. GitHub OAuth is not itself
+an OIDC issuer for Kubernetes, so Dex re-exposes the existing GitHub OAuth app
+as OIDC under a callback subpath of the existing auth host. The public example
+issuer is `https://auth.home.example/oauth2/callback/dex`; the private
+Flux substitution Secret supplies the live auth host and issuer.
+
+The Dex bridge reads `client-id` and `client-secret` from the existing
+`auth/oauth2-proxy-private-values` Secret instead of copying GitHub OAuth
+credentials. Its GitHub redirect URI is the issuer plus `/callback`, for example
+`https://auth.home.example/oauth2/callback/dex/callback`. GitHub OAuth
+allows redirect URIs below the configured callback path, which lets the pilot
+reuse the OAuth app already used by the Traefik middleware when that app's
+registered callback is `https://auth.home.example/oauth2/callback`.
+
+Kairos grants pilot admin access to the OIDC username
+`github:${GITHUB_USERNAME}` through a bootstrap `ClusterRoleBinding`. Keep this
+binding limited to the disposable nested cluster; production clusters should use
+a narrower role and group-based authorization.
+
+## Preflight
+
+Run these checks from the devcontainer or another trusted workstation with the
+local kubeconfig:
+
+```bash
+kubectl -n kubevirt get kubevirt kubevirt
+kubectl -n cdi get cdi cdi
+kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.allocatable.devices\.kubevirt\.io/kvm}{"\t"}{.status.allocatable.cpu}{"\t"}{.status.allocatable.memory}{"\n"}{end}'
+kubectl -n vms get vm,vmi,dv,pvc
+kubectl -n auth get secret oauth2-proxy-private-values
+kubectl -n flux-system get secret dex-substitutions
+virtctl version --client
+kubectl oidc-login version
+kustomize build clusters/home/evaluation/kairos-kubevirt
+```
+
+Expected result: KubeVirt and CDI are deployed, at least one node advertises
+KVM, no existing `kairos-*` evaluation resources are present, `virtctl` and
+`kubectl oidc-login` are available, and the private OAuth/substitution Secrets
+exist.
+
+## First Boot And Install
+
+Reconcile the private SOPS overlay so the VM cloud-init Secrets exist, then
+reconcile shared Dex before starting either VM:
+
+```bash
+flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
+kubectl -n vms get secret kairos-server-user-data kairos-agent-user-data
+kubectl -n flux-system get secret dex-substitutions
+flux reconcile kustomization infrastructure-dex -n flux-system --with-source
+```
+
+For a persistent GitOps pilot, change `evaluation-kairos-kubevirt` to
+`suspend: false` in `clusters/home/infrastructure.yaml`, commit and push that
+change, then reconcile the root and evaluation Kustomizations:
+
+```bash
+flux reconcile kustomization flux-system -n flux-system --with-source
+flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+```
+
+For a temporary live pilot without committing `suspend: false`, patch the child
+Kustomization after the root `flux-system` Kustomization has reconciled. The
+root Kustomization manages this child object and can restore the committed
+`suspend: true` value on its next run:
+
+```bash
+kubectl -n flux-system patch kustomization evaluation-kairos-kubevirt --type=merge -p '{"spec":{"suspend":false,"wait":false}}'
+flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+```
+
+If you are using the ad hoc local Secret path instead of Flux, apply the
+rendered `/tmp/kairos-*-user-data.yaml` files before resuming the evaluation.
+
+If a VM was started first, the launcher pod will stay pending with
+`MountVolume.SetUp failed ... secret "kairos-*-user-data" not found`. Create the
+missing Secret, then stop and start the affected VM so KubeVirt creates a fresh
+launcher pod with the cloud-init disk mounted.
+
+Watch imports and VM state:
+
+```bash
+kubectl -n vms get dv,pvc,vm,vmi -l home-server.dev/evaluation=kairos -w
+```
+
+Start the server VM after the DataVolumes are ready:
+
+```bash
+virtctl -n vms start kairos-server
+virtctl -n vms console kairos-server
+```
+
+The manifests give the persistent root disk a higher boot priority than the
+installer media. On a blank disk, firmware falls through to the installer; after
+install, the VM should boot from `/dev/vda`. If it keeps returning to the
+installer, stop the VM and verify `rootdisk` has `bootOrder: 1` and `installer`
+has `bootOrder: 2`, or temporarily detach the installer media before continuing.
+
+Start the agent only after the server API is reachable:
+
+```bash
+virtctl -n vms start kairos-agent
+virtctl -n vms console kairos-agent
+```
+
+After the server API is reachable, confirm OIDC discovery through the public
+auth host. Use the live issuer URL from the private substitution Secret; the
+example below is public-safe:
+
+```bash
+curl -fsS https://auth.home.example/oauth2/callback/dex/.well-known/openid-configuration
+```
+
+For a disposable local connection, forward the Kairos API with `virtctl` and use
+an OIDC kubeconfig that does not contain nested admin client certificates. The
+pilot uses `--insecure-skip-tls-verify` only because the forwarded K3s API uses
+the nested cluster's private serving CA; replace this with a trusted API endpoint
+before carrying the pattern beyond evaluation.
+
+```bash
+virtctl -n vms port-forward vm/kairos-server 16443:6443
+
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-cluster kairos-pilot \
+  --server=https://127.0.0.1:16443 \
+  --insecure-skip-tls-verify=true
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github \
+  --exec-api-version=client.authentication.k8s.io/v1 \
+  --exec-command=kubectl \
+  --exec-arg=oidc-login \
+  --exec-arg=get-token \
+  --exec-arg=--oidc-issuer-url=https://auth.home.example/oauth2/callback/dex \
+  --exec-arg=--oidc-client-id=kairos-kubernetes \
+  --exec-arg=--oidc-extra-scope=groups
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-pilot \
+  --cluster=kairos-pilot \
+  --user=github
+kubectl --kubeconfig .local/kairos/oidc-kubeconfig --context kairos-pilot get nodes -o wide
+```
+
+## Reinstall And Rejoin
+
+Record current state before destructive testing:
+
+```bash
+kubectl -n vms get vm,dv,pvc -l home-server.dev/evaluation=kairos -o wide
+sudo k3s kubectl get nodes -o wide
+```
+
+For agent rejoin testing, stop the agent, delete only its root DataVolume/PVC,
+let Flux recreate it, then start the agent again. The committed root disk
+DataVolumes use filesystem PVCs so CDI does not need block-device access while
+creating the blank disk image:
+
+```bash
+virtctl -n vms stop kairos-agent
+kubectl -n vms delete dv kairos-agent-root
+flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+virtctl -n vms start kairos-agent
+```
+
+The agent should reinstall and rejoin the nested server using the same local
+token.
+
+## Upgrade And Rollback
+
+Snapshot before upgrade when the KubeVirt snapshot API is available:
+
+```bash
+kubectl -n vms apply -f - <<'EOF'
+apiVersion: snapshot.kubevirt.io/v1beta1
+kind: VirtualMachineSnapshot
+metadata:
+  labels:
+    home-server.dev/evaluation: kairos
+  name: kairos-server-before-upgrade
+spec:
+  source:
+    apiGroup: kubevirt.io
+    kind: VirtualMachine
+    name: kairos-server
+EOF
+```
+
+Run the Kairos upgrade flow from inside the guest. For this pilot, upgrade the
+active system first and only upgrade recovery after the new active system is
+healthy:
+
+```bash
+sudo kairos-agent upgrade --source oci:quay.io/kairos/hadron:v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+sudo reboot
+```
+
+Confirm the VM boots, K3s is healthy, and the previous boot entry or KubeVirt
+snapshot can recover the pilot if the guest does not become healthy.
+
+## Management Path Unavailable
+
+Apply the example deny-egress policy only for the failure test:
+
+```bash
+kubectl apply -f clusters/home/evaluation/kairos-kubevirt/examples/management-path-deny-egress.example.yaml
+```
+
+Reboot one VM from the console. The installed node should still boot locally,
+but remote image pulls, upgrade checks, and rejoin paths that require cluster
+or internet access should fail predictably. If the cluster CNI does not enforce
+NetworkPolicy, record that and repeat this test by blocking egress at the host,
+router, or test namespace firewall layer.
+
+Remove the policy after the test:
+
+```bash
+kubectl -n vms delete networkpolicy kairos-evaluation-deny-egress
+```
+
+## Cleanup
+
+Suspend reconciliation first:
+
+```bash
+flux suspend kustomization evaluation-kairos-kubevirt -n flux-system
+```
+
+Stop and remove only the labeled evaluation resources:
+
+```bash
+virtctl -n vms stop kairos-server
+virtctl -n vms stop kairos-agent
+kubectl -n vms delete vm,dv,pvc,svc,virtualmachinesnapshot -l home-server.dev/evaluation=kairos
+kubectl -n vms delete secret kairos-server-user-data kairos-agent-user-data
+```
+
+The evaluation uses `longhorn-virtualization-test`, which has one replica and
+`reclaimPolicy: Delete`; deleting the evaluation PVCs should release the
+Longhorn volumes. Still verify that no old retained PVs, `prime-*` PVCs, or
+Longhorn volumes remain from earlier runs that used `longhorn-virtualization`.
+
+## Pilot Log
+
+Current status as of 2026-05-23:
+
+- Pinned Kairos ISO URL returned HTTP 302 to a release asset.
+- Checksum file returned
+  `0bbc4bf00b4b149d15dd3cc9a281cc58590c03c5bb9dd253372cb0a46ae1d27f`.
+- Temporary `virtctl v1.8.2` client worked from the devcontainer session.
+- KubeVirt phase: `Deployed`.
+- CDI phase: `Deployed`.
+- `vms` namespace had no `vm`, `vmi`, `dv`, or `pvc` resources.
+- At least one node reported allocatable KVM; node name and capacity are
+  intentionally omitted from committed notes.
+- No production node was migrated and no evaluation VM was created during this
+  read-only preflight.
+
+Sanitized observations still to capture during the live pilot:
+
+- Install media checksum result.
+- First boot and post-install boot result.
+- Nested `kubectl get nodes` output with private addresses redacted if needed.
+- Agent wipe/rejoin result.
+- Upgrade and rollback result.
+- Management-path unavailable behavior.
+
+Current status as of 2026-05-24:
+
+- Clean root DataVolumes for `kairos-server` and `kairos-agent` imported
+  successfully after removing retained Longhorn/CDI evaluation volumes from
+  earlier failed attempts.
+- The server initially became unreachable after K3s CNI startup when nested
+  K3s used the default pod and Service ranges. Pinning the nested cluster to
+  non-overlapping private-overlay pod and Service ranges kept the KubeVirt
+  bridge path reachable after reboot.
+- The live cloud-init Secret uses GitHub public SSH key import with
+  `github:<operator>`, an explicit Kairos `network` stage, and a retrying
+  `kairos-github-ssh-keys.service` oneshot; no SSH public key material is
+  copied into the user-data template.
+- OIDC has been added for the next clean server install through the shared Dex
+  infrastructure service that reuses the existing GitHub OAuth app credentials
+  from oauth2-proxy.
+- The nested API answered `/ping` after the post-CNI settle period.
+- `kairos-server` and `kairos-agent` both appeared in the nested API with
+  `Ready=True`; private node addresses are intentionally omitted.
+
+Still to capture after this baseline:
+
+- Agent wipe/rejoin result.
+- Upgrade and rollback result.
+- Management-path unavailable behavior.
