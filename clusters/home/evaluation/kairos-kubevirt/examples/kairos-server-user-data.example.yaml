@@ -19,6 +19,8 @@ stringData:
       args:
         - --node-name=kairos-server
         - --secrets-encryption
+        # Disable bundled edge ingress/load-balancer components in the nested pilot
+        # to reduce exposed surface and keep only explicitly required services.
         - --disable=traefik,servicelb
         - --kube-apiserver-arg=anonymous-auth=false
         - --kube-apiserver-arg=profiling=false

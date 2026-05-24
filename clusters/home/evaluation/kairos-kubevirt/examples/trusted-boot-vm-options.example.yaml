@@ -15,6 +15,9 @@ spec:
           smm:
             enabled: true
         devices:
+          # KubeVirt exposes a vTPM (TPM 2.0) device by default for this field.
+          # Keep this patch opt-in and pair it with trusted boot media plus
+          # persistent TPM state handling in the target virtualization platform.
           tpm: {}
 ---
 apiVersion: kubevirt.io/v1
@@ -34,4 +37,7 @@ spec:
           smm:
             enabled: true
         devices:
+          # KubeVirt exposes a vTPM (TPM 2.0) device by default for this field.
+          # Keep this patch opt-in and pair it with trusted boot media plus
+          # persistent TPM state handling in the target virtualization platform.
           tpm: {}

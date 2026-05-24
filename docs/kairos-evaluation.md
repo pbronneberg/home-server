@@ -23,8 +23,8 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 This pilot uses the standard Kairos ISO path and does not enable Kairos Trusted
 Boot by default. Trusted Boot requires signed UKI media plus Secure Boot and TPM
 support in the VM firmware. Keep that as an explicit opt-in track and use
-`clusters/home/evaluation/kairos-kubevirt/examples/trusted-boot-vm-options.example.yaml`
-only when you are testing Trusted Boot media.
+the [trusted boot VM options example][trusted-boot-vm-options-example] only when
+you are testing Trusted Boot media.
 
 The selected artifact keeps the pilot on the K3s `v1.35` minor used by the
 home-cluster lifecycle at the time this evaluation path was added. Verify the
@@ -387,3 +387,5 @@ Still to capture after this baseline:
 - Agent wipe/rejoin result.
 - Upgrade and rollback result.
 - Management-path unavailable behavior.
+
+[trusted-boot-vm-options-example]: ../clusters/home/evaluation/kairos-kubevirt/examples/trusted-boot-vm-options.example.yaml
