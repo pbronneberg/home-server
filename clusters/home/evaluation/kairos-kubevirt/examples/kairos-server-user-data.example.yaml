@@ -18,6 +18,14 @@ stringData:
       enabled: true
       args:
         - --node-name=kairos-server
+        - --secrets-encryption
+        - --disable=traefik,servicelb
+        - --kube-apiserver-arg=anonymous-auth=false
+        - --kube-apiserver-arg=profiling=false
+        - --kube-controller-manager-arg=profiling=false
+        - --kube-scheduler-arg=profiling=false
+        - --kubelet-arg=anonymous-auth=false
+        - --kubelet-arg=read-only-port=0
         - --token=${KAIROS_K3S_TOKEN}
         - --cluster-cidr=198.18.0.0/16
         - --service-cidr=198.19.0.0/16

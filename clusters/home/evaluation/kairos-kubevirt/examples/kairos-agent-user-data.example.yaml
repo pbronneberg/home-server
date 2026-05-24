@@ -19,6 +19,8 @@ stringData:
       args:
         - --node-name=kairos-agent
         - --server=https://kairos-k3s-api.vms.svc.cluster.local:6443
+        - --kubelet-arg=anonymous-auth=false
+        - --kubelet-arg=read-only-port=0
         - --token=${KAIROS_K3S_TOKEN}
     write_files:
       - path: /usr/local/sbin/kairos-fetch-github-ssh-keys

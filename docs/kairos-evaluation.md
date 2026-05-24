@@ -20,18 +20,37 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 - Kairos artifact:
   `kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso`
 
+This pilot uses the standard Kairos ISO path and does not enable Kairos Trusted
+Boot by default. Trusted Boot requires signed UKI media plus Secure Boot and TPM
+support in the VM firmware. Keep that as an explicit opt-in track and use
+`clusters/home/evaluation/kairos-kubevirt/examples/trusted-boot-vm-options.example.yaml`
+only when you are testing Trusted Boot media.
+
 The selected artifact keeps the pilot on the K3s `v1.35` minor used by the
 home-cluster lifecycle at the time this evaluation path was added. Verify the
 artifact before use:
 
 ```bash
-curl -LO https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
-curl -LO https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso.sha256
-sha256sum -c kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso.sha256
+VERSION=v4.0.3
+ISO=kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
+BASE=https://github.com/kairos-io/kairos/releases/download/${VERSION}
+
+curl -fLO "${BASE}/${ISO}"
+curl -fLO "${BASE}/${ISO}.sha256"
+curl -fLO "${BASE}/${ISO}.sha256.pem"
+curl -fLO "${BASE}/${ISO}.sha256.sig"
+
+cosign verify-blob \
+  --cert "${ISO}.sha256.pem" \
+  --signature "${ISO}.sha256.sig" \
+  --certificate-identity "https://github.com/kairos-io/kairos/.github/workflows/reusable-release.yaml@refs/tags/${VERSION}" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  "${ISO}.sha256"
+
+sha256sum -c "${ISO}.sha256"
 ```
 
-The upstream Kairos release also publishes signature material for the checksum
-file. Use `cosign verify-blob` when validating install media outside CDI.
+If either verification fails, do not resume the evaluation Kustomization.
 
 ## Public And Private Boundaries
 

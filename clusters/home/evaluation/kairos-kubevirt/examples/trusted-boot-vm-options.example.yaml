@@ -1,0 +1,37 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: kairos-server
+  namespace: vms
+spec:
+  template:
+    spec:
+      domain:
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        features:
+          smm:
+            enabled: true
+        devices:
+          tpm: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: kairos-agent
+  namespace: vms
+spec:
+  template:
+    spec:
+      domain:
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        features:
+          smm:
+            enabled: true
+        devices:
+          tpm: {}
