@@ -46,8 +46,8 @@ Kubernetes Secrets:
 - `private/flux/home/kairos-agent-user-data.sops.yaml`
 - `private/flux/home/dex-substitutions.sops.yaml`
 
-Rotate the embedded pilot K3s token for each evaluation run, and replace the
-placeholder SSH public key with an operator key before relying on SSH access:
+Rotate the embedded pilot K3s token for each evaluation run, and set the
+placeholder GitHub username before relying on SSH access:
 
 ```bash
 make sops-edit SOPS_FILE=private/flux/home/kairos-server-user-data.sops.yaml
@@ -64,10 +64,12 @@ cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-agent-user-data.exam
 
 Replace `${KAIROS_K3S_TOKEN}` with a temporary token and `${GITHUB_USERNAME}`
 with the GitHub account whose public SSH keys Kairos should import at provisioning
-time, for example `github:example-user`. Keep the rendered files outside the
-repository. Clean installs need outbound HTTPS access to GitHub for SSH bootstrap;
-installed nodes keep their previously rendered authorized keys if that path is
-unavailable later.
+time, for example `example-user`. The user-data keeps both the standard
+`users.ssh_authorized_keys` form and an explicit Kairos `network` stage
+`authorized_keys` entry so GitHub key import runs after networking is available.
+Keep the rendered files outside the repository. Clean installs need outbound
+HTTPS access to GitHub for SSH bootstrap; installed nodes keep their previously
+rendered authorized keys if that path is unavailable later.
 
 The nested K3s server also pins public-safe example ranges
 `--cluster-cidr=198.18.0.0/16`, `--service-cidr=198.19.0.0/16`, and
@@ -350,8 +352,9 @@ Current status as of 2026-05-24:
   non-overlapping private-overlay pod and Service ranges kept the KubeVirt
   bridge path reachable after reboot.
 - The live cloud-init Secret uses GitHub public SSH key import with
-  `github:<operator>`; no SSH public key material is copied into the user-data
-  template.
+  `github:<operator>` and an explicit Kairos `network` stage so keys are fetched
+  after networking is available; no SSH public key material is copied into the
+  user-data template.
 - OIDC has been added for the next clean server install through the shared Dex
   infrastructure service that reuses the existing GitHub OAuth app credentials
   from oauth2-proxy.

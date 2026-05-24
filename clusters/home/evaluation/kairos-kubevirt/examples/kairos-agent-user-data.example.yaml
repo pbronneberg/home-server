@@ -27,4 +27,10 @@ stringData:
           - admin
         ssh_authorized_keys:
           - github:${GITHUB_USERNAME}
+    stages:
+      network:
+        - name: Fetch operator SSH keys from GitHub
+          authorized_keys:
+            kairos:
+              - github:${GITHUB_USERNAME}
 type: Opaque
