@@ -29,25 +29,6 @@ stringData:
         - "--kube-apiserver-arg=oidc-groups-claim=groups"
         - "--kube-apiserver-arg=oidc-groups-prefix=github:"
         - "--write-kubeconfig-mode=0600"
-    write_files:
-      - path: /var/lib/rancher/k3s/server/manifests/kairos-oidc-admin-binding.yaml
-        permissions: "0600"
-        owner: root:root
-        content: |
-          apiVersion: rbac.authorization.k8s.io/v1
-          kind: ClusterRoleBinding
-          metadata:
-            name: kairos-oidc-pilot-admin
-            labels:
-              home-server.dev/evaluation: kairos
-          subjects:
-            - kind: User
-              apiGroup: rbac.authorization.k8s.io
-              name: github:${GITHUB_USERNAME}
-          roleRef:
-            kind: ClusterRole
-            apiGroup: rbac.authorization.k8s.io
-            name: cluster-admin
     users:
       - name: kairos
         lock_passwd: true
@@ -57,6 +38,45 @@ stringData:
           - github:${GITHUB_USERNAME}
     stages:
       network:
+        - name: Configure nested K3s OIDC
+          commands:
+            - |
+              set -eu
+
+              mkdir -p /etc/rancher/k3s/config.yaml.d
+              cat > /etc/rancher/k3s/config.yaml.d/90-kairos-oidc.yaml <<'EOF'
+              kube-apiserver-arg:
+                - oidc-issuer-url=${DEX_ISSUER_URL}
+                - oidc-client-id=kairos-kubernetes
+                - oidc-username-claim=preferred_username
+                - oidc-username-prefix=github:
+                - oidc-groups-claim=groups
+                - oidc-groups-prefix=github:
+              EOF
+              chmod 0600 /etc/rancher/k3s/config.yaml.d/90-kairos-oidc.yaml
+
+              mkdir -p /var/lib/rancher/k3s/server/manifests
+              cat > /var/lib/rancher/k3s/server/manifests/kairos-oidc-admin-binding.yaml <<'EOF'
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRoleBinding
+              metadata:
+                name: kairos-oidc-pilot-admin
+                labels:
+                  home-server.dev/evaluation: kairos
+              subjects:
+                - kind: User
+                  apiGroup: rbac.authorization.k8s.io
+                  name: github:${GITHUB_USERNAME}
+              roleRef:
+                kind: ClusterRole
+                apiGroup: rbac.authorization.k8s.io
+                name: cluster-admin
+              EOF
+              chmod 0600 /var/lib/rancher/k3s/server/manifests/kairos-oidc-admin-binding.yaml
+
+              if systemctl is-active --quiet k3s.service; then
+                systemctl restart k3s.service
+              fi
         - name: Fetch operator SSH keys from GitHub
           commands:
             - |

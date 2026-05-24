@@ -84,6 +84,9 @@ an OIDC issuer for Kubernetes, so Dex re-exposes the existing GitHub OAuth app
 as OIDC under a callback subpath of the existing auth host. The public example
 issuer is `https://auth.home.example/oauth2/callback/dex`; the private
 Flux substitution Secret supplies the live auth host and issuer.
+Kairos writes the OIDC flags into
+`/etc/rancher/k3s/config.yaml.d/90-kairos-oidc.yaml` so they are visible on the
+installed node and loaded by K3s on restart.
 
 The Dex bridge reads `client-id` and `client-secret` from the existing
 `auth/oauth2-proxy-private-values` Secret instead of copying GitHub OAuth
