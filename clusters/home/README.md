@@ -9,7 +9,7 @@ the `flux-system` Kustomization reconcile the infrastructure Kustomizations in
 
 Infrastructure includes namespaces, Helm repositories, SOPS-backed private
 secrets, cert-manager, Longhorn, kube-prometheus-stack monitoring,
-oauth2-proxy for opt-in GitHub-backed ingress authentication, Traefik
-middlewares, and Longhorn storage classes. Workloads, including Home Assistant,
+oauth2-proxy for opt-in GitHub-backed ingress authentication, Dex for
+shared OIDC federation, Traefik middlewares, and Longhorn storage classes. Workloads, including Home Assistant,
 are reconciled separately so application-facing releases can depend on the
 platform pieces they need.

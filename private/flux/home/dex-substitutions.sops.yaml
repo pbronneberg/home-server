@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: dex-substitutions
+    namespace: flux-system
+type: Opaque
+stringData:
+    DEX_AUTH_HOST: ENC[AES256_GCM,data:It+I9u7kd5CUm+uCIgh2mW95kA==,iv:eg+cEqevnqtM84/OnnVjhHBsOev0097CyZxgJSJOGs0=,tag:esFxiRtQMHWDd5UfTdFYDQ==,type:str]
+    DEX_ISSUER_URL: ENC[AES256_GCM,data:rFYJGeFXEFsiFXA5YtQYFYZj4wmT8TfeX0p6uPFh8KApTa1h5akd1V7wOky+f8I=,iv:yl42Dppr6MA+leBuYWkatMdfcxbTCzMJU/4djiAowhk=,tag:c7hTX3P/PS5L1Xirw2HVtQ==,type:str]
+    DEX_GITHUB_REDIRECT_URI: ENC[AES256_GCM,data:d+WNmEADJRQkDIS1yuZ8Ra2HclS4wGpkZreoNsqdff9UNfU88e9Azx1Jg4fUMccs8YHr4Rby9xA=,iv:HEe4VZ8bgj1lbUtW8dGKh5dj/P2LdH2P1HNOVK4AUDo=,tag:tYylRfHRfPUKJ3ePGfVcjQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBrOE1UTThMS1VTQVVCbmdj
+            UWtyUU81c0UwdXg1Y2Uyc0NhZ3MwRFhUNldvCnJaYjE1QUhLZmw4NTNRVWVaVmZR
+            SUF6NlRtUXVXTGxwTGxSYzlYaEQ3a00KLS0tIEllRmZWWkp6MG9vbEpGSWs0UWtX
+            MzdqdFg0ZHdKc2NVNVVPTkJhWGt5KzAK8rBN4jeViacjub0z64CCwIx9TjGDS0hl
+            1SaKovedprMam2dqtia38H6ugJG7nnGHDgVc4tWEhP6nV8CGfK6D0A==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-05-24T11:32:52Z"
+    mac: ENC[AES256_GCM,data:RaIK1DOvORIn8ndY8QYcRgfGeM7vHHKUZQelxvUCTHoV+OEHjmpulyTXhWC245iFitqW8CxuDQ7S8uyQV/Fe97phoV65SwSaXp+YTFzxpi9fl4Mwz8ari+g/Lrw1jk5Yj+a1DATFrgsDYIuxZBq2z/pV8sfksTD4jIbQWzpNYhA=,iv:+jKRkK+jNkRVXg1a1YhsQ6em5x3cvEgg0kzAvqgP/vk=,tag:Zsh2h1XeNEoh4x9+ajoeLA==,type:str]
+    version: 3.13.1

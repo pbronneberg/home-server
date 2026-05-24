@@ -22,7 +22,32 @@ stringData:
         - --cluster-cidr=198.18.0.0/16
         - --service-cidr=198.19.0.0/16
         - --cluster-dns=198.19.0.10
+        - --kube-apiserver-arg=oidc-issuer-url=${DEX_ISSUER_URL}
+        - --kube-apiserver-arg=oidc-client-id=kairos-kubernetes
+        - --kube-apiserver-arg=oidc-username-claim=preferred_username
+        - --kube-apiserver-arg=oidc-username-prefix=github:
+        - --kube-apiserver-arg=oidc-groups-claim=groups
+        - --kube-apiserver-arg=oidc-groups-prefix=github:
         - --write-kubeconfig-mode=0600
+    write_files:
+      - path: /var/lib/rancher/k3s/server/manifests/kairos-oidc-admin-binding.yaml
+        permissions: "0600"
+        owner: root:root
+        content: |
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: kairos-oidc-pilot-admin
+            labels:
+              home-server.dev/evaluation: kairos
+          subjects:
+            - kind: User
+              apiGroup: rbac.authorization.k8s.io
+              name: github:${GITHUB_USERNAME}
+          roleRef:
+            kind: ClusterRole
+            apiGroup: rbac.authorization.k8s.io
+            name: cluster-admin
     users:
       - name: kairos
         lock_passwd: true

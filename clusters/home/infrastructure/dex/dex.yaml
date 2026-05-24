@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: dex
+    app.kubernetes.io/part-of: identity
+  name: dex-config
+  namespace: auth
+data:
+  config.yaml: |
+    issuer: ${DEX_ISSUER_URL}
+    storage:
+      type: memory
+    web:
+      http: 0.0.0.0:5556
+    oauth2:
+      skipApprovalScreen: true
+    staticClients:
+      - id: kairos-kubernetes
+        name: Kubernetes kubectl
+        public: true
+        redirectURIs:
+          - http://127.0.0.1:8000
+          - http://127.0.0.1:18000
+    connectors:
+      - type: github
+        id: github
+        name: GitHub
+        config:
+          clientID: $GITHUB_CLIENT_ID
+          clientSecret: $GITHUB_CLIENT_SECRET
+          redirectURI: ${DEX_GITHUB_REDIRECT_URI}
+          useLoginAsID: true
+          loadAllGroups: false
+    enablePasswordDB: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: dex
+    app.kubernetes.io/part-of: identity
+  name: dex
+  namespace: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dex
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dex
+        app.kubernetes.io/part-of: identity
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: dex
+          image: ghcr.io/dexidp/dex:v2.45.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - /usr/local/bin/dex
+          args:
+            - serve
+            - /etc/dex/config.yaml
+          env:
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-private-values
+                  key: client-id
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy-private-values
+                  key: client-secret
+          ports:
+            - name: http
+              containerPort: 5556
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 48Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: config
+              mountPath: /etc/dex
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      securityContext:
+        runAsNonRoot: true
+      volumes:
+        - name: config
+          configMap:
+            name: dex-config
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: dex
+    app.kubernetes.io/part-of: identity
+  name: dex
+  namespace: auth
+spec:
+  ports:
+    - name: http
+      port: 5556
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: dex
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  labels:
+    app.kubernetes.io/name: dex
+    app.kubernetes.io/part-of: identity
+  name: dex
+  namespace: auth
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: ${DEX_AUTH_HOST}
+      http:
+        paths:
+          - path: /oauth2/callback/dex
+            pathType: Prefix
+            backend:
+              service:
+                name: dex
+                port:
+                  name: http
+  tls:
+    - secretName: oauth2-proxy-tls
+      hosts:
+        - ${DEX_AUTH_HOST}

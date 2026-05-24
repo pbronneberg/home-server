@@ -18,6 +18,8 @@ ARG HELM_VERSION=4.2.0
 ARG KUBECTL_VERSION=1.36.1
 # renovate: datasource=github-releases depName=kubevirt/kubevirt extractVersion=^v(?<version>.*)$
 ARG KUBEVIRT_VERSION=1.8.2
+# renovate: datasource=github-releases depName=int128/kubelogin extractVersion=^v(?<version>.*)$
+ARG KUBELOGIN_VERSION=1.36.1
 # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/v(?<version>.*)$
 ARG KUSTOMIZE_VERSION=5.8.1
 # renovate: datasource=github-releases depName=getsops/sops extractVersion=^v(?<version>.*)$
@@ -45,6 +47,7 @@ RUN apt-get update \
       python3-venv \
       ripgrep \
       tar \
+      unzip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g "@openai/codex@${CODEX_VERSION}"
@@ -57,8 +60,8 @@ RUN python3 -m venv /opt/home-server-tools \
 
 RUN set -eux; \
     case "${TARGETARCH}" in \
-      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; gh_arch="amd64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64" ;; \
-      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; gh_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64" ;; \
+      amd64) helm_arch="amd64"; actionlint_arch="amd64"; gitleaks_arch="x64"; gh_arch="amd64"; sops_arch="amd64"; flux_arch="amd64"; kustomize_arch="amd64"; kubelogin_arch="amd64" ;; \
+      arm64) helm_arch="arm64"; actionlint_arch="arm64"; gitleaks_arch="arm64"; gh_arch="arm64"; sops_arch="arm64"; flux_arch="arm64"; kustomize_arch="arm64"; kubelogin_arch="arm64" ;; \
       *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
     esac; \
     curl -fsSL "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_${flux_arch}.tar.gz" \
@@ -84,8 +87,13 @@ RUN set -eux; \
     curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_${kustomize_arch}.tar.gz" \
       | tar -xz -C /tmp kustomize; \
     mv /tmp/kustomize /usr/local/bin/kustomize; \
+    curl -fsSL -o /tmp/kubelogin.zip "https://github.com/int128/kubelogin/releases/download/v${KUBELOGIN_VERSION}/kubelogin_linux_${kubelogin_arch}.zip"; \
+    unzip -q /tmp/kubelogin.zip -d /tmp/kubelogin; \
+    mv /tmp/kubelogin/kubelogin /usr/local/bin/kubectl-oidc_login; \
+    ln -s /usr/local/bin/kubectl-oidc_login /usr/local/bin/kubelogin; \
+    rm -rf /tmp/kubelogin /tmp/kubelogin.zip; \
     curl -fsSL -o /usr/local/bin/sops "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.${sops_arch}"; \
-    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/virtctl /usr/local/bin/kubectl-virt /usr/local/bin/kustomize /usr/local/bin/sops
+    chmod +x /usr/local/bin/flux /usr/local/bin/helm /usr/local/bin/actionlint /usr/local/bin/gitleaks /usr/local/bin/gh /usr/local/bin/kubectl /usr/local/bin/virtctl /usr/local/bin/kubectl-virt /usr/local/bin/kubectl-oidc_login /usr/local/bin/kustomize /usr/local/bin/sops
 
 RUN actionlint --version \
     && codex --version \
@@ -96,6 +104,7 @@ RUN actionlint --version \
     && kubectl version --client \
     && virtctl version --client \
     && kubectl virt version --client \
+    && kubectl oidc-login version \
     && kustomize version \
     && sops --version \
     && yamllint --version \

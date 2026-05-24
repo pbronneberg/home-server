@@ -105,6 +105,7 @@ them current:
 * `kustomize`
 * `virtctl`
 * `kubectl virt`
+* `kubectl oidc-login`
 * `yamllint`
 * `actionlint`
 * `gitleaks`
@@ -141,6 +142,7 @@ go install github.com/fluxcd/flux2/v2/cmd/flux@v2.8.6
 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 go install github.com/zricethezav/gitleaks/v8@v8.30.1
 go install github.com/cli/cli/v2/cmd/gh@v2.92.0
+go install github.com/int128/kubelogin@v1.36.1
 go install sigs.k8s.io/kustomize/kustomize/v5@v5.8.1
 npm install -g @openai/codex@0.130.0
 ```

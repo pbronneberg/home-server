@@ -44,6 +44,7 @@ Kubernetes Secrets:
 
 - `private/flux/home/kairos-server-user-data.sops.yaml`
 - `private/flux/home/kairos-agent-user-data.sops.yaml`
+- `private/flux/home/dex-substitutions.sops.yaml`
 
 Rotate the embedded pilot K3s token for each evaluation run, and replace the
 placeholder SSH public key with an operator key before relying on SSH access:
@@ -74,6 +75,26 @@ The nested K3s server also pins public-safe example ranges
 non-overlapping ranges chosen for the live host cluster. Keep those live
 ranges encrypted if they reveal local topology.
 
+The nested K3s server also enables OIDC authentication against the shared Dex
+service in `clusters/home/infrastructure/dex`. GitHub OAuth is not itself
+an OIDC issuer for Kubernetes, so Dex re-exposes the existing GitHub OAuth app
+as OIDC under a callback subpath of the existing auth host. The public example
+issuer is `https://auth.home.example/oauth2/callback/dex`; the private
+Flux substitution Secret supplies the live auth host and issuer.
+
+The Dex bridge reads `client-id` and `client-secret` from the existing
+`auth/oauth2-proxy-private-values` Secret instead of copying GitHub OAuth
+credentials. Its GitHub redirect URI is the issuer plus `/callback`, for example
+`https://auth.home.example/oauth2/callback/dex/callback`. GitHub OAuth
+allows redirect URIs below the configured callback path, which lets the pilot
+reuse the OAuth app already used by the Traefik middleware when that app's
+registered callback is `https://auth.home.example/oauth2/callback`.
+
+Kairos grants pilot admin access to the OIDC username
+`github:${GITHUB_USERNAME}` through a bootstrap `ClusterRoleBinding`. Keep this
+binding limited to the disposable nested cluster; production clusters should use
+a narrower role and group-based authorization.
+
 ## Preflight
 
 Run these checks from the devcontainer or another trusted workstation with the
@@ -84,22 +105,28 @@ kubectl -n kubevirt get kubevirt kubevirt
 kubectl -n cdi get cdi cdi
 kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.allocatable.devices\.kubevirt\.io/kvm}{"\t"}{.status.allocatable.cpu}{"\t"}{.status.allocatable.memory}{"\n"}{end}'
 kubectl -n vms get vm,vmi,dv,pvc
+kubectl -n auth get secret oauth2-proxy-private-values
+kubectl -n flux-system get secret dex-substitutions
 virtctl version --client
+kubectl oidc-login version
 kustomize build clusters/home/evaluation/kairos-kubevirt
 ```
 
 Expected result: KubeVirt and CDI are deployed, at least one node advertises
-KVM, no existing `kairos-*` evaluation resources are present, and `virtctl` is
-available.
+KVM, no existing `kairos-*` evaluation resources are present, `virtctl` and
+`kubectl oidc-login` are available, and the private OAuth/substitution Secrets
+exist.
 
 ## First Boot And Install
 
-Reconcile the private SOPS overlay so the VM cloud-init Secrets exist before
-starting either VM:
+Reconcile the private SOPS overlay so the VM cloud-init Secrets exist, then
+reconcile shared Dex before starting either VM:
 
 ```bash
 flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
 kubectl -n vms get secret kairos-server-user-data kairos-agent-user-data
+kubectl -n flux-system get secret dex-substitutions
+flux reconcile kustomization infrastructure-dex -n flux-system --with-source
 ```
 
 For a persistent GitOps pilot, change `evaluation-kairos-kubevirt` to
@@ -155,10 +182,38 @@ virtctl -n vms start kairos-agent
 virtctl -n vms console kairos-agent
 ```
 
-From the server console, confirm the nested cluster:
+After the server API is reachable, confirm OIDC discovery through the public
+auth host. Use the live issuer URL from the private substitution Secret; the
+example below is public-safe:
 
 ```bash
-sudo k3s kubectl get nodes -o wide
+curl -fsS https://auth.home.example/oauth2/callback/dex/.well-known/openid-configuration
+```
+
+For a disposable local connection, forward the Kairos API with `virtctl` and use
+an OIDC kubeconfig that does not contain nested admin client certificates. The
+pilot uses `--insecure-skip-tls-verify` only because the forwarded K3s API uses
+the nested cluster's private serving CA; replace this with a trusted API endpoint
+before carrying the pattern beyond evaluation.
+
+```bash
+virtctl -n vms port-forward vm/kairos-server 16443:6443
+
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-cluster kairos-pilot \
+  --server=https://127.0.0.1:16443 \
+  --insecure-skip-tls-verify=true
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github \
+  --exec-api-version=client.authentication.k8s.io/v1 \
+  --exec-command=kubectl \
+  --exec-arg=oidc-login \
+  --exec-arg=get-token \
+  --exec-arg=--oidc-issuer-url=https://auth.home.example/oauth2/callback/dex \
+  --exec-arg=--oidc-client-id=kairos-kubernetes \
+  --exec-arg=--oidc-extra-scope=groups
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-pilot \
+  --cluster=kairos-pilot \
+  --user=github
+kubectl --kubeconfig .local/kairos/oidc-kubeconfig --context kairos-pilot get nodes -o wide
 ```
 
 ## Reinstall And Rejoin
@@ -297,6 +352,9 @@ Current status as of 2026-05-24:
 - The live cloud-init Secret uses GitHub public SSH key import with
   `github:<operator>`; no SSH public key material is copied into the user-data
   template.
+- OIDC has been added for the next clean server install through the shared Dex
+  infrastructure service that reuses the existing GitHub OAuth app credentials
+  from oauth2-proxy.
 - The nested API answered `/ping` after the post-CNI settle period.
 - `kairos-server` and `kairos-agent` both appeared in the nested API with
   `Ready=True`; private node addresses are intentionally omitted.

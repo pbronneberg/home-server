@@ -1,26 +1,26 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  labels:
-    app.kubernetes.io/name: kairos-kubevirt-evaluation
-    home-server.dev/evaluation: kairos
-  name: kairos-server-user-data
-  namespace: vms
+    labels:
+        app.kubernetes.io/name: kairos-kubevirt-evaluation
+        home-server.dev/evaluation: kairos
+    name: kairos-server-user-data
+    namespace: vms
 stringData:
-  userdata: ENC[AES256_GCM,data:enhsMTksbdZm5sD4JvbSjyZxqvslNIoJbLgtUQ7Ptb1qBtw9+u3Ka/igoX6ssQJ1O2v0HZPzk4DR9r8LKx8UxCZuVX4Ce+dHAdVnDOSBiwCWRaRGoBaatxvxnalLVt0XfWmDcqqYlj4JhhQxSa0mHgR+9TMVoMn8PqZQVkwzmihEtlxMuJNk3Cqrj62vK6WTW54fW3VgaD0snkysHIiLYa6VwUZ1jaZllR1vqNZfHbOU3Z8c611y6mvCBvrT6tzbZ+qGyPS+NshipOqvsXQZEIu63B31tnOyXSzQn2aYLdxEuFQZ63JmAgAMI22D2xQ+9/BMCcZabGRLah8vnwHWc6NBaRokdhlh9uU5yybi0NjaMcn4dK6E0wxbAseXTrBRlAw/reSOC3y4iNcz5FxiQn4qXSZwfBAjDUHxB2zY6h4V4+Zt+a8dvysdr3JWPEUq7ETqlpM81hryNSC/SwpCXX8a2u+0Tfu9QUOEdWmAeT+GDxViL7aJ+sYmi+AkznGgR72NeX+UGDmi9jZH0mK7ST1qMnjVhH/z8olo13/R45hyGwSzNaWJHlE2Te+3/lUCCgSQPYMQLn4s/BceiTsVNOoSJzdTyn1Ihn1+WBKsNMq01IK2g3cYbW74KjJF7aiAA+jxbXQoQsjRZnAJj1ey,iv:w2hH2Gp+n0l1XluzGtXSUSkZET9ovv8B+p0FQSls4MM=,tag:atTIWUNcnxnk31NbB+dTsg==,type:str]
+    userdata: ENC[AES256_GCM,data:2Hs7F8mlioBYgSjx/TDviiUcDwT/NkZs3Hchype8rqbaO/Rou9WW7HX7kaHqx1CXG4/2CmdSYrgGXszNp2p765lh1tDNbqeBX1k3XdN+2Ms5PiV0RI083JgHaP2Yuz8dlQKlKOJp0Zh75epXN6mYol02C6y1MLst4qAzy0W6KdxOAXsFjuIJAVOlnEfR/j8ytQS9q07QwcX7Oy4Saw097MjSYrGZlo41edBNRC+L7Q91kmGj2Iw2frVt36BTGgut5fXOx2HWfz4DgoE17ysPSukLgqNO6uWSopx+YuBuhWDTCtKwU0n631QpzyRn4woqUDAJYEagiGdkRKBRJRLObTE9NI7wPo+x0mxjhP2dsCbqnqZK5+X1HqaCFB+pNqOTRiOTqDIw8mMlS790VkssgQsa5WgByGVKKAtwGGC8EXlfZjn77iQFk7exxG0c1Y844tvIIIIAjZuwAnOK8B4YXDXDLmM3uVlyN1aa7yWH1KkPkQRBQnVFMYlU5dDXFSiyhesYbkQV5Y3LyuxpjKgZzWqL992SsyAt4ctdqMgbMPtW2PnnGdqAMwmp7ox6bEdkZY395gzD7N5/JowbGtpU9giF1eKlQXvM2UAFO78hvB7i1bQkwzUz1TrUZ/Ogc38srMcKV9fess0S31APPZ3wqlVrqx1ZB/hPHQQoGTlHIPSYw5T77sUNLCr5MYnXTLP0e+SAMj7uFMQNlq3Txa/TVU23Z7oCiZuhe4MaQ5uoDbq1x+qyukQVm2TbwAeYGw5TEdQ4f4t05YY7Atcr4fCWTkKiMgpLopyuwD1S0Dirgn0TUZZBUEkzLYDB8PemyyHdqhYAxx2poLcT3dZGzvwy/NKeJTCzCVyjl5/dWI1SjkQlmq9l4T3tQztfkJgQGSrIttaSHVR1zkxZnbcBhOO7te6MiNW8LDmxT5q5g8vmZi+iaaZ+ATZL4TFEehzaK0ZnaOyo1tIyknub+yUfyxYiyhj/SSXN4BpVym4dk5p2W38n3GoTLvmC0TGY49lSJnRHAiWqMpZYGDsuTLg0bovpCiHSkd/Ee0cXKMKJxpJQ1kpBbTg7E5N5iszK5+rz1p0R+1SMyDpzaGMNVRxT3aUnEug2pLfjZ6hUYv/HEydKAJxBph7PKswD+kSjCVKFKWpfqp3LevO0bDNZZ8HuLP0nJo9soi6fjqaguWvEO0W6S6UFV5y+iDhBEDgiJM/iRhP5xUfTue5jcrTvQWptKeAEewDvl7KvjKlv9/TlrYOF36r+WdkWm9y+ZZ0mhkJQOHDl93FUVhw79HsqFPaSuH3PgfRbSSYITLNuRlgsQDkATPVvewYRk6gICJ+8xQ3jF4nxLzV8/DzK035vX519/2OnA86p8f2IFhqQqBbx9gWiWB/o45akiJq+3JbrduTqjt0PhxCr81k9O8ZZTGmTA/N369J8hUJJmBlofnG/adgHkK5gSMhzucA2t7PeIRcgu1ChOi83YsaYR6hCX1cj9sj/9z25hwCWu/N+9/U/SkpFeIquBXppIcNLPRdhVejQ50mbqAg0i5+XUBupYivRCMfr5Nk2/zzngDIKdE6C06phDcL/DqWhi7YZdFIBwBXZzEjrUkWQik0WoA7QQQByPLXvLpXbBywrz2cn1ChyyMHouiJe8pRUlhgLaD2rDJHVlpPd0QysBC82vzy1kYHbms7JjWK5qbeC5H5bK85Ke5q/94bjq2t3poLznFXsPszoihX5ntPAcH23JsJNwyUBHhXu6mQ39hih59MhviopXv4uHg59MOcwVGKJWIZAYEhMBOWVxlMRDtKyvEYDeqIevVMoLGoOoFnH+FzPExDixCogY+nyG5QLM2kppyWBBcNMFQ5wkqVajj3X6aEzm1YegsmZUZCFvAjoSxrFVSvftRbocIzh8q8bbRzZvadT4roV5bs3/+AwalQV4wBKBg==,iv:vP6NoC0K+9R69+uOjGpOyvqpgWmEL/jivQ7r/VHT/xU=,tag:caerDUHHbkmeJZY/uRbmxw==,type:str]
 type: Opaque
 sops:
-  age:
-    - enc: |
-        -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBFeFNsZS9kc1lUTkJGMXBP
-        SlE0QjROWDk2Mi9qMWZ5TTdVZC9UN3RxbG1jCkVndzBabHMrdU5uNzduSGdPbmVE
-        dEhxL2tYUEp3eCtRS2pEbEJ3eDY3ZWcKLS0tIGZpUUNOaHVIT1U0MTNkMW1rb2dY
-        dVlJRHZKeEljSVAxS1ZhdWRycGZ1bTQKrSx1r0jeI6uwjrX0DjzVyRVApxWfeM4h
-        GMf70NJ880iAJDVqoMbvy8o1KFz56mDZ1g2Hv3UFAlV05eysILdV0Q==
-        -----END AGE ENCRYPTED FILE-----
-      recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
-  encrypted_regex: ^(data|stringData)$
-  lastmodified: "2026-05-24T10:08:12Z"
-  mac: ENC[AES256_GCM,data:KGS7q1RCt4xDGQmTn4iRABlOyzK6NkX0pFzaoZSHJYyD+/e/DoW5tfx28JBjQKyQ3DdoQ4qlkCo10Oa5kf+LvMDNE38zdJ+jHwf8tFdTxRtU27YCeKcLbw4uDEZGQ5NUJT0vlGLqDdUJAm4UDKQccOnaSknb+hnw/0vh1Kje1zg=,iv:b0uba8jMaNr48qDvxkq9qd5RBwiXtQ4kdDUEyUOL27U=,tag:ShZhLvAKsOw0iDjTuA8jiw==,type:str]
-  version: 3.13.1
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBRSnUzbkViUWFsbVVxdm51
+            SnBLTGRGMlZDUUlMTklZUGIxY3FTWVQzUHc0CmhoRW16MWRVNTZUVlFEZ3o1YUpX
+            MDlYVTQ2UlZWa294UndUTmMrK2ZHa1EKLS0tIElTTUtKdHlybk95bzQzdVBwemNW
+            eDA5ak9FdDNCbHJPVnlHaG5YZWxrK3cKuGhV8/bRxhpH++bsjGF5YubWRHdmKcE5
+            6MUicZ9nSrpxWlBTGnREhFB3Bern4LANQH93k/6U557kmMogkXDGdQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-05-24T11:33:25Z"
+    mac: ENC[AES256_GCM,data:0wfChJO/5ft7OLL83FTy88DKlXakV5EU1nVCqTpSJreTc1GAmKHnDEmL94zb1gyn4hM4LakesorLiCuJ7LaOI/07EO3F+4uhVAk+XELofWfo3+Uzm50s1m55ytDXbW0wdOQhdoFnaZ1cHKtt13zValtlyXkiT9rmcyjILZ07md0=,iv:2cjTEdsvXTvL/nvbATJSaN0oD5LIo/FAK0Jt0/Cjbmw=,tag:POWZiNqYSfCveXa30bB4nA==,type:str]
+    version: 3.13.1

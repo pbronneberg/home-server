@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - kairos-agent-user-data.sops.yaml
   - kairos-server-user-data.sops.yaml
+  - dex-substitutions.sops.yaml
   - cluster-status-values.sops.yaml
   - bronneberg-org-values.sops.yaml
   - home-assistant-config.sops.yaml

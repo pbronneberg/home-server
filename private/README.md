@@ -60,6 +60,11 @@ authenticate every GitHub account.
 The committed example keeps `replicaCount: 0`; cluster runtime values enable one replica
 because protected ingresses depend on oauth2-proxy being available.
 
+Shared Dex OIDC federation uses `dex-substitutions.sops.yaml` for the live
+auth host, issuer URL, and GitHub redirect URI. Dex reuses the GitHub OAuth
+client ID and secret from `oauth2-proxy-values.sops.yaml`; do not duplicate
+those credentials into Dex-specific Secrets.
+
 After restoring the age identity on a workstation, run `make
 sops-recovery-drill` from the repository root before relying on a fresh Flux
 bootstrap. The drill is documented in
