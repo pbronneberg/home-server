@@ -18,6 +18,11 @@ Secret named `sops-age` in the `flux-system` namespace before those manifests
 can reconcile. Workload Helm values that contain real hostnames or LAN
 addresses belong here as encrypted Kubernetes Secrets.
 
+Kairos KubeVirt evaluation user-data lives in
+`kairos-server-user-data.sops.yaml` and `kairos-agent-user-data.sops.yaml`.
+Rotate the embedded pilot K3s token for each evaluation run, and replace the
+placeholder SSH public key with an operator key before relying on SSH access.
+
 Home Assistant is captured with two private Secrets:
 
 - `home-assistant-config.sops.yaml` stores `configuration.yaml`, generated from

@@ -38,8 +38,22 @@ Committed examples use placeholders only. Do not commit generated user-data,
 K3s tokens, kubeconfigs, SSH private keys, real hostnames, LAN IPs, or console
 logs that include private values.
 
-Create real pilot Secrets from the examples into ignored local files or apply
-them directly from a private shell session:
+The home private overlay supplies the live pilot Secrets as SOPS-encrypted
+Kubernetes Secrets:
+
+- `private/flux/home/kairos-server-user-data.sops.yaml`
+- `private/flux/home/kairos-agent-user-data.sops.yaml`
+
+Rotate the embedded pilot K3s token for each evaluation run, and replace the
+placeholder SSH public key with an operator key before relying on SSH access:
+
+```bash
+make sops-edit SOPS_FILE=private/flux/home/kairos-server-user-data.sops.yaml
+make sops-edit SOPS_FILE=private/flux/home/kairos-agent-user-data.sops.yaml
+```
+
+For ad hoc testing outside Flux, create real pilot Secrets from the examples
+into ignored local files or apply them directly from a private shell session:
 
 ```bash
 cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-server-user-data.example.yaml /tmp/kairos-server-user-data.yaml
@@ -69,14 +83,23 @@ available.
 
 ## First Boot And Install
 
-Apply the local-only Secrets, then resume the suspended Flux Kustomization:
+Reconcile the private SOPS overlay so the VM cloud-init Secrets exist before
+starting either VM, then resume the suspended Flux Kustomization:
 
 ```bash
-kubectl apply -f /tmp/kairos-server-user-data.yaml
-kubectl apply -f /tmp/kairos-agent-user-data.yaml
+flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
+kubectl -n vms get secret kairos-server-user-data kairos-agent-user-data
 flux resume kustomization evaluation-kairos-kubevirt -n flux-system
 flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system --with-source
 ```
+
+If you are using the ad hoc local Secret path instead of Flux, apply the
+rendered `/tmp/kairos-*-user-data.yaml` files before resuming the evaluation.
+
+If a VM was started first, the launcher pod will stay pending with
+`MountVolume.SetUp failed ... secret "kairos-*-user-data" not found`. Create the
+missing Secret, then stop and start the affected VM so KubeVirt creates a fresh
+launcher pod with the cloud-init disk mounted.
 
 Watch imports and VM state:
 
