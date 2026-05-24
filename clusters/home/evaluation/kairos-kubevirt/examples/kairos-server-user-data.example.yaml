@@ -26,7 +26,7 @@ stringData:
         - "--write-kubeconfig-mode=0600"
         - "--kube-apiserver-arg=oidc-issuer-url=${DEX_ISSUER_URL}"
         - "--kube-apiserver-arg=oidc-client-id=kairos-kubernetes"
-        - "--kube-apiserver-arg=oidc-username-claim=preferred_username"
+        - "--kube-apiserver-arg=oidc-username-claim=sub"
         - "--kube-apiserver-arg=oidc-username-prefix=github:"
         - "--kube-apiserver-arg=oidc-groups-claim=groups"
         - "--kube-apiserver-arg=oidc-groups-prefix=github:"
@@ -95,7 +95,7 @@ stringData:
           subjects:
             - kind: User
               apiGroup: rbac.authorization.k8s.io
-              name: github:${GITHUB_USERNAME}
+              name: github:${GITHUB_DEX_SUBJECT}
           roleRef:
             kind: ClusterRole
             apiGroup: rbac.authorization.k8s.io

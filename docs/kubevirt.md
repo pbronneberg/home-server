@@ -62,9 +62,10 @@ cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-server-user-data.exa
 cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-agent-user-data.example.yaml /tmp/kairos-agent-user-data.yaml
 ```
 
-Replace `${KAIROS_K3S_TOKEN}` with a temporary token and `${GITHUB_USERNAME}`
+Replace `${KAIROS_K3S_TOKEN}` with a temporary token, `${GITHUB_USERNAME}`
 with the GitHub account whose public SSH keys Kairos should import at provisioning
-time, for example `example-user`. The user-data keeps the standard
+time, for example `example-user`, and `${GITHUB_DEX_SUBJECT}` with the stable Dex
+`sub` claim for the pilot operator. The user-data keeps the standard
 `users.ssh_authorized_keys` form, an explicit Kairos `network` stage
 `authorized_keys` entry, and a retrying systemd oneshot that fetches
 `https://github.com/${GITHUB_USERNAME}.keys` after `network-online.target`.
@@ -94,9 +95,11 @@ reuse the OAuth app already used by the Traefik middleware when that app's
 registered callback is `https://auth.home.example/oauth2/callback`.
 
 Kairos grants pilot admin access to the OIDC username
-`github:${GITHUB_USERNAME}` through a bootstrap `ClusterRoleBinding`. Keep this
-binding limited to the disposable nested cluster; production clusters should use
-a narrower role and group-based authorization.
+`github:${GITHUB_DEX_SUBJECT}` through a bootstrap `ClusterRoleBinding`.
+For this GitHub-backed Dex client, Kubernetes uses the signed Dex `sub` claim
+instead of `preferred_username`, because only `sub` is guaranteed to be present
+in the ID token. Keep this binding limited to the disposable nested cluster;
+production clusters should use a narrower role and group-based authorization.
 
 ## Preflight
 
@@ -216,10 +219,14 @@ kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github
   --exec-arg=--oidc-issuer-url=https://auth.home.example/oauth2/callback/dex \
   --exec-arg=--oidc-client-id=kairos-kubernetes \
   --exec-arg=--oidc-extra-scope=groups \
-  --exec-arg=--token-cache-storage=disk
+  --exec-arg=--token-cache-storage=disk \
+  --exec-arg=--token-cache-dir=.local/kairos/oidc-cache
 kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-pilot \
   --cluster=kairos-pilot \
   --user=github
+
+# If Dex was restarted while using memory storage, clear stale cached tokens first.
+kubectl oidc-login clean --token-cache-dir .local/kairos/oidc-cache || true
 kubectl --kubeconfig .local/kairos/oidc-kubeconfig --context kairos-pilot get nodes -o wide
 ```
 
