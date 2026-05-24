@@ -3,12 +3,12 @@ kind: NetworkPolicy
 metadata:
   labels:
     app.kubernetes.io/name: kairos-kubevirt-evaluation
-    example.com/evaluation: kairos
+    home-server.dev/evaluation: kairos
   name: kairos-evaluation-deny-egress
   namespace: vms
 spec:
   podSelector:
     matchLabels:
-      example.com/evaluation: kairos
+      home-server.dev/evaluation: kairos
   policyTypes:
     - Egress

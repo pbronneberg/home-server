@@ -4,8 +4,8 @@ metadata:
   labels:
     app.kubernetes.io/name: kairos-kubevirt-evaluation
     app.kubernetes.io/part-of: kairos-evaluation
-    example.com/evaluation: kairos
-    example.com/evaluation-role: server
+    home-server.dev/evaluation: kairos
+    home-server.dev/evaluation-role: server
   name: kairos-server
   namespace: vms
 spec:
@@ -14,7 +14,7 @@ spec:
     - metadata:
         labels:
           app.kubernetes.io/name: kairos-kubevirt-evaluation
-          example.com/evaluation: kairos
+          home-server.dev/evaluation: kairos
         name: kairos-server-installer
       spec:
         source:
@@ -31,7 +31,7 @@ spec:
     - metadata:
         labels:
           app.kubernetes.io/name: kairos-kubevirt-evaluation
-          example.com/evaluation: kairos
+          home-server.dev/evaluation: kairos
         name: kairos-server-root
       spec:
         source:
@@ -48,19 +48,19 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kairos-kubevirt-evaluation
-        example.com/evaluation: kairos
-        example.com/evaluation-role: server
+        home-server.dev/evaluation: kairos
+        home-server.dev/evaluation-role: server
     spec:
       domain:
         cpu:
           cores: 2
         devices:
           disks:
-            - bootOrder: 1
+            - bootOrder: 2
               cdrom:
                 bus: sata
               name: installer
-            - bootOrder: 2
+            - bootOrder: 1
               disk:
                 bus: virtio
               name: rootdisk
@@ -95,8 +95,8 @@ metadata:
   labels:
     app.kubernetes.io/name: kairos-kubevirt-evaluation
     app.kubernetes.io/part-of: kairos-evaluation
-    example.com/evaluation: kairos
-    example.com/evaluation-role: agent
+    home-server.dev/evaluation: kairos
+    home-server.dev/evaluation-role: agent
   name: kairos-agent
   namespace: vms
 spec:
@@ -105,7 +105,7 @@ spec:
     - metadata:
         labels:
           app.kubernetes.io/name: kairos-kubevirt-evaluation
-          example.com/evaluation: kairos
+          home-server.dev/evaluation: kairos
         name: kairos-agent-installer
       spec:
         source:
@@ -122,7 +122,7 @@ spec:
     - metadata:
         labels:
           app.kubernetes.io/name: kairos-kubevirt-evaluation
-          example.com/evaluation: kairos
+          home-server.dev/evaluation: kairos
         name: kairos-agent-root
       spec:
         source:
@@ -139,19 +139,19 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kairos-kubevirt-evaluation
-        example.com/evaluation: kairos
-        example.com/evaluation-role: agent
+        home-server.dev/evaluation: kairos
+        home-server.dev/evaluation-role: agent
     spec:
       domain:
         cpu:
           cores: 2
         devices:
           disks:
-            - bootOrder: 1
+            - bootOrder: 2
               cdrom:
                 bus: sata
               name: installer
-            - bootOrder: 2
+            - bootOrder: 1
               disk:
                 bus: virtio
               name: rootdisk

@@ -3,7 +3,7 @@ kind: Secret
 metadata:
   labels:
     app.kubernetes.io/name: kairos-kubevirt-evaluation
-    example.com/evaluation: kairos
+    home-server.dev/evaluation: kairos
   name: kairos-agent-user-data
   namespace: vms
 stringData:

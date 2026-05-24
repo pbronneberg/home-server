@@ -13,7 +13,7 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 ## Pilot Scope
 
 - Target namespace: `vms`
-- Resource label: `example.com/evaluation=kairos`
+- Resource label: `home-server.dev/evaluation=kairos`
 - VMs: `kairos-server` and `kairos-agent`
 - Nested K3s API Service: `kairos-k3s-api.vms.svc:6443`
 - StorageClass: `longhorn-virtualization`
@@ -122,7 +122,7 @@ launcher pod with the cloud-init disk mounted.
 Watch imports and VM state:
 
 ```bash
-kubectl -n vms get dv,pvc,vm,vmi -l example.com/evaluation=kairos -w
+kubectl -n vms get dv,pvc,vm,vmi -l home-server.dev/evaluation=kairos -w
 ```
 
 Start the server VM after the DataVolumes are ready:
@@ -132,10 +132,11 @@ virtctl -n vms start kairos-server
 virtctl -n vms console kairos-server
 ```
 
-Kairos should install to `/dev/vda`, reboot, and then boot from the persistent
-root disk. If it keeps returning to the installer, stop the VM and remove the
-installer disk or lower its boot priority in a local test overlay before
-continuing.
+The manifests give the persistent root disk a higher boot priority than the
+installer media. On a blank disk, firmware falls through to the installer; after
+install, the VM should boot from `/dev/vda`. If it keeps returning to the
+installer, stop the VM and verify `rootdisk` has `bootOrder: 1` and `installer`
+has `bootOrder: 2`, or temporarily detach the installer media before continuing.
 
 Start the agent only after the server API is reachable:
 
@@ -155,7 +156,7 @@ sudo k3s kubectl get nodes -o wide
 Record current state before destructive testing:
 
 ```bash
-kubectl -n vms get vm,dv,pvc -l example.com/evaluation=kairos -o wide
+kubectl -n vms get vm,dv,pvc -l home-server.dev/evaluation=kairos -o wide
 sudo k3s kubectl get nodes -o wide
 ```
 
@@ -184,7 +185,7 @@ apiVersion: snapshot.kubevirt.io/v1beta1
 kind: VirtualMachineSnapshot
 metadata:
   labels:
-    example.com/evaluation: kairos
+    home-server.dev/evaluation: kairos
   name: kairos-server-before-upgrade
 spec:
   source:
@@ -239,7 +240,7 @@ Stop and remove only the labeled evaluation resources:
 ```bash
 virtctl -n vms stop kairos-server
 virtctl -n vms stop kairos-agent
-kubectl -n vms delete vm,dv,pvc,svc,virtualmachinesnapshot -l example.com/evaluation=kairos
+kubectl -n vms delete vm,dv,pvc,svc,virtualmachinesnapshot -l home-server.dev/evaluation=kairos
 kubectl -n vms delete secret kairos-server-user-data kairos-agent-user-data
 ```
 

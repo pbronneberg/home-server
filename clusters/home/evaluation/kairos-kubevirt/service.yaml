@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/name: kairos-kubevirt-evaluation
-    example.com/evaluation: kairos
+    home-server.dev/evaluation: kairos
   name: kairos-k3s-api
   namespace: vms
 spec:
@@ -13,5 +13,5 @@ spec:
       protocol: TCP
       targetPort: 6443
   selector:
-    kubevirt.io/domain: kairos-server
+    vm.kubevirt.io/name: kairos-server
   type: ClusterIP
