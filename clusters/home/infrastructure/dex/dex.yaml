@@ -20,6 +20,7 @@ data:
         name: Kubernetes kubectl
         public: true
         redirectURIs:
+          - /device/callback
           - http://127.0.0.1:8000
           - http://127.0.0.1:18000
     connectors:
