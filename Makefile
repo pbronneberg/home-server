@@ -24,7 +24,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check
+.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify
 
 help:
 	@printf '%s\n' \
@@ -54,7 +54,13 @@ help:
 		'  scan-secrets   Scan the current working tree for secrets with Gitleaks.' \
 		'  scan-history   Scan all Git history for secrets with Gitleaks.' \
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
-		'  check-history-redactions Check Git history for public unsafe topology.'
+		'  check-history-redactions Check Git history for public unsafe topology.' \
+		'  kairos-preflight      Check live KubeVirt/CDI/KVM and Kairos VM resources.' \
+		'  kairos-install-server Install kairos-server, switch to root disk, and start it.' \
+		'  kairos-install-agent  Install kairos-agent, switch to root disk, and start it.' \
+		'  kairos-verify-server  Check kairos-server SSH and nested K3s readiness.' \
+		'  kairos-verify-agent   Check kairos-agent SSH and nested node readiness.' \
+		'  kairos-verify         Run all live Kairos KubeVirt acceptance checks.'
 
 ci: lint auth-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
 
@@ -204,3 +210,21 @@ check-public-redactions:
 
 check-history-redactions:
 	./scripts/check-history-redactions.sh
+
+kairos-preflight:
+	@bash scripts/kairos-kubevirt-check.sh preflight
+
+kairos-install-server:
+	@bash scripts/kairos-kubevirt-check.sh install-server
+
+kairos-install-agent:
+	@bash scripts/kairos-kubevirt-check.sh install-agent
+
+kairos-verify-server:
+	@bash scripts/kairos-kubevirt-check.sh server
+
+kairos-verify-agent:
+	@bash scripts/kairos-kubevirt-check.sh agent
+
+kairos-verify:
+	@bash scripts/kairos-kubevirt-check.sh all

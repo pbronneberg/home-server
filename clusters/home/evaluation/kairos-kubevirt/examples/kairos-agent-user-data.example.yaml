@@ -13,13 +13,14 @@ stringData:
     install:
       auto: true
       device: /dev/vda
-      reboot: true
+      poweroff: true
     k3s-agent:
       enabled: true
+      env:
+        K3S_TOKEN: "${KAIROS_K3S_TOKEN}"
+        K3S_URL: "https://kairos-k3s-api.vms.svc.cluster.local:6443"
       args:
         - "--node-name=kairos-agent"
-        - "--server=https://kairos-k3s-api.vms.svc.cluster.local:6443"
-        - "--token=${KAIROS_K3S_TOKEN}"
     users:
       - name: kairos
         lock_passwd: true
@@ -28,8 +29,15 @@ stringData:
         ssh_authorized_keys:
           - github:${GITHUB_USERNAME}
     stages:
+      boot:
+        - name: Enable SSH daemon
+          commands:
+            - |
+              set -eu
+              systemctl enable sshd.service || systemctl enable ssh.service || true
+              systemctl start sshd.service || systemctl start ssh.service || true
       network:
-        - name: Fetch operator SSH keys from GitHub
+        - name: Refresh operator SSH keys from GitHub
           commands:
             - |
               set -eu
@@ -41,21 +49,27 @@ stringData:
               chown kairos:kairos "$ssh_dir"
               chmod 0700 "$ssh_dir"
 
-              attempts=0
-              until wget -qO "$tmp" "https://github.com/${GITHUB_USERNAME}.keys" && [ -s "$tmp" ]; do
-                attempts=$((attempts + 1))
-                rm -f "$tmp"
-                if [ "$attempts" -ge 30 ]; then
-                  echo "failed to fetch GitHub SSH keys for ${GITHUB_USERNAME}" >&2
-                  exit 1
-                fi
-                sleep 10
-              done
+              if [ ! -s "$ssh_dir/authorized_keys" ]; then
+                attempts=0
+                while [ "$attempts" -lt 6 ]; do
+                  attempts=$((attempts + 1))
+                  if timeout 5 wget -qO "$tmp" "https://github.com/${GITHUB_USERNAME}.keys" && [ -s "$tmp" ]; then
+                    cp "$tmp" "$ssh_dir/authorized_keys"
+                    break
+                  fi
+                  rm -f "$tmp"
+                  sleep 2
+                done
+              fi
 
-              cp "$tmp" "$ssh_dir/authorized_keys"
-              chown kairos:kairos "$ssh_dir/authorized_keys"
-              chmod 0600 "$ssh_dir/authorized_keys"
+              if [ -s "$ssh_dir/authorized_keys" ]; then
+                chown kairos:kairos "$ssh_dir/authorized_keys"
+                chmod 0600 "$ssh_dir/authorized_keys"
+              else
+                echo "warning: no GitHub SSH keys rendered for ${GITHUB_USERNAME}; continuing boot" >&2
+              fi
+
               rm -f "$tmp"
-
-              systemctl enable --now sshd.service
+              systemctl enable sshd.service || systemctl enable ssh.service || true
+              systemctl start sshd.service || systemctl start ssh.service || true
 type: Opaque

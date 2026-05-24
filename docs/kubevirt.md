@@ -165,24 +165,25 @@ Watch imports and VM state:
 kubectl -n vms get dv,pvc,vm,vmi -l home-server.dev/evaluation=kairos -w
 ```
 
-Start the server VM after the DataVolumes are ready:
+Install and start the server VM after the DataVolumes are ready:
 
 ```bash
-virtctl -n vms start kairos-server
-virtctl -n vms console kairos-server
+make kairos-install-server
 ```
 
-The manifests give the persistent root disk a higher boot priority than the
-installer media. On a blank disk, firmware falls through to the installer; after
-install, the VM should boot from `/dev/vda`. If it keeps returning to the
-installer, stop the VM and verify `rootdisk` has `bootOrder: 1` and `installer`
-has `bootOrder: 2`, or temporarily detach the installer media before continuing.
+The install helper temporarily boots the installer media first, waits for
+Kairos to power off after installing to the persistent root disk, switches the
+VM back to root-disk-first boot, and starts the installed node.
 
-Start the agent only after the server API is reachable:
+The committed manifests keep the persistent root disk as the steady-state boot
+device. A clean blank disk may not reliably fall through to the installer on
+all KubeVirt firmware paths, so use the install helper for disposable clean
+boots instead of starting a fresh VM directly.
+
+Install and start the agent only after the server API is reachable:
 
 ```bash
-virtctl -n vms start kairos-agent
-virtctl -n vms console kairos-agent
+make kairos-install-agent
 ```
 
 After the server API is reachable, confirm OIDC discovery through the public
@@ -207,12 +208,15 @@ kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-cluster kairos-pil
   --insecure-skip-tls-verify=true
 kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github \
   --exec-api-version=client.authentication.k8s.io/v1 \
+  --exec-interactive-mode=Always \
   --exec-command=kubectl \
   --exec-arg=oidc-login \
   --exec-arg=get-token \
+  --exec-arg=--grant-type=device-code \
   --exec-arg=--oidc-issuer-url=https://auth.home.example/oauth2/callback/dex \
   --exec-arg=--oidc-client-id=kairos-kubernetes \
-  --exec-arg=--oidc-extra-scope=groups
+  --exec-arg=--oidc-extra-scope=groups \
+  --exec-arg=--token-cache-storage=disk
 kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-pilot \
   --cluster=kairos-pilot \
   --user=github

@@ -130,6 +130,18 @@ KVM, no existing `kairos-*` evaluation resources are present, `virtctl` and
 `kubectl oidc-login` are available, and the private OAuth/substitution Secrets
 exist.
 
+After the evaluation resources are reconciled, run the executable preflight
+harness before starting any VM:
+
+```bash
+make kairos-preflight
+```
+
+The harness fails if KubeVirt/CDI are not deployed, KVM is unavailable, the
+`longhorn-virtualization-test` StorageClass is missing, user-data Secrets are
+missing, VMs are missing, or any Kairos DataVolume has not imported
+successfully.
+
 ## First Boot And Install
 
 Reconcile the private SOPS overlay so the VM cloud-init Secrets exist, then
@@ -175,25 +187,56 @@ Watch imports and VM state:
 kubectl -n vms get dv,pvc,vm,vmi -l home-server.dev/evaluation=kairos -w
 ```
 
-Start the server VM after the DataVolumes are ready:
+Install and start the server VM after the DataVolumes are ready:
 
 ```bash
-virtctl -n vms start kairos-server
-virtctl -n vms console kairos-server
+make kairos-install-server
 ```
 
-The manifests give the persistent root disk a higher boot priority than the
-installer media. On a blank disk, firmware falls through to the installer; after
-install, the VM should boot from `/dev/vda`. If it keeps returning to the
-installer, stop the VM and verify `rootdisk` has `bootOrder: 1` and `installer`
-has `bootOrder: 2`, or temporarily detach the installer media before continuing.
+The install helper temporarily boots the installer media first, waits for
+Kairos to power off after installing to the persistent root disk, switches the
+VM back to root-disk-first boot, and starts the installed node.
 
-Start the agent only after the server API is reachable:
+Verify the server before starting the agent:
 
 ```bash
-virtctl -n vms start kairos-agent
-virtctl -n vms console kairos-agent
+make kairos-verify-server
 ```
+
+This check uses non-interactive `virtctl ssh` with `BatchMode=yes`, so it fails
+instead of prompting for a password when GitHub SSH keys were not rendered into
+the VM. It also verifies `k3s.service` is active, the nested API `/readyz`
+endpoint responds, and the `kairos-server` node exists.
+
+If your private key is not available through `SSH_AUTH_SOCK`, point the harness
+at one explicitly:
+
+```bash
+KAIROS_SSH_IDENTITY_FILE=~/.ssh/id_ed25519 make kairos-verify-server
+```
+
+The committed manifests keep the persistent root disk as the steady-state boot
+device. A clean blank disk may not reliably fall through to the installer on
+all KubeVirt firmware paths, so use the install helper for disposable clean
+boots instead of starting a fresh VM directly.
+
+Install and start the agent only after the server verification passes:
+
+```bash
+make kairos-install-agent
+```
+
+Then run the full live acceptance harness:
+
+```bash
+make kairos-verify
+```
+
+The full check repeats preflight, verifies SSH and K3s on the server, verifies
+SSH and `k3s-agent.service` on the agent, and waits for `kairos-agent` to become
+Ready in the nested cluster. Treat a harness failure as a failed disposable VM
+run: fix the GitOps input, delete the labeled evaluation resources, reconcile,
+and create clean VMs again.
 
 After the server API is reachable, confirm OIDC discovery through the public
 auth host. Use the live issuer URL from the private substitution Secret; the
@@ -217,12 +260,15 @@ kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-cluster kairos-pil
   --insecure-skip-tls-verify=true
 kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github \
   --exec-api-version=client.authentication.k8s.io/v1 \
+  --exec-interactive-mode=Always \
   --exec-command=kubectl \
   --exec-arg=oidc-login \
   --exec-arg=get-token \
+  --exec-arg=--grant-type=device-code \
   --exec-arg=--oidc-issuer-url=https://auth.home.example/oauth2/callback/dex \
   --exec-arg=--oidc-client-id=kairos-kubernetes \
-  --exec-arg=--oidc-extra-scope=groups
+  --exec-arg=--oidc-extra-scope=groups \
+  --exec-arg=--token-cache-storage=disk
 kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-pilot \
   --cluster=kairos-pilot \
   --user=github

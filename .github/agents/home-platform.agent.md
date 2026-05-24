@@ -61,6 +61,24 @@ and understandable.
 - Before making the repository public, run `make public-check` and follow
   `docs/publication-runbook.md`.
 
+## Live Pilot Harness Rules
+
+- For disposable infrastructure pilots, do not rely on runbook prose alone for
+  behaviors that can only be proven against a live workload. Add executable
+  harness checks when the work depends on SSH access, service readiness,
+  cluster joins, API health, storage attachment, or reconciliation side effects.
+- Make harness checks fail fast and non-interactively. For SSH, use batch mode
+  or equivalent so missing key trust fails as an error instead of prompting for
+  a password. For services, verify both the system service and the user-visible
+  API or health endpoint.
+- Wire new live harness checks into `make` targets and the relevant runbook.
+  Run the non-mutating checks when the live cluster state allows it; if a check
+  cannot be run safely, state the exact reason and the command the operator
+  should run next.
+- When a disposable pilot fails a live harness check, prefer fixing GitOps input
+  and recreating the disposable resource over in-place repair, unless the user
+  explicitly asks for recovery commands.
+
 ## OAuth2 And Traefik Auth Invariant
 
 - Keep `clusters/home/infrastructure/oauth2-proxy/github-oauth.yaml` on
