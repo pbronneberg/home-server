@@ -26,17 +26,30 @@ the `deploy/kairos-staging` label, and generates a PR-specific VM Kustomization
 plus installer Job inside the cluster. CI does not need a kubeconfig; it can
 build artifacts and, eventually, add or remove the PR label.
 
-Before enabling the trigger, create the GitHub auth Secret expected by the
-`ResourceSetInputProvider` in `flux-system`:
+Before enabling the trigger, create the GitHub App auth Secret expected by the
+`ResourceSetInputProvider` and generated PR `GitRepository` sources. Download the
+GitHub App private key to an ignored local path, then generate a SOPS-encrypted
+Secret:
 
 ```bash
-kubectl -n flux-system create secret generic github-auth \
-  --from-literal=username=flux \
-  --from-literal=password="${GITHUB_TOKEN}"
+mkdir -p .local/github-app
+# Save the downloaded GitHub App PEM as:
+# .local/github-app/home-server-flux-staging.private-key.pem
+
+flux create secret githubapp github-app-auth \
+  --namespace=flux-system \
+  --app-id="${GITHUB_APP_ID}" \
+  --app-installation-owner=pbronneberg \
+  --app-private-key=.local/github-app/home-server-flux-staging.private-key.pem \
+  --export > private/flux/home/github-app-auth.sops.yaml
+
+sops --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place private/flux/home/github-app-auth.sops.yaml
 ```
 
-The token needs read access to this repository and pull request metadata. A
-GitHub App Secret is also valid if you prefer that authentication mode.
+Add `github-app-auth.sops.yaml` to `private/flux/home/kustomization.yaml` before
+reconciling `infrastructure-private-secrets`. The app needs read-only repository
+contents and pull request metadata permissions for `pbronneberg/home-server`.
 
 Enable the controller path explicitly:
 

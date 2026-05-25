@@ -32,10 +32,11 @@ ephemeral PR staging cluster. Those Secrets should use the same object names as
 home workloads, but with disposable credentials and staging endpoints.
 
 Kairos PR staging uses Flux Operator's GitHub Pull Request ResourceSet pattern.
-Store the GitHub token or GitHub App credentials for the
-`ResourceSetInputProvider` as a SOPS-encrypted Secret named `github-auth` in the
-`flux-system` namespace before resuming `staging-kairos-prs`. The token should
-have read access to this repository and pull request metadata only.
+Store the GitHub App credentials for the `ResourceSetInputProvider` and
+generated PR `GitRepository` sources as a SOPS-encrypted Secret named
+`github-app-auth` in the `flux-system` namespace before resuming
+`staging-kairos-prs`. The app should have read-only repository contents and
+pull request metadata access for this repository only.
 
 Home Assistant is captured with two private Secrets:
 

@@ -131,7 +131,7 @@ spec:
   type: GitHubPullRequest
   url: https://github.com/pbronneberg/home-server
   secretRef:
-    name: github-auth
+    name: github-app-auth
   filter:
     labels:
       - deploy/kairos-staging
@@ -163,11 +163,11 @@ spec:
         namespace: flux-system
       spec:
         interval: 1m
-        provider: generic
+        provider: github
         ref:
           commit: << inputs.sha | quote >>
         secretRef:
-          name: github-auth
+          name: github-app-auth
         url: << inputs.repository | quote >>
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
