@@ -23,8 +23,11 @@ home definitions from the PR branch with staging-safe values.
 The intended trigger is the Flux Operator GitHub Pull Request ResourceSet
 pattern. The home cluster runs Flux Operator, scans this repository for PRs with
 the `deploy/kairos-staging` label, and generates a PR-specific VM Kustomization
-plus installer Job inside the cluster. CI does not need a kubeconfig; it can
-build artifacts and, eventually, add or remove the PR label.
+plus installer Job inside the cluster. The VM substrate is reconciled from the
+current home `flux-system` source so harness fixes do not require rebasing every
+PR; the nested staging cluster is bootstrapped against the PR branch. CI does not
+need a kubeconfig; it can build artifacts and, eventually, add or remove the PR
+label.
 
 Before enabling the trigger, create the GitHub App auth Secret expected by the
 `ResourceSetInputProvider` and generated PR `GitRepository` sources. Download the
@@ -61,8 +64,9 @@ flux reconcile kustomization staging-kairos-prs -n flux-system --with-source
 
 Then label one PR at a time with `deploy/kairos-staging`. The generated Job
 removes stale Kairos staging VMs/DataVolumes/PVCs, waits for Flux to recreate
-the VM substrate from the PR commit, installs the server and agent, and lets the
-server user-data bootstrap Flux inside the nested cluster against the PR branch.
+the VM substrate from the main home source, installs the server and agent, and
+lets the server user-data bootstrap Flux inside the nested cluster against the PR
+branch.
 
 Keep the normal `staging-kairos-kubevirt` Kustomization suspended while using
 this PR trigger; both paths own the same fixed VM names.

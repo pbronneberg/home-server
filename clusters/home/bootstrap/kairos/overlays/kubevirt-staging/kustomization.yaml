@@ -4,3 +4,18 @@ resources:
   - ../../base
   - service.yaml
   - virtualmachines.yaml
+patches:
+  - target:
+      kind: Secret
+      name: kairos-server-user-data
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: vms
+  - target:
+      kind: Secret
+      name: kairos-agent-user-data
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: vms

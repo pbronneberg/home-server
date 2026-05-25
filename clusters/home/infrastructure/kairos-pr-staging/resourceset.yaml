@@ -191,22 +191,6 @@ spec:
       kind: ResourceSetInputProvider
       name: kairos-pr-staging-pull-requests
   resources:
-    - apiVersion: source.toolkit.fluxcd.io/v1
-      kind: GitRepository
-      metadata:
-        labels:
-          app.kubernetes.io/name: kairos-pr-staging
-          home-server.dev/evaluation: kairos
-        name: kairos-staging-pr-<< inputs.id >>
-        namespace: flux-system
-      spec:
-        interval: 1m
-        provider: github
-        ref:
-          commit: << inputs.sha | quote >>
-        secretRef:
-          name: github-app-auth
-        url: << inputs.repository | quote >>
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -247,7 +231,7 @@ spec:
         prune: true
         sourceRef:
           kind: GitRepository
-          name: kairos-staging-pr-<< inputs.id >>
+          name: flux-system
         timeout: 10m
         wait: false
     - apiVersion: v1
@@ -432,14 +416,21 @@ spec:
           fi
 
           for i in $(seq 1 90); do
-            if kubectl -n "${namespace}" get secret kairos-server-user-data kairos-agent-user-data >/dev/null 2>&1               && kubectl -n "${namespace}" get vm kairos-server kairos-agent >/dev/null 2>&1; then
+            if kubectl -n "${namespace}" get secret kairos-server-user-data kairos-agent-user-data >/dev/null 2>&1 \
+              && kubectl -n "${namespace}" get vm kairos-server kairos-agent >/dev/null 2>&1; then
+              log 'found Kairos user-data Secrets and VMs'
               break
+            fi
+            if [ $((i % 6)) -eq 0 ]; then
+              log "waiting for vms/kairos user-data Secrets and VM definitions (${i}/90)"
             fi
             sleep 10
           done
 
-          kubectl -n "${namespace}" get secret kairos-server-user-data kairos-agent-user-data >/dev/null
-          kubectl -n "${namespace}" get vm kairos-server kairos-agent >/dev/null
+          kubectl -n "${namespace}" get secret kairos-server-user-data kairos-agent-user-data >/dev/null \
+            || fail 'missing vms/kairos-server-user-data or vms/kairos-agent-user-data Secret'
+          kubectl -n "${namespace}" get vm kairos-server kairos-agent >/dev/null \
+            || fail 'missing kairos-server or kairos-agent VirtualMachine'
           wait_datavolumes
           install_vm kairos-server
           install_vm kairos-agent
