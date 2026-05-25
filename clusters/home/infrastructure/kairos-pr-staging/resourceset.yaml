@@ -205,7 +205,7 @@ spec:
         namespace: flux-system
       spec:
         force: true
-        interval: 1m
+        interval: 6h
         path: ./clusters/home/bootstrap/kairos/overlays/kubevirt-staging
         postBuild:
           substituteFrom:
@@ -385,18 +385,44 @@ spec:
             wait_jsonpath virtualmachineinstance "$1" '{.status.phase}' Running 600 10
           }
 
+          wait_vmi_absent() {
+            vm="$1"
+            timeout_seconds="$2"
+            interval_seconds="${3:-10}"
+            elapsed=0
+
+            while [ "${elapsed}" -le "${timeout_seconds}" ]; do
+              if ! kubectl -n "${namespace}" get virtualmachineinstance "${vm}" >/dev/null 2>&1; then
+                log "virtualmachineinstance/${vm} is absent"
+                return 0
+              fi
+              sleep "${interval_seconds}"
+              elapsed=$((elapsed + interval_seconds))
+            done
+
+            fail "virtualmachineinstance/${vm} still exists after ${timeout_seconds}s"
+          }
+
           install_vm() {
             vm="$1"
             log "installing ${vm} from Kairos media"
             if kubectl -n "${namespace}" get virtualmachineinstance "${vm}" >/dev/null 2>&1; then
+              log "stopping existing ${vm} instance before reinstall"
               set_run_strategy "${vm}" Halted
+              wait_vmi_absent "${vm}" 1200 10
               wait_vm_stopped "${vm}"
             fi
 
+            log "booting ${vm} from Kairos install media"
             patch_boot_order "${vm}" 1 2
-            set_run_strategy "${vm}" Always
+            set_run_strategy "${vm}" Once
+            wait_vmi_running "${vm}"
+
+            log "waiting for ${vm} installer to power off"
+            wait_vmi_absent "${vm}" 1800 10
             wait_vm_stopped "${vm}"
 
+            log "booting ${vm} from installed disk"
             patch_boot_order "${vm}" 2 1
             set_run_strategy "${vm}" Always
             wait_vmi_running "${vm}"

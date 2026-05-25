@@ -9,7 +9,7 @@ metadata:
   name: kairos-server
   namespace: vms
 spec:
-  runStrategy: Halted
+  runStrategy: Manual
   dataVolumeTemplates:
     - metadata:
         labels:
@@ -107,7 +107,7 @@ metadata:
   name: kairos-agent
   namespace: vms
 spec:
-  runStrategy: Halted
+  runStrategy: Manual
   dataVolumeTemplates:
     - metadata:
         labels:
