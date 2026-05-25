@@ -1,0 +1,66 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-comment
+  namespace: flux-system
+spec:
+  type: githubpullrequestcomment
+  address: https://github.com/pbronneberg/home-server
+  secretRef:
+    name: github-app-auth
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-status
+  namespace: flux-system
+spec:
+  type: github
+  address: https://github.com/pbronneberg/home-server
+  secretRef:
+    name: github-app-auth
+  commitStatusExpr: "'kairos/pr-staging'"
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging-comments
+  namespace: flux-system
+spec:
+  eventSeverity: info
+  providerRef:
+    name: kairos-pr-comment
+  summary: Kairos PR staging reconciliation
+  eventSources:
+    - kind: Kustomization
+      name: "*"
+      namespace: flux-system
+      matchLabels:
+        app.kubernetes.io/name: kairos-pr-staging
+        home-server.dev/evaluation: kairos
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging-status
+  namespace: flux-system
+spec:
+  eventSeverity: info
+  providerRef:
+    name: kairos-pr-status
+  summary: Kairos PR staging reconciliation
+  eventSources:
+    - kind: Kustomization
+      name: "*"
+      namespace: flux-system
+      matchLabels:
+        app.kubernetes.io/name: kairos-pr-staging
+        home-server.dev/evaluation: kairos

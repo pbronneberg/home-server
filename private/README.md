@@ -36,8 +36,10 @@ Store the GitHub App credentials for the `ResourceSetInputProvider`, generated
 PR `GitRepository` sources, and Flux GitHub webhook Receiver as a SOPS-encrypted
 Secret named `github-app-auth` in the `flux-system` namespace before resuming
 `staging-kairos-prs`. The Secret also carries the Receiver HMAC `token` and
-`FLUX_WEBHOOK_HOST` substitution value. The app should have read-only repository
-contents and pull request metadata access for this repository only.
+`FLUX_WEBHOOK_HOST` substitution value. The app should have repository
+contents read-only access, pull request read/write access for Flux PR comments,
+and commit status read/write access for Flux commit statuses on this repository
+only.
 
 Home Assistant is captured with two private Secrets:
 

@@ -67,8 +67,10 @@ sops --encrypt --encrypted-regex '^(data|stringData)$' \
 Replace the placeholder `FLUX_WEBHOOK_HOST` value with the real public webhook
 host before configuring the GitHub App webhook. Add `github-app-auth.sops.yaml`
 to `private/flux/home/kustomization.yaml` before reconciling
-`infrastructure-private-secrets`. The app needs read-only repository contents
-and pull request metadata permissions for `pbronneberg/home-server`.
+`infrastructure-private-secrets`. The app needs repository contents
+read-only access, pull request read/write access for Flux PR comments, and
+commit status read/write access for Flux commit statuses on
+`pbronneberg/home-server`.
 
 Enable the controller path explicitly:
 
@@ -122,7 +124,12 @@ make staging-verify-agent
 The Kairos server user-data can bootstrap Flux inside the nested cluster when
 `KAIROS_STAGING_FLUX_BOOTSTRAP` is set to `true` by the PR ResourceSet. The
 bootstrap downloads the Flux manifests from the PR branch and patches the nested
-Flux `GitRepository` to follow that branch. In the home cluster, the PR ResourceSet also creates a per-PR GitHub App-authenticated `GitRepository` so the staging VM manifests are rendered from the PR branch itself.
+Flux `GitRepository` to follow that branch. In the home cluster, the PR
+ResourceSet also creates a per-PR GitHub App-authenticated `GitRepository` so the
+staging VM manifests are rendered from the PR branch itself. Flux
+notification-controller reports the generated Kairos Kustomization back to the
+pull request through a sticky PR comment and the `kairos/pr-staging` commit
+status.
 
 Create the `sops-age` Secret in the staging cluster before expecting
 `private/flux/staging` to reconcile. That overlay must contain staging-safe
