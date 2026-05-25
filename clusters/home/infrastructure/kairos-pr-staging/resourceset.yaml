@@ -356,7 +356,7 @@ spec:
         labels:
           app.kubernetes.io/name: kairos-pr-staging
           home-server.dev/evaluation: kairos
-        name: "kairos-staging-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>"
+        name: "kairos-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>"
         namespace: vms
       data:
         rehearse.sh: |
@@ -553,7 +553,7 @@ spec:
         labels:
           app.kubernetes.io/name: kairos-pr-staging
           home-server.dev/evaluation: kairos
-        name: "kairos-staging-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>"
+        name: "kairos-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>"
         namespace: vms
       spec:
         backoffLimit: 0
@@ -586,6 +586,6 @@ spec:
             volumes:
               - configMap:
                   defaultMode: 0555
-                  name: "kairos-staging-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>"
+                  name: "kairos-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>"
                 name: script
         ttlSecondsAfterFinished: 86400
