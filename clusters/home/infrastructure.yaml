@@ -395,6 +395,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  suspend: true
   timeout: 5m
   wait: true
