@@ -15,3 +15,4 @@ resources:
   - photobooth-app-values.sops.yaml
   - tls-proxies-values.sops.yaml
   - github-app-auth.sops.yaml
+  - github-webhook-token.sops.yaml

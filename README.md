@@ -255,9 +255,10 @@ SOPS_AGE_KEY_FILE=.sops/age/keys.txt \
 ```
 
 The `github-app-auth` Secret contains the GitHub App ID, exactly one installation
-selector (`githubAppInstallationOwner` in this repo), the private key, a `token`
-used by the Flux GitHub webhook Receiver for HMAC validation, and
-`FLUX_WEBHOOK_HOST` for the webhook Ingress hostname. The app needs
+selector (`githubAppInstallationOwner` in this repo), the private key, and
+`FLUX_WEBHOOK_HOST` for the webhook Ingress hostname. Keep the Receiver HMAC in
+`github-webhook-token`; Flux GitHub notification providers treat a `token` key as
+PAT auth, so the GitHub App auth Secret must stay free of webhook tokens. The app needs
 read-only repository contents, pull request read/write, commit status read/write,
 and the default metadata permission for
 `pbronneberg/home-server`. Pull request write is used only for Flux PR status
@@ -265,9 +266,9 @@ comments; commit status write is used for the `kairos/pr-staging` status check.
 
 Flux exposes a GitHub Receiver at `Receiver/github-webhook`. After it is ready,
 read `.status.webhookPath` and configure the GitHub App webhook URL as
-`https://<FLUX_WEBHOOK_HOST><webhookPath>`, using the same `token` value as the
-GitHub webhook secret. Subscribe the app webhook to push events; `ping` is only
-needed to validate delivery.
+`https://<FLUX_WEBHOOK_HOST><webhookPath>`, using the `token` value from the
+`github-webhook-token` Secret. Subscribe the app webhook to push events; `ping`
+is only needed to validate delivery.
 
 After bootstrap, inspect reconciliation from your kubeconfig:
 

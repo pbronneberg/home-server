@@ -11,7 +11,7 @@ spec:
     - ping
     - push
   secretRef:
-    name: github-app-auth
+    name: github-webhook-token
   resources:
     - apiVersion: source.toolkit.fluxcd.io/v1
       kind: GitRepository

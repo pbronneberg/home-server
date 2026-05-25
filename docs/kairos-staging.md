@@ -46,15 +46,13 @@ flux create secret githubapp github-app-auth \
   --app-private-key=.local/github-app/home-server-flux-staging.private-key.pem \
   --export > private/flux/home/github-app-auth.sops.yaml
 
-export TOKEN=$(openssl rand -hex 32)
 python3 - <<'PY'
-import os
 from pathlib import Path
 path = Path("private/flux/home/github-app-auth.sops.yaml")
 text = path.read_text()
 text = text.replace(
     "stringData:\n",
-    f"stringData:\n  token: {os.environ['TOKEN']}\n  FLUX_WEBHOOK_HOST: flux-webhook.home.example\n",
+    "stringData:\n  FLUX_WEBHOOK_HOST: flux-webhook.home.example\n",
     1,
 )
 path.write_text(text)
@@ -62,11 +60,21 @@ PY
 
 sops --encrypt --encrypted-regex '^(data|stringData)$' \
   --in-place private/flux/home/github-app-auth.sops.yaml
+
+WEBHOOK_TOKEN=$(openssl rand -hex 32)
+kubectl create secret generic github-webhook-token \
+  --namespace=flux-system \
+  --from-literal=token="${WEBHOOK_TOKEN}" \
+  --dry-run=client \
+  -o yaml > private/flux/home/github-webhook-token.sops.yaml
+sops --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place private/flux/home/github-webhook-token.sops.yaml
 ```
 
 Replace the placeholder `FLUX_WEBHOOK_HOST` value with the real public webhook
-host before configuring the GitHub App webhook. Add `github-app-auth.sops.yaml`
-to `private/flux/home/kustomization.yaml` before reconciling
+host before configuring the GitHub App webhook. Add both
+`github-app-auth.sops.yaml` and `github-webhook-token.sops.yaml` to
+`private/flux/home/kustomization.yaml` before reconciling
 `infrastructure-private-secrets`. The app needs repository contents
 read-only access, pull request read/write access for Flux PR comments, and
 commit status read/write access for Flux commit statuses on

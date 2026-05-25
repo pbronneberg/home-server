@@ -33,10 +33,12 @@ home workloads, but with disposable credentials and staging endpoints.
 
 Kairos PR staging uses Flux Operator's GitHub Pull Request ResourceSet pattern.
 Store the GitHub App credentials for the `ResourceSetInputProvider`, generated
-PR `GitRepository` sources, and Flux GitHub webhook Receiver as a SOPS-encrypted
+PR `GitRepository` sources, and Flux notification providers as a SOPS-encrypted
 Secret named `github-app-auth` in the `flux-system` namespace before resuming
-`staging-kairos-prs`. The Secret also carries the Receiver HMAC `token` and
-`FLUX_WEBHOOK_HOST` substitution value. The app should have repository
+`staging-kairos-prs`. The Secret also carries the `FLUX_WEBHOOK_HOST`
+substitution value. The Flux Receiver HMAC lives separately in
+`github-webhook-token` because Flux GitHub notification providers interpret a
+`token` key as PAT auth. The app should have repository
 contents read-only access, pull request read/write access for Flux PR comments,
 and commit status read/write access for Flux commit statuses on this repository
 only.
