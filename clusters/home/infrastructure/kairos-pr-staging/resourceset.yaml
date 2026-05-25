@@ -550,6 +550,7 @@ spec:
           event.toolkit.fluxcd.io/branch: << inputs.branch | quote >>
           event.toolkit.fluxcd.io/change_request: << inputs.id | quote >>
           event.toolkit.fluxcd.io/commit: << inputs.sha | quote >>
+          fluxcd.controlplane.io/force: enabled
         labels:
           app.kubernetes.io/name: kairos-pr-staging
           home-server.dev/evaluation: kairos
