@@ -264,11 +264,13 @@ and the default metadata permission for
 `pbronneberg/home-server`. Pull request write is used only for Flux PR status
 comments; commit status write is used for the `kairos/pr-staging` status check.
 
-Flux exposes a GitHub Receiver at `Receiver/github-webhook`. After it is ready,
-read `.status.webhookPath` and configure the GitHub App webhook URL as
-`https://<FLUX_WEBHOOK_HOST><webhookPath>`, using the `token` value from the
-`github-webhook-token` Secret. Subscribe the app webhook to push events; `ping`
-is only needed to validate delivery.
+Flux exposes a GitHub webhook bridge at `/github/pr-events`. Configure the
+GitHub App webhook URL as `https://<FLUX_WEBHOOK_HOST>/github/pr-events`, using
+the `token` value from the `github-webhook-token` Secret. Subscribe the app
+webhook to push and pull request events; `ping` is only needed to validate
+delivery. The bridge forwards `push` and `ping` payloads to
+`Receiver/github-webhook` and annotates the Kairos `ResourceSetInputProvider`
+when the `deploy/kairos-staging` label is added or removed.
 
 After bootstrap, inspect reconciliation from your kubeconfig:
 

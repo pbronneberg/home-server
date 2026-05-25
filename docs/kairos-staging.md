@@ -88,6 +88,13 @@ flux reconcile kustomization infrastructure-flux-operator -n flux-system --with-
 flux reconcile kustomization staging-kairos-prs -n flux-system --with-source
 ```
 
+Configure the GitHub App webhook URL to
+`https://<FLUX_WEBHOOK_HOST>/github/pr-events` with the secret from
+`github-webhook-token`, and subscribe it to push and pull request events. The
+webhook bridge forwards push events to the Flux Receiver and immediately nudges
+`ResourceSetInputProvider/kairos-pr-staging-pull-requests` when the
+`deploy/kairos-staging` label is added or removed.
+
 Then label one PR at a time with `deploy/kairos-staging`. The generated Job
 removes stale Kairos staging VMs/DataVolumes/PVCs, waits for Flux to recreate
 the VM substrate from the main home source, installs the server and agent, and
