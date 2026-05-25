@@ -1,0 +1,452 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging
+  namespace: flux-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging
+  namespace: flux-system
+rules:
+  - apiGroups:
+      - source.toolkit.fluxcd.io
+    resources:
+      - gitrepositories
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - kustomize.toolkit.fluxcd.io
+    resources:
+      - kustomizations
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging
+  namespace: flux-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kairos-pr-staging
+subjects:
+  - kind: ServiceAccount
+    name: kairos-pr-staging
+    namespace: flux-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging
+  namespace: vms
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging
+  namespace: vms
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kairos-pr-staging
+subjects:
+  - kind: ServiceAccount
+    name: kairos-pr-staging
+    namespace: flux-system
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSetInputProvider
+metadata:
+  annotations:
+    fluxcd.controlplane.io/reconcileEvery: 10m
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging-pull-requests
+  namespace: flux-system
+spec:
+  type: GitHubPullRequest
+  url: https://github.com/pbronneberg/home-server
+  secretRef:
+    name: github-auth
+  filter:
+    labels:
+      - deploy/kairos-staging
+  defaultValues:
+    repository: https://github.com/pbronneberg/home-server
+    rawBase: https://raw.githubusercontent.com/pbronneberg/home-server
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  labels:
+    app.kubernetes.io/name: kairos-pr-staging
+  name: kairos-pr-staging
+  namespace: flux-system
+spec:
+  serviceAccountName: kairos-pr-staging
+  inputsFrom:
+    - apiVersion: fluxcd.controlplane.io/v1
+      kind: ResourceSetInputProvider
+      name: kairos-pr-staging-pull-requests
+  resources:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      metadata:
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-pr-<< inputs.id >>
+        namespace: flux-system
+      spec:
+        interval: 1m
+        provider: generic
+        ref:
+          commit: << inputs.sha | quote >>
+        secretRef:
+          name: github-auth
+        url: << inputs.repository | quote >>
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        annotations:
+          event.toolkit.fluxcd.io/branch: << inputs.branch | quote >>
+          event.toolkit.fluxcd.io/change_request: << inputs.id | quote >>
+          event.toolkit.fluxcd.io/commit: << inputs.sha | quote >>
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-vms-pr-<< inputs.id >>
+        namespace: flux-system
+      spec:
+        force: true
+        interval: 1m
+        path: ./clusters/home/bootstrap/kairos/overlays/kubevirt-staging
+        postBuild:
+          substituteFrom:
+            - kind: Secret
+              name: kairos-staging-values
+          substitute:
+            KAIROS_SERVER_HOSTNAME: kairos-server
+            KAIROS_SERVER_INSTALL_DEVICE: /dev/vda
+            KAIROS_SERVER_NODE_NAME: kairos-server
+            KAIROS_AGENT_HOSTNAME: kairos-agent
+            KAIROS_AGENT_INSTALL_DEVICE: /dev/vda
+            KAIROS_AGENT_NODE_NAME: kairos-agent
+            KAIROS_AGENT_K3S_URL: https://kairos-k3s-api.vms.svc.home-server.bronneberg.local:6443
+            KAIROS_CLUSTER_CIDR: 198.18.0.0/16
+            KAIROS_SERVICE_CIDR: 198.19.0.0/16
+            KAIROS_CLUSTER_DNS: 198.19.0.10
+            KAIROS_CLUSTER_DOMAIN: home-server.bronneberg.local
+            GITHUB_DEX_SUBJECT: CgtwYnJvbm5lYmVyZxIGZ2l0aHVi
+            KAIROS_STAGING_FLUX_BOOTSTRAP: "true"
+            KAIROS_STAGING_GIT_BRANCH: << inputs.branch | quote >>
+            KAIROS_STAGING_GIT_URL: << inputs.repository | quote >>
+            KAIROS_STAGING_GIT_RAW_BASE: << inputs.rawBase | quote >>
+        prune: true
+        sourceRef:
+          kind: GitRepository
+          name: kairos-staging-pr-<< inputs.id >>
+        timeout: 10m
+        wait: false
+    - apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-rehearsal-pr-<< inputs.id >>
+        namespace: vms
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-rehearsal-pr-<< inputs.id >>
+        namespace: vms
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - pods
+            - pods/log
+            - services
+            - secrets
+            - persistentvolumeclaims
+          verbs:
+            - get
+            - list
+            - watch
+        - apiGroups:
+            - ""
+          resources:
+            - persistentvolumeclaims
+          verbs:
+            - delete
+        - apiGroups:
+            - cdi.kubevirt.io
+          resources:
+            - datavolumes
+          verbs:
+            - get
+            - list
+            - watch
+            - delete
+        - apiGroups:
+            - kubevirt.io
+          resources:
+            - virtualmachines
+            - virtualmachineinstances
+          verbs:
+            - get
+            - list
+            - watch
+            - patch
+            - delete
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-rehearsal-pr-<< inputs.id >>
+        namespace: vms
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: kairos-staging-rehearsal-pr-<< inputs.id >>
+      subjects:
+        - kind: ServiceAccount
+          name: kairos-staging-rehearsal-pr-<< inputs.id >>
+          namespace: vms
+    - apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-rehearsal-pr-<< inputs.id >>
+        namespace: vms
+      data:
+        rehearse.sh: |
+          #!/bin/sh
+          set -eu
+
+          namespace="${KAIROS_NAMESPACE:-vms}"
+          clean="${KAIROS_REHEARSAL_CLEAN:-true}"
+
+          log() {
+            printf '[kairos-pr-staging] %s\n' "$*"
+          }
+
+          fail() {
+            printf '[kairos-pr-staging] ERROR: %s\n' "$*" >&2
+            exit 1
+          }
+
+          jsonpath() {
+            kubectl -n "${namespace}" get "$1" "$2" -o "jsonpath=$3"
+          }
+
+          wait_jsonpath() {
+            resource="$1"
+            name="$2"
+            path="$3"
+            expected="$4"
+            timeout_seconds="$5"
+            interval_seconds="${6:-10}"
+            elapsed=0
+            value=""
+
+            while [ "${elapsed}" -le "${timeout_seconds}" ]; do
+              value="$(jsonpath "${resource}" "${name}" "${path}" 2>/dev/null || true)"
+              if [ "${value}" = "${expected}" ]; then
+                log "${resource}/${name} reached ${path}=${expected}"
+                return 0
+              fi
+              sleep "${interval_seconds}"
+              elapsed=$((elapsed + interval_seconds))
+            done
+
+            fail "${resource}/${name} did not reach ${path}=${expected}; last value: ${value:-<empty>}"
+          }
+
+          patch_boot_order() {
+            vm="$1"
+            installer_order="$2"
+            root_order="$3"
+            kubectl -n "${namespace}" patch vm "${vm}" --type=json -p "[{\"op\":\"replace\",\"path\":\"/spec/template/spec/domain/devices/disks/0/bootOrder\",\"value\":${installer_order}},{\"op\":\"replace\",\"path\":\"/spec/template/spec/domain/devices/disks/1/bootOrder\",\"value\":${root_order}}]" >/dev/null
+          }
+
+          set_run_strategy() {
+            vm="$1"
+            strategy="$2"
+            kubectl -n "${namespace}" patch vm "${vm}" --type=merge -p "{\"spec\":{\"runStrategy\":\"${strategy}\"}}" >/dev/null
+          }
+
+          wait_datavolumes() {
+            for dv in kairos-server-installer kairos-server-root kairos-agent-installer kairos-agent-root; do
+              kubectl -n "${namespace}" get datavolume "${dv}" >/dev/null
+              wait_jsonpath datavolume "${dv}" '{.status.phase}' Succeeded 900 10
+            done
+          }
+
+          wait_vm_stopped() {
+            wait_jsonpath virtualmachine "$1" '{.status.printableStatus}' Stopped 1200 10
+          }
+
+          wait_vmi_running() {
+            wait_jsonpath virtualmachineinstance "$1" '{.status.phase}' Running 600 10
+          }
+
+          install_vm() {
+            vm="$1"
+            log "installing ${vm} from Kairos media"
+            if kubectl -n "${namespace}" get virtualmachineinstance "${vm}" >/dev/null 2>&1; then
+              set_run_strategy "${vm}" Halted
+              wait_vm_stopped "${vm}"
+            fi
+
+            patch_boot_order "${vm}" 1 2
+            set_run_strategy "${vm}" Always
+            wait_vm_stopped "${vm}"
+
+            patch_boot_order "${vm}" 2 1
+            set_run_strategy "${vm}" Always
+            wait_vmi_running "${vm}"
+            log "${vm} is running from installed disk"
+          }
+
+          if [ "${clean}" = "true" ]; then
+            log 'cleaning stale Kairos staging VMs and volumes before PR rehearsal'
+            for vm in kairos-agent kairos-server; do
+              if kubectl -n "${namespace}" get vm "${vm}" >/dev/null 2>&1; then
+                set_run_strategy "${vm}" Halted || true
+              fi
+            done
+            kubectl -n "${namespace}" delete vm kairos-agent kairos-server --ignore-not-found
+            kubectl -n "${namespace}" delete datavolume               kairos-agent-root kairos-server-root kairos-agent-installer kairos-server-installer               --ignore-not-found
+            kubectl -n "${namespace}" delete pvc -l home-server.dev/evaluation=kairos --ignore-not-found
+          fi
+
+          for i in $(seq 1 90); do
+            if kubectl -n "${namespace}" get secret kairos-server-user-data kairos-agent-user-data >/dev/null 2>&1               && kubectl -n "${namespace}" get vm kairos-server kairos-agent >/dev/null 2>&1; then
+              break
+            fi
+            sleep 10
+          done
+
+          kubectl -n "${namespace}" get secret kairos-server-user-data kairos-agent-user-data >/dev/null
+          kubectl -n "${namespace}" get vm kairos-server kairos-agent >/dev/null
+          wait_datavolumes
+          install_vm kairos-server
+          install_vm kairos-agent
+          log 'Kairos PR staging VMs are installed and running; server user-data bootstraps Flux inside the nested cluster'
+    - apiVersion: batch/v1
+      kind: Job
+      metadata:
+        annotations:
+          event.toolkit.fluxcd.io/branch: << inputs.branch | quote >>
+          event.toolkit.fluxcd.io/change_request: << inputs.id | quote >>
+          event.toolkit.fluxcd.io/commit: << inputs.sha | quote >>
+        labels:
+          app.kubernetes.io/name: kairos-pr-staging
+          home-server.dev/evaluation: kairos
+        name: kairos-staging-rehearsal-pr-<< inputs.id >>
+        namespace: vms
+      spec:
+        backoffLimit: 0
+        template:
+          metadata:
+            labels:
+              app.kubernetes.io/name: kairos-pr-staging
+              home-server.dev/evaluation: kairos
+          spec:
+            containers:
+              - command:
+                  - /bin/sh
+                  - /scripts/rehearse.sh
+                env:
+                  - name: KAIROS_NAMESPACE
+                    value: vms
+                  - name: KAIROS_REHEARSAL_CLEAN
+                    value: "true"
+                image: bitnami/kubectl:1.36.1
+                imagePullPolicy: IfNotPresent
+                name: rehearse
+                volumeMounts:
+                  - mountPath: /scripts
+                    name: script
+                    readOnly: true
+            restartPolicy: Never
+            serviceAccountName: kairos-staging-rehearsal-pr-<< inputs.id >>
+            volumes:
+              - configMap:
+                  defaultMode: 0555
+                  name: kairos-staging-rehearsal-pr-<< inputs.id >>
+                name: script
+        ttlSecondsAfterFinished: 86400

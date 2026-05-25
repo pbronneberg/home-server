@@ -18,10 +18,47 @@ cluster, using the home workload definitions from the PR branch.
 Do not copy workload manifests into `clusters/staging`. The point is to test the
 home definitions from the PR branch with staging-safe values.
 
-## Clean VM Install
+## PR Rehearsal Trigger
 
-Review or rotate the small home-owned VM bootstrap value Secret, then reconcile
-the home-side substrate. Flux combines the encrypted values with public
+The intended trigger is the Flux Operator GitHub Pull Request ResourceSet
+pattern. The home cluster runs Flux Operator, scans this repository for PRs with
+the `deploy/kairos-staging` label, and generates a PR-specific VM Kustomization
+plus installer Job inside the cluster. CI does not need a kubeconfig; it can
+build artifacts and, eventually, add or remove the PR label.
+
+Before enabling the trigger, create the GitHub auth Secret expected by the
+`ResourceSetInputProvider` in `flux-system`:
+
+```bash
+kubectl -n flux-system create secret generic github-auth \
+  --from-literal=username=flux \
+  --from-literal=password="${GITHUB_TOKEN}"
+```
+
+The token needs read access to this repository and pull request metadata. A
+GitHub App Secret is also valid if you prefer that authentication mode.
+
+Enable the controller path explicitly:
+
+```bash
+flux resume kustomization staging-kairos-prs -n flux-system
+flux reconcile kustomization infrastructure-flux-operator -n flux-system --with-source
+flux reconcile kustomization staging-kairos-prs -n flux-system --with-source
+```
+
+Then label one PR at a time with `deploy/kairos-staging`. The generated Job
+removes stale Kairos staging VMs/DataVolumes/PVCs, waits for Flux to recreate
+the VM substrate from the PR commit, installs the server and agent, and lets the
+server user-data bootstrap Flux inside the nested cluster against the PR branch.
+
+Keep the normal `staging-kairos-kubevirt` Kustomization suspended while using
+this PR trigger; both paths own the same fixed VM names.
+
+## Manual VM Install
+
+The manual path remains useful while debugging the VM substrate itself. Review
+or rotate the small home-owned VM bootstrap value Secret, then reconcile the
+home-side substrate. Flux combines the encrypted values with public
 substitutions from `clusters/home/infrastructure.yaml`:
 
 ```bash
@@ -32,7 +69,7 @@ flux reconcile kustomization staging-kairos-kubevirt -n flux-system
 make staging-preflight
 ```
 
-For a clean staging run, delete only the staging root DataVolumes after stopping
+For a clean manual run, delete only the staging root DataVolumes after stopping
 both VMs. The installer and root disks are disposable for this cluster:
 
 ```bash
@@ -47,21 +84,18 @@ make staging-install-agent
 make staging-verify-agent
 ```
 
-## PR Flux Bootstrap
+## Nested Flux
 
-After the staging K3s API is reachable, bootstrap Flux to `clusters/staging` on
-the PR branch being tested. Keep the bootstrap kubeconfig outside git.
-
-```bash
-mkdir -p .local/kairos
-virtctl -n vms port-forward vm/kairos-server 16443:6443
-
-flux bootstrap github   --owner=pbronneberg   --repository=home-server   --branch=<pr-branch>   --path=clusters/staging   --personal   --kubeconfig=.local/kairos/staging-kubeconfig
-```
+The Kairos server user-data can bootstrap Flux inside the nested cluster when
+`KAIROS_STAGING_FLUX_BOOTSTRAP` is set to `true` by the PR ResourceSet. The
+bootstrap downloads the Flux manifests from the PR branch and patches the nested
+Flux `GitRepository` to follow that branch.
 
 Create the `sops-age` Secret in the staging cluster before expecting
 `private/flux/staging` to reconcile. That overlay must contain staging-safe
-runtime Secrets with the same names expected by the home manifests.
+runtime Secrets with the same names expected by the home manifests. A later
+hardening step should inject a staging-only age key declaratively instead of
+using a manual kubeconfig.
 
 ## Acceptance
 

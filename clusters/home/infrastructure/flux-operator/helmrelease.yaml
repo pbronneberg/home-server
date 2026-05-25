@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  chart:
+    spec:
+      chart: flux-operator
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: flux-operator
+        namespace: flux-system
+      version: 0.50.0
+  install:
+    crds: Create
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  releaseName: flux-operator
+  timeout: 5m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    web:
+      enabled: false

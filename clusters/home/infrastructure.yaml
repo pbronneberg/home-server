@@ -79,6 +79,10 @@ spec:
       KAIROS_CLUSTER_DNS: 10.245.0.10
       KAIROS_CLUSTER_DOMAIN: home-server.bronneberg.local
       GITHUB_DEX_SUBJECT: CgtwYnJvbm5lYmVyZxIGZ2l0aHVi
+      KAIROS_STAGING_FLUX_BOOTSTRAP: "false"
+      KAIROS_STAGING_GIT_BRANCH: main
+      KAIROS_STAGING_GIT_URL: https://github.com/pbronneberg/home-server
+      KAIROS_STAGING_GIT_RAW_BASE: https://raw.githubusercontent.com/pbronneberg/home-server
   prune: true
   sourceRef:
     kind: GitRepository
@@ -118,6 +122,23 @@ spec:
     kind: GitRepository
     name: flux-system
   timeout: 2m
+  wait: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure-flux-operator
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-sources
+  interval: 10m
+  path: ./clusters/home/infrastructure/flux-operator
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
   wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -346,6 +367,10 @@ spec:
       KAIROS_CLUSTER_DNS: 198.19.0.10
       KAIROS_CLUSTER_DOMAIN: home-server.bronneberg.local
       GITHUB_DEX_SUBJECT: CgtwYnJvbm5lYmVyZxIGZ2l0aHVi
+      KAIROS_STAGING_FLUX_BOOTSTRAP: "true"
+      KAIROS_STAGING_GIT_BRANCH: main
+      KAIROS_STAGING_GIT_URL: https://github.com/pbronneberg/home-server
+      KAIROS_STAGING_GIT_RAW_BASE: https://raw.githubusercontent.com/pbronneberg/home-server
   prune: true
   sourceRef:
     kind: GitRepository
@@ -353,3 +378,23 @@ spec:
   suspend: true
   timeout: 10m
   wait: false
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: staging-kairos-prs
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-flux-operator
+    - name: infrastructure-private-secrets
+    - name: infrastructure-virtualization
+  interval: 10m
+  path: ./clusters/home/infrastructure/kairos-pr-staging
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  suspend: true
+  timeout: 5m
+  wait: true

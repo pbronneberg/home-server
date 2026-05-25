@@ -62,3 +62,13 @@ spec:
   interval: 1h
   url: https://prometheus-community.github.io/helm-charts
 ---
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 1h
+  type: oci
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts

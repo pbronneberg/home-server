@@ -52,6 +52,7 @@ stringData:
               set -eu
               systemctl enable sshd.service || systemctl enable ssh.service || true
               systemctl start sshd.service || systemctl start ssh.service || true
+              systemctl enable kairos-staging-flux-bootstrap.service || true
       network:
         - name: Refresh operator SSH keys from GitHub
           commands:
@@ -89,6 +90,56 @@ stringData:
               systemctl enable sshd.service || systemctl enable ssh.service || true
               systemctl start sshd.service || systemctl start ssh.service || true
     write_files:
+      - path: /usr/local/sbin/kairos-staging-flux-bootstrap.sh
+        permissions: "0700"
+        owner: root:root
+        content: |
+          #!/bin/sh
+          set -eu
+
+          if [ "${KAIROS_STAGING_FLUX_BOOTSTRAP}" != "true" ]; then
+            exit 0
+          fi
+
+          branch="${KAIROS_STAGING_GIT_BRANCH}"
+          repo_url="${KAIROS_STAGING_GIT_URL}"
+          raw_base="${KAIROS_STAGING_GIT_RAW_BASE}/${KAIROS_STAGING_GIT_BRANCH}"
+          work_dir="/run/kairos-staging-flux-bootstrap"
+          sync_file="${work_dir}/gotk-sync.yaml"
+
+          mkdir -p "${work_dir}"
+
+          until /usr/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
+            sleep 5
+          done
+
+          wget -qO - "${raw_base}/clusters/staging/flux-system/gotk-components.yaml" \
+            | /usr/bin/k3s kubectl apply -f -
+
+          wget -qO "${sync_file}" \
+            "${raw_base}/clusters/staging/flux-system/gotk-sync.yaml"
+          sed -i \
+            -e "s|url: .*|url: ${repo_url}|" \
+            -e "s|branch: .*|branch: ${branch}|" \
+            "${sync_file}"
+          /usr/bin/k3s kubectl apply -f "${sync_file}"
+      - path: /etc/systemd/system/kairos-staging-flux-bootstrap.service
+        permissions: "0644"
+        owner: root:root
+        content: |
+          [Unit]
+          Description=Bootstrap Flux for the Kairos PR staging cluster
+          Wants=k3s.service network-online.target
+          After=k3s.service network-online.target
+          ConditionPathExists=/usr/local/sbin/kairos-staging-flux-bootstrap.sh
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/local/sbin/kairos-staging-flux-bootstrap.sh
+          RemainAfterExit=yes
+
+          [Install]
+          WantedBy=multi-user.target
       - path: /var/lib/rancher/k3s/server/manifests/kairos-oidc-admin-binding.yaml
         permissions: "0600"
         owner: root:root
