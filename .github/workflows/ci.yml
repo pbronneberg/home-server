@@ -11,6 +11,7 @@ on:
       - ".yamllint.yml"
       - "renovate.json"
       - "README.md"
+      - "scripts/**"
       - "application/**"
       - "clusters/**"
       - "private/**"
@@ -26,6 +27,7 @@ on:
       - ".yamllint.yml"
       - "renovate.json"
       - "README.md"
+      - "scripts/**"
       - "application/**"
       - "clusters/**"
       - "private/**"
@@ -78,6 +80,8 @@ jobs:
 
       - name: Install linters
         run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes ripgrep
           python -m pip install --upgrade pip
           python -m pip install "yamllint==${YAMLLINT_VERSION}"
           go install "github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}"
