@@ -473,7 +473,7 @@ spec:
                     value: vms
                   - name: KAIROS_REHEARSAL_CLEAN
                     value: "true"
-                image: registry.k8s.io/kubectl:v1.34.3
+                image: alpine/kubectl:1.34.2
                 imagePullPolicy: IfNotPresent
                 name: rehearse
                 volumeMounts:
