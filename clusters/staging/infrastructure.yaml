@@ -43,42 +43,7 @@ spec:
   dependsOn:
     - name: infrastructure-namespaces
   interval: 10m
-  path: ./private/flux/home
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  timeout: 2m
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: bootstrap-kairos
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-namespaces
-    - name: infrastructure-private-secrets
-  interval: 10m
-  path: ./clusters/home/bootstrap/kairos/base
-  postBuild:
-    substituteFrom:
-      - kind: Secret
-        name: kairos-bootstrap-values
-    substitute:
-      KAIROS_SERVER_HOSTNAME: kairos-server
-      KAIROS_SERVER_INSTALL_DEVICE: /dev/vda
-      KAIROS_SERVER_NODE_NAME: kairos-server
-      KAIROS_AGENT_HOSTNAME: kairos-agent
-      KAIROS_AGENT_INSTALL_DEVICE: /dev/vda
-      KAIROS_AGENT_NODE_NAME: kairos-agent
-      KAIROS_AGENT_K3S_URL: https://kairos-k3s-api.vms.svc.cluster.local:6443
-      KAIROS_CLUSTER_CIDR: 10.244.0.0/16
-      KAIROS_SERVICE_CIDR: 10.245.0.0/16
-      KAIROS_CLUSTER_DNS: 10.245.0.10
-      KAIROS_CLUSTER_DOMAIN: home-server.bronneberg.local
-      GITHUB_DEX_SUBJECT: CgtwYnJvbm5lYmVyZxIGZ2l0aHVi
+  path: ./private/flux/staging
   prune: true
   sourceRef:
     kind: GitRepository
@@ -123,56 +88,6 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: infrastructure-kured
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-sources
-  interval: 10m
-  path: ./clusters/home/infrastructure/kured
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  timeout: 5m
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: infrastructure-system-upgrade-controller
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-namespaces
-  interval: 10m
-  path: ./clusters/home/infrastructure/system-upgrade-controller
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  timeout: 5m
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: infrastructure-system-upgrade-plans
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-system-upgrade-controller
-  interval: 10m
-  path: ./clusters/home/infrastructure/system-upgrade-plans
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  timeout: 2m
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
   name: infrastructure-longhorn
   namespace: flux-system
 spec:
@@ -184,7 +99,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  timeout: 5m
+  timeout: 10m
   wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -202,40 +117,6 @@ spec:
     kind: GitRepository
     name: flux-system
   timeout: 2m
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: infrastructure-virtualization-operators
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-longhorn-storageclasses
-  interval: 10m
-  path: ./clusters/home/infrastructure/virtualization-operators
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  timeout: 10m
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: infrastructure-virtualization
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-virtualization-operators
-  interval: 10m
-  path: ./clusters/home/infrastructure/virtualization
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  timeout: 10m
   wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -316,40 +197,3 @@ spec:
     name: flux-system
   timeout: 10m
   wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: staging-kairos-kubevirt
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: infrastructure-dex
-    - name: infrastructure-private-secrets
-    - name: infrastructure-virtualization
-  interval: 10m
-  path: ./clusters/home/bootstrap/kairos/overlays/kubevirt-staging
-  postBuild:
-    substituteFrom:
-      - kind: Secret
-        name: kairos-staging-values
-    substitute:
-      KAIROS_SERVER_HOSTNAME: kairos-server
-      KAIROS_SERVER_INSTALL_DEVICE: /dev/vda
-      KAIROS_SERVER_NODE_NAME: kairos-server
-      KAIROS_AGENT_HOSTNAME: kairos-agent
-      KAIROS_AGENT_INSTALL_DEVICE: /dev/vda
-      KAIROS_AGENT_NODE_NAME: kairos-agent
-      KAIROS_AGENT_K3S_URL: https://kairos-k3s-api.vms.svc.home-server.bronneberg.local:6443
-      KAIROS_CLUSTER_CIDR: 198.18.0.0/16
-      KAIROS_SERVICE_CIDR: 198.19.0.0/16
-      KAIROS_CLUSTER_DNS: 198.19.0.10
-      KAIROS_CLUSTER_DOMAIN: home-server.bronneberg.local
-      GITHUB_DEX_SUBJECT: CgtwYnJvbm5lYmVyZxIGZ2l0aHVi
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  suspend: true
-  timeout: 10m
-  wait: false

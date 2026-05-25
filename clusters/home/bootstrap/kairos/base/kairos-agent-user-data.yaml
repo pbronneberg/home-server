@@ -2,41 +2,26 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    app.kubernetes.io/name: kairos-kubevirt-evaluation
-    home-server.dev/evaluation: kairos
-  name: kairos-server-user-data
-  namespace: vms
+    app.kubernetes.io/name: kairos-bootstrap
+  name: kairos-agent-user-data
+  namespace: kairos-system
 stringData:
   userdata: |
     #cloud-config
-    hostname: kairos-server
+    hostname: ${KAIROS_AGENT_HOSTNAME}
     install:
       auto: true
-      device: /dev/vda
+      device: ${KAIROS_AGENT_INSTALL_DEVICE}
       poweroff: true
-    k3s:
+    k3s-agent:
       enabled: true
       env:
         K3S_TOKEN: "${KAIROS_K3S_TOKEN}"
+        K3S_URL: "${KAIROS_AGENT_K3S_URL}"
       args:
-        - "--node-name=kairos-server"
-        - "--secrets-encryption"
-        - "--cluster-cidr=198.18.0.0/16"
-        - "--service-cidr=198.19.0.0/16"
-        - "--cluster-dns=198.19.0.10"
-        - "--write-kubeconfig-mode=0600"
-        - "--kube-apiserver-arg=anonymous-auth=false"
-        - "--kube-apiserver-arg=profiling=false"
-        - "--kube-controller-manager-arg=profiling=false"
-        - "--kube-scheduler-arg=profiling=false"
+        - "--node-name=${KAIROS_AGENT_NODE_NAME}"
         - "--kubelet-arg=anonymous-auth=false"
         - "--kubelet-arg=read-only-port=0"
-        - "--kube-apiserver-arg=oidc-issuer-url=${DEX_ISSUER_URL}"
-        - "--kube-apiserver-arg=oidc-client-id=kairos-kubernetes"
-        - "--kube-apiserver-arg=oidc-username-claim=sub"
-        - "--kube-apiserver-arg=oidc-username-prefix=github:"
-        - "--kube-apiserver-arg=oidc-groups-claim=groups"
-        - "--kube-apiserver-arg=oidc-groups-prefix=github:"
     users:
       - name: kairos
         lock_passwd: true
@@ -88,23 +73,4 @@ stringData:
               rm -f "$tmp"
               systemctl enable sshd.service || systemctl enable ssh.service || true
               systemctl start sshd.service || systemctl start ssh.service || true
-    write_files:
-      - path: /var/lib/rancher/k3s/server/manifests/kairos-oidc-admin-binding.yaml
-        permissions: "0600"
-        owner: root:root
-        content: |
-          apiVersion: rbac.authorization.k8s.io/v1
-          kind: ClusterRoleBinding
-          metadata:
-            name: kairos-oidc-pilot-admin
-            labels:
-              home-server.dev/evaluation: kairos
-          subjects:
-            - kind: User
-              apiGroup: rbac.authorization.k8s.io
-              name: github:${GITHUB_DEX_SUBJECT}
-          roleRef:
-            kind: ClusterRole
-            apiGroup: rbac.authorization.k8s.io
-            name: cluster-admin
 type: Opaque

@@ -26,9 +26,20 @@ report_matches() {
   fi
 }
 
-report_matches \
-  "private RFC1918 network ranges must not be committed" \
-  '(^|[^0-9])((10|192\.168|172\.(1[6-9]|2[0-9]|3[0-1]))\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})([^0-9]|$)'
+rfc1918_matches="$(
+  rg -n -I "${scan_globs[@]}" -- '(^|[^0-9])((10|192\.168|172\.(1[6-9]|2[0-9]|3[0-1]))\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})([^0-9]|$)' . \
+    | grep -Ev 'KAIROS_(CLUSTER_CIDR|SERVICE_CIDR|CLUSTER_DNS):' || true
+)"
+
+if [ -n "$rfc1918_matches" ]; then
+  printf '%s
+' "$rfc1918_matches"
+  printf '
+Public-readiness check failed: private RFC1918 network ranges must not be committed
+
+' >&2
+  fail=1
+fi
 
 report_matches \
   "personal email providers must be replaced with user@example.com" \

@@ -74,6 +74,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   labels:
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+  name: kairos-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
     pod-security.kubernetes.io/audit: privileged
     pod-security.kubernetes.io/audit-version: latest
     pod-security.kubernetes.io/enforce: privileged

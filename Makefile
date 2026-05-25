@@ -24,7 +24,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify
+.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
 
 help:
 	@printf '%s\n' \
@@ -60,7 +60,12 @@ help:
 		'  kairos-install-agent  Install kairos-agent, switch to root disk, and start it.' \
 		'  kairos-verify-server  Check kairos-server SSH and nested K3s readiness.' \
 		'  kairos-verify-agent   Check kairos-agent SSH and nested node readiness.' \
-		'  kairos-verify         Run all live Kairos KubeVirt acceptance checks.'
+		'  kairos-verify         Run all live Kairos KubeVirt acceptance checks.' \
+		'  staging-preflight    Alias for kairos-preflight against staging VMs.' \
+		'  staging-install-server Install the staging Kairos server VM.' \
+		'  staging-install-agent  Install the staging Kairos agent VM.' \
+		'  staging-verify-flux Check Flux and platform smoke in the staging cluster.' \
+		'  staging-verify       Run staging VM and Flux acceptance checks.'
 
 ci: lint auth-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
 
@@ -228,3 +233,20 @@ kairos-verify-agent:
 
 kairos-verify:
 	@bash scripts/kairos-kubevirt-check.sh all
+
+
+staging-preflight: kairos-preflight
+
+staging-install-server: kairos-install-server
+
+staging-install-agent: kairos-install-agent
+
+staging-verify-server: kairos-verify-server
+
+staging-verify-agent: kairos-verify-agent
+
+staging-verify-flux:
+	@bash scripts/kairos-kubevirt-check.sh staging-flux
+
+staging-verify:
+	@bash scripts/kairos-kubevirt-check.sh staging

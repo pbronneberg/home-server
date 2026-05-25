@@ -6,6 +6,7 @@ namespace="${KAIROS_NAMESPACE:-vms}"
 ssh_user="${KAIROS_SSH_USER:-kairos}"
 known_hosts="${KAIROS_SSH_KNOWN_HOSTS:-.local/kairos/known_hosts}"
 identity_file="${KAIROS_SSH_IDENTITY_FILE:-}"
+staging_kubeconfig="${KAIROS_STAGING_KUBECONFIG:-.local/kairos/staging-kubeconfig}"
 kubectl_bin="${KUBECTL:-kubectl}"
 virtctl_bin="${VIRTCTL:-virtctl}"
 
@@ -267,6 +268,42 @@ check_agent() {
   log 'kairos-agent passed SSH, service, and nested-node readiness checks'
 }
 
+check_staging_flux() {
+  require_kubectl
+  [ -f "$staging_kubeconfig" ] || fail "missing staging kubeconfig: $staging_kubeconfig"
+
+  local timeout="${KAIROS_STAGING_FLUX_TIMEOUT:-15m}"
+  local expected_kustomizations=(
+    flux-system
+    infrastructure-namespaces
+    infrastructure-sources
+    infrastructure-private-secrets
+    infrastructure-cert-manager
+    infrastructure-cert-manager-issuers
+    infrastructure-longhorn
+    infrastructure-longhorn-storageclasses
+    infrastructure-oauth2-proxy
+    infrastructure-dex
+    infrastructure-traefik-middlewares
+    infrastructure-monitoring
+    workload-bronneberg-org
+    workload-cluster-status
+    workload-home-assistant
+    workload-photobooth
+    workload-tls-proxies
+    workload-longhorn-admin
+  )
+
+  log "checking Flux readiness in staging cluster using $staging_kubeconfig"
+  "$kubectl_bin" --kubeconfig "$staging_kubeconfig" -n flux-system rollout status deployment/source-controller --timeout=120s
+  "$kubectl_bin" --kubeconfig "$staging_kubeconfig" -n flux-system rollout status deployment/kustomize-controller --timeout=120s
+  "$kubectl_bin" --kubeconfig "$staging_kubeconfig" -n flux-system get gitrepository flux-system >/dev/null
+  "$kubectl_bin" --kubeconfig "$staging_kubeconfig" -n flux-system get kustomization "${expected_kustomizations[@]}" >/dev/null
+  "$kubectl_bin" --kubeconfig "$staging_kubeconfig" -n flux-system wait kustomization "${expected_kustomizations[@]}" --for=condition=Ready --timeout="$timeout"
+
+  log 'staging Flux controllers and home rehearsal Kustomizations are ready'
+}
+
 case "$mode" in
   preflight)
     check_preflight
@@ -283,12 +320,21 @@ case "$mode" in
   install-agent)
     install_vm kairos-agent
     ;;
+  staging-flux)
+    check_staging_flux
+    ;;
+  staging)
+    check_preflight
+    check_server
+    check_agent
+    check_staging_flux
+    ;;
   all)
     check_preflight
     check_server
     check_agent
     ;;
   *)
-    fail "unknown mode '$mode'; expected preflight, install-server, install-agent, server, agent, or all"
+    fail "unknown mode '$mode'; expected preflight, install-server, install-agent, server, agent, staging-flux, staging, or all"
     ;;
 esac

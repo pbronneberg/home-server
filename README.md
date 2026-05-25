@@ -78,7 +78,9 @@ is [docs/node-update-strategy.md](docs/node-update-strategy.md).
 KubeVirt is managed as cluster infrastructure for Linux, Windows, and staging
 K3s VMs. The version choice, Longhorn virtualization storage default, node
 requirements, and staging guidance are documented in
-[docs/kubevirt.md](docs/kubevirt.md).
+[docs/kubevirt.md](docs/kubevirt.md). Kairos staging and home hardware
+operations are documented in [docs/kairos-staging.md](docs/kairos-staging.md)
+and [docs/kairos-hardware.md](docs/kairos-hardware.md).
 
 Agent instructions live in [AGENTS.md](AGENTS.md) and
 [`.github/instructions/repository.instructions.md`](.github/instructions/repository.instructions.md).

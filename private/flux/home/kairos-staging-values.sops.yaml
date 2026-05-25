@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kairos-staging-values
+  namespace: flux-system
+type: Opaque
+stringData:
+  KAIROS_K3S_TOKEN: ENC[AES256_GCM,data:sIT15b2Rcl6mPAgex2eVfozmyjUX4OVyUwSdk5zpPsOqy+acH8iO4x8y1Q==,iv:smb+fGGeKpe/4R1hQopF5pY4SY15hSrnjRVqhXCmELE=,tag:RkbPnPYAw7X41Vm+qxGK/w==,type:str]
+  DEX_ISSUER_URL: ENC[AES256_GCM,data:Jx5ZnxlqcD8MzEaVlpqJ4CV1MbGqaKeTTUFFc3YZg2LDQEkn9KoBclaVRZltKik=,iv:DeEi8dcatp24NqIPK2BCp+xZjqAo21b0oPRo1AjgZsM=,tag:+Tv597zVv7WSyrTFXSUF6g==,type:str]
+  GITHUB_USERNAME: ENC[AES256_GCM,data:ZHqUbRldonOd4a0=,iv:/Dc1R3P6wp/UUJfbJ+rMVFV8rtNBq/jhXelJLsYeZ+E=,tag:ZuN1INLHs1fpMDK1HSunPA==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBUR2NIbXVWZ2gyWnMzWnFw
+        RjFRN2xFVk0vcmd5d3dIcXdBN1B1eklCL0RrCkxUTmNuTmY0cmg5K2xwQmpMVko2
+        MXR0SENmSkROMjBSaXhVblZ2bnpvSlEKLS0tIEtmaVNDRjhhcWFCNGwzbURmZ1Er
+        VEsraXV5RzNKSC9CWDRmUUZJYjB6ZTgKhYovRJgG1IyZQ1sMbnUvELeGfzHPHKmW
+        4NW1k2iRUiTDw0jvzd+Gdk9jukFU6KHJmoMiKTNZWxxp1JaEJ7/7UA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-05-25T08:27:24Z"
+  mac: ENC[AES256_GCM,data:FJ19Engp12goDXq+dLbKblPtb2hb6X/JAlMN0uVecRjTYZw9L4TYlwzCHjQUPjlwVD35vaygt9bg2TyXHVn3hHpLQp0PeL5y4vkmM+K9vIqMabXop95BQEW0hUGk5pRiHQ2pXb2ihwADJ6k88jJ8/gy8XmMHcOAIBRuFirx2Xmw=,iv:XmDL0Ifi9cgdeJrAVwRrpnmfUo4DtGIi9FhoHrD6gLA=,tag:Ze9F1rPTyzv2j8MK6Zz8Zw==,type:str]
+  version: 3.13.1

@@ -18,10 +18,18 @@ Secret named `sops-age` in the `flux-system` namespace before those manifests
 can reconcile. Workload Helm values that contain real hostnames or LAN
 addresses belong here as encrypted Kubernetes Secrets.
 
-Kairos KubeVirt evaluation user-data lives in
-`kairos-server-user-data.sops.yaml` and `kairos-agent-user-data.sops.yaml`.
-Rotate the embedded pilot K3s token for each evaluation run, and replace the
-placeholder SSH public key with an operator key before relying on SSH access.
+Kairos user-data templates live in `clusters/home/bootstrap/kairos`. Public
+cluster-specific substitutions live in `clusters/home/infrastructure.yaml`.
+The private overlays hold only the encrypted Kairos values that are actually
+secret or externally identifying: `KAIROS_K3S_TOKEN`, the external Dex issuer
+URL, and the GitHub username used for SSH key import. Use
+`private/flux/home/kairos-bootstrap-values.sops.yaml` for home hardware and
+`private/flux/home/kairos-staging-values.sops.yaml` for the home-owned KubeVirt
+staging VMs. Rotate staging and hardware K3s tokens separately.
+
+`private/flux/staging` is reserved for runtime Secrets applied inside the
+ephemeral PR staging cluster. Those Secrets should use the same object names as
+home workloads, but with disposable credentials and staging endpoints.
 
 Home Assistant is captured with two private Secrets:
 

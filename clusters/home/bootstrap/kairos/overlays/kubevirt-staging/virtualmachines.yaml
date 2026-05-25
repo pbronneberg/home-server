@@ -2,8 +2,8 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   labels:
-    app.kubernetes.io/name: kairos-kubevirt-evaluation
-    app.kubernetes.io/part-of: kairos-evaluation
+    app.kubernetes.io/name: kairos-kubevirt-staging
+    app.kubernetes.io/part-of: kairos-staging
     home-server.dev/evaluation: kairos
     home-server.dev/evaluation-role: server
   name: kairos-server
@@ -13,7 +13,7 @@ spec:
   dataVolumeTemplates:
     - metadata:
         labels:
-          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          app.kubernetes.io/name: kairos-kubevirt-staging
           home-server.dev/evaluation: kairos
         name: kairos-server-installer
       spec:
@@ -30,7 +30,7 @@ spec:
           volumeMode: Filesystem
     - metadata:
         labels:
-          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          app.kubernetes.io/name: kairos-kubevirt-staging
           home-server.dev/evaluation: kairos
         name: kairos-server-root
       spec:
@@ -47,7 +47,7 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: kairos-kubevirt-evaluation
+        app.kubernetes.io/name: kairos-kubevirt-staging
         home-server.dev/evaluation: kairos
         home-server.dev/evaluation-role: server
     spec:
@@ -100,8 +100,8 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   labels:
-    app.kubernetes.io/name: kairos-kubevirt-evaluation
-    app.kubernetes.io/part-of: kairos-evaluation
+    app.kubernetes.io/name: kairos-kubevirt-staging
+    app.kubernetes.io/part-of: kairos-staging
     home-server.dev/evaluation: kairos
     home-server.dev/evaluation-role: agent
   name: kairos-agent
@@ -111,7 +111,7 @@ spec:
   dataVolumeTemplates:
     - metadata:
         labels:
-          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          app.kubernetes.io/name: kairos-kubevirt-staging
           home-server.dev/evaluation: kairos
         name: kairos-agent-installer
       spec:
@@ -128,7 +128,7 @@ spec:
           volumeMode: Filesystem
     - metadata:
         labels:
-          app.kubernetes.io/name: kairos-kubevirt-evaluation
+          app.kubernetes.io/name: kairos-kubevirt-staging
           home-server.dev/evaluation: kairos
         name: kairos-agent-root
       spec:
@@ -145,7 +145,7 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: kairos-kubevirt-evaluation
+        app.kubernetes.io/name: kairos-kubevirt-staging
         home-server.dev/evaluation: kairos
         home-server.dev/evaluation-role: agent
     spec:

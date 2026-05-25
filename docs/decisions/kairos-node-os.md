@@ -2,7 +2,7 @@
 
 ## Status
 
-Adopt for spare and disposable pilot nodes only.
+Adopt for staging VMs and home-owned Kairos hardware definitions only.
 
 ## Context
 
@@ -18,8 +18,8 @@ contract.
 
 ## Decision
 
-Use Kairos only for spare hardware or disposable KubeVirt pilot VMs until the
-following are proven:
+Use Kairos for the KubeVirt staging cluster and keep real-hardware Kairos
+definitions as first-class `home` configuration until the following are proven:
 
 - A node can install, reboot, and run K3s from sanitized configuration.
 - A node can be wiped or reset and rejoin without preserving hidden local state.
@@ -28,13 +28,18 @@ following are proven:
 - Flux bootstrap, SOPS recovery, backups, and K3s API recovery remain viable
   when a Kairos node or its management path is unavailable.
 
-No production control-plane node is migrated by this decision.
+No production `home` control-plane node is migrated by this decision. Kairos
+hardware is allowed to become a future replacement candidate only after Flux,
+SOPS recovery, backups, ingress, storage, and workload promotion have their own
+acceptance checks.
 
 ## Consequences
 
-- The repository carries a suspended KubeVirt evaluation path and public-safe
-  examples.
+- The repository carries a home-owned KubeVirt staging substrate, a separate
+  `clusters/staging` Flux root for the nested VM cluster, and public-safe
+  Kairos bootstrap and KubeVirt staging overlays under `clusters/home/bootstrap/kairos`.
 - Real K3s tokens, kubeconfigs, SSH private keys, local hostnames, and LAN
   addresses remain local-only or encrypted.
-- The decision should move back to defer if the pilot cannot complete install,
-  rejoin, upgrade, rollback, or management-path failure tests.
+- The decision should move back to defer if staging or Kairos hardware cannot
+  complete install, rejoin, upgrade, rollback, Flux bootstrap, or
+  management-path failure tests.

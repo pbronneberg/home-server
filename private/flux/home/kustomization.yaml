@@ -1,13 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - kairos-agent-user-data.sops.yaml
-  - kairos-server-user-data.sops.yaml
   - dex-substitutions.sops.yaml
   - cluster-status-values.sops.yaml
   - bronneberg-org-values.sops.yaml
   - home-assistant-config.sops.yaml
   - home-assistant-values.sops.yaml
+  - kairos-bootstrap-values.sops.yaml
+  - kairos-staging-values.sops.yaml
   - longhorn-admin-values.sops.yaml
   - monitoring-values.sops.yaml
   - oauth2-proxy-values.sops.yaml

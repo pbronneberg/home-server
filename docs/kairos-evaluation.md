@@ -4,29 +4,31 @@ This runbook evaluates Kairos as an immutable K3s node OS without placing the
 main home cluster on the critical path. It uses the existing KubeVirt and CDI
 installation to run disposable VMs in the `vms` namespace.
 
-The Flux Kustomization `evaluation-kairos-kubevirt` is committed suspended by
-default and does not wait for VM readiness, because the pilot VMs are
+The durable staging workflow is documented in [kairos-staging.md](kairos-staging.md).
+
+The Flux Kustomization `staging-kairos-kubevirt` is committed suspended by
+default and does not wait for VM readiness, because the staging VMs are
 intentionally created halted. Resuming it is a live-cluster action that imports
 VM media and creates Longhorn volumes; starting disposable VMs remains an
 explicit `virtctl start` step after the cloud-init Secrets exist.
 
-## Pilot Scope
+## Staging VM Scope
 
 - Target namespace: `vms`
 - Resource label: `home-server.dev/evaluation=kairos`
 - VMs: `kairos-server` and `kairos-agent`
-- Nested K3s API Service: `kairos-k3s-api.vms.svc.cluster.local:6443`
-- StorageClass: `longhorn-virtualization`
+- Nested K3s API Service: `kairos-k3s-api.vms.svc.home-server.bronneberg.local:6443`
+- StorageClass: `longhorn-virtualization-test`
 - Kairos artifact:
   `kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso`
 
-This pilot uses the standard Kairos ISO path and does not enable Kairos Trusted
+This staging VM path uses the standard Kairos ISO path and does not enable Kairos Trusted
 Boot by default. Trusted Boot requires signed UKI media plus Secure Boot and TPM
 support in the VM firmware. Keep that as an explicit opt-in track and use
 the [trusted boot VM options example][trusted-boot-vm-options-example] only when
 you are testing Trusted Boot media.
 
-The selected artifact keeps the pilot on the K3s `v1.35` minor used by the
+The selected artifact keeps staging on the K3s `v1.35` minor used by the
 home-cluster lifecycle at the time this evaluation path was added. Verify the
 artifact before use:
 
@@ -50,55 +52,52 @@ cosign verify-blob \
 sha256sum -c "${ISO}.sha256"
 ```
 
-If either verification fails, do not resume the evaluation Kustomization.
+If either verification fails, do not resume the staging VM Kustomization.
 
 ## Public And Private Boundaries
 
-Committed examples use placeholders only. Do not commit generated user-data,
-K3s tokens, kubeconfigs, SSH private keys, real hostnames, LAN IPs, or console
-logs that include private values.
+Committed Kairos templates are reviewable and use Flux substitutions for live
+values. Do not commit generated user-data, K3s tokens, kubeconfigs, SSH private
+keys, real hostnames, LAN IPs, or console logs that include private values.
 
-The home private overlay supplies the live pilot Secrets as SOPS-encrypted
-Kubernetes Secrets:
+The home private overlay supplies only encrypted VM bootstrap values for the
+staging K3s token, external Dex issuer URL, and GitHub username:
 
-- `private/flux/home/kairos-server-user-data.sops.yaml`
-- `private/flux/home/kairos-agent-user-data.sops.yaml`
+- `private/flux/home/kairos-staging-values.sops.yaml`
 - `private/flux/home/dex-substitutions.sops.yaml`
 
-Rotate the embedded pilot K3s token for each evaluation run, and set the
-placeholder GitHub username before relying on SSH access:
+Public staging values such as app name, namespace, `/dev/vda`, node names,
+internal API URL, CIDRs, OIDC claims, OIDC prefixes, and Dex subject live in
+`clusters/home/infrastructure.yaml`. The separate `private/flux/staging` overlay
+is reserved for runtime Secrets applied inside the nested PR staging cluster.
+
+Edit the staging values before a clean evaluation run:
 
 ```bash
-make sops-edit SOPS_FILE=private/flux/home/kairos-server-user-data.sops.yaml
-make sops-edit SOPS_FILE=private/flux/home/kairos-agent-user-data.sops.yaml
+make sops-edit SOPS_FILE=private/flux/home/kairos-staging-values.sops.yaml
+flux reconcile kustomization infrastructure-private-secrets -n flux-system --with-source
 ```
 
-For ad hoc testing outside Flux, create real pilot Secrets from the examples
-into ignored local files or apply them directly from a private shell session:
+`KAIROS_K3S_TOKEN` is the hard secret. `${GITHUB_USERNAME}` selects the GitHub
+account whose public SSH keys Kairos should fetch at provisioning time, and it
+stays encrypted as an external account identifier. `${GITHUB_DEX_SUBJECT}` is
+the stable Dex `sub` claim granted admin access inside the disposable nested
+cluster; it is public in the Flux substitution block. Disk choices, node names,
+internal API endpoints, CIDRs, OIDC claims, and OIDC prefixes are operational
+configuration, not secrets.
 
-```bash
-cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-server-user-data.example.yaml /tmp/kairos-server-user-data.yaml
-cp clusters/home/evaluation/kairos-kubevirt/examples/kairos-agent-user-data.example.yaml /tmp/kairos-agent-user-data.yaml
-```
+The user-data keeps the standard `users.ssh_authorized_keys` form, an explicit
+Kairos `network` stage `authorized_keys` entry, and a retrying systemd oneshot
+that fetches `https://github.com/${GITHUB_USERNAME}.keys` after
+`network-online.target`. Clean installs need outbound HTTPS access to GitHub for
+SSH bootstrap; installed nodes keep their previously fetched authorized keys if
+that path is unavailable later.
 
-Replace `${KAIROS_K3S_TOKEN}` with a temporary token, `${GITHUB_USERNAME}`
-with the GitHub account whose public SSH keys Kairos should import at provisioning
-time, for example `example-user`, and `${GITHUB_DEX_SUBJECT}` with the stable Dex
-`sub` claim for the pilot operator. The user-data keeps the standard
-`users.ssh_authorized_keys` form and an explicit Kairos `network` stage command
-that fetches `https://github.com/${GITHUB_USERNAME}.keys` before enabling
-`sshd.service`.
-Keep the rendered files outside the repository. Clean installs need outbound
-HTTPS access to GitHub for SSH bootstrap; installed nodes keep their previously
-rendered authorized keys if that path is unavailable later.
-
-The nested K3s server also pins public-safe example ranges
+The nested K3s server pins non-overlapping public staging ranges
 `--cluster-cidr=198.18.0.0/16`, `--service-cidr=198.19.0.0/16`, and
-`--cluster-dns=198.19.0.10`. The private SOPS overlay may use different
-non-overlapping ranges chosen for the live host cluster. Keep those live
-ranges encrypted if they reveal local topology.
+`--cluster-dns=198.19.0.10` in the public Flux substitution block.
 
-The nested pilot intentionally keeps K3s' bundled `traefik` and `servicelb`
+The nested staging cluster intentionally keeps K3s' bundled `traefik` and `servicelb`
 components enabled. This evaluation doubles as the recipe for future node
 upgrades, so those defaults should stay visible unless a later production plan
 explicitly disables them.
@@ -109,7 +108,7 @@ an OIDC issuer for Kubernetes, so Dex re-exposes the existing GitHub OAuth app
 as OIDC under a callback subpath of the existing auth host. The public example
 issuer is `https://auth.home.example/oauth2/callback/dex`; the private
 Flux substitution Secret supplies the live auth host and issuer.
-Kairos owns the K3s install and service lifecycle. The pilot passes the nested
+Kairos owns the K3s install and service lifecycle. The staging VM bootstrap passes the nested
 cluster OIDC settings through Kairos `k3s.args`, which become server-side K3s
 API server flags. Do not add boot-stage service restarts for K3s in the
 evaluation user-data; doing so can race the installed system and make the VM
@@ -124,11 +123,11 @@ The Dex bridge reads `client-id` and `client-secret` from the existing
 `auth/oauth2-proxy-private-values` Secret instead of copying GitHub OAuth
 credentials. Its GitHub redirect URI is the issuer plus `/callback`, for example
 `https://auth.home.example/oauth2/callback/dex/callback`. GitHub OAuth
-allows redirect URIs below the configured callback path, which lets the pilot
+allows redirect URIs below the configured callback path, which lets staging
 reuse the OAuth app already used by the Traefik middleware when that app's
 registered callback is `https://auth.home.example/oauth2/callback`.
 
-Kairos grants pilot admin access to the OIDC username
+Kairos grants staging admin access to the OIDC username
 `github:${GITHUB_DEX_SUBJECT}` through a bootstrap `ClusterRoleBinding`.
 For this GitHub-backed Dex client, Kubernetes uses the signed Dex `sub` claim
 instead of `preferred_username`, because only `sub` is guaranteed to be present
@@ -149,7 +148,7 @@ kubectl -n auth get secret oauth2-proxy-private-values
 kubectl -n flux-system get secret dex-substitutions
 virtctl version --client
 kubectl oidc-login version
-kustomize build clusters/home/evaluation/kairos-kubevirt
+kustomize build clusters/home/bootstrap/kairos/overlays/kubevirt-staging
 ```
 
 Expected result: KubeVirt and CDI are deployed, at least one node advertises
@@ -181,27 +180,24 @@ kubectl -n flux-system get secret dex-substitutions
 flux reconcile kustomization infrastructure-dex -n flux-system --with-source
 ```
 
-For a persistent GitOps pilot, change `evaluation-kairos-kubevirt` to
+For a persistent GitOps staging VM deployment, change `staging-kairos-kubevirt` to
 `suspend: false` in `clusters/home/infrastructure.yaml`, commit and push that
-change, then reconcile the root and evaluation Kustomizations:
+change, then reconcile the root and staging VM Kustomizations:
 
 ```bash
 flux reconcile kustomization flux-system -n flux-system --with-source
-flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+flux reconcile kustomization staging-kairos-kubevirt -n flux-system
 ```
 
-For a temporary live pilot without committing `suspend: false`, patch the child
+For a temporary live staging deployment without committing `suspend: false`, patch the child
 Kustomization after the root `flux-system` Kustomization has reconciled. The
 root Kustomization manages this child object and can restore the committed
 `suspend: true` value on its next run:
 
 ```bash
-kubectl -n flux-system patch kustomization evaluation-kairos-kubevirt --type=merge -p '{"spec":{"suspend":false,"wait":false}}'
-flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+kubectl -n flux-system patch kustomization staging-kairos-kubevirt --type=merge -p '{"spec":{"suspend":false,"wait":false}}'
+flux reconcile kustomization staging-kairos-kubevirt -n flux-system
 ```
-
-If you are using the ad hoc local Secret path instead of Flux, apply the
-rendered `/tmp/kairos-*-user-data.yaml` files before resuming the evaluation.
 
 If a VM was started first, the launcher pod will stay pending with
 `MountVolume.SetUp failed ... secret "kairos-*-user-data" not found`. Create the
@@ -275,14 +271,14 @@ curl -fsS https://auth.home.example/oauth2/callback/dex/.well-known/openid-confi
 
 For a disposable local connection, forward the Kairos API with `virtctl` and use
 an OIDC kubeconfig that does not contain nested admin client certificates. The
-pilot uses `--insecure-skip-tls-verify` only because the forwarded K3s API uses
+staging uses `--insecure-skip-tls-verify` only because the forwarded K3s API uses
 the nested cluster's private serving CA; replace this with a trusted API endpoint
 before carrying the pattern beyond evaluation.
 
 ```bash
 virtctl -n vms port-forward vm/kairos-server 16443:6443
 
-kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-cluster kairos-pilot \
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-cluster kairos-staging \
   --server=https://127.0.0.1:16443 \
   --insecure-skip-tls-verify=true
 kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github \
@@ -297,13 +293,13 @@ kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-credentials github
   --exec-arg=--oidc-extra-scope=groups \
   --exec-arg=--token-cache-storage=disk \
   --exec-arg=--token-cache-dir=.local/kairos/oidc-cache
-kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-pilot \
-  --cluster=kairos-pilot \
+kubectl config --kubeconfig .local/kairos/oidc-kubeconfig set-context kairos-staging \
+  --cluster=kairos-staging \
   --user=github
 
 # If Dex was restarted while using memory storage, clear stale cached tokens first.
 kubectl oidc-login clean --token-cache-dir .local/kairos/oidc-cache || true
-kubectl --kubeconfig .local/kairos/oidc-kubeconfig --context kairos-pilot get nodes -o wide
+kubectl --kubeconfig .local/kairos/oidc-kubeconfig --context kairos-staging get nodes -o wide
 ```
 
 ## Reinstall And Rejoin
@@ -323,7 +319,7 @@ creating the blank disk image:
 ```bash
 virtctl -n vms stop kairos-agent
 kubectl -n vms delete dv kairos-agent-root
-flux reconcile kustomization evaluation-kairos-kubevirt -n flux-system
+flux reconcile kustomization staging-kairos-kubevirt -n flux-system
 virtctl -n vms start kairos-agent
 ```
 
@@ -350,7 +346,7 @@ spec:
 EOF
 ```
 
-Run the Kairos upgrade flow from inside the guest. For this pilot, upgrade the
+Run the Kairos upgrade flow from inside the guest. For staging, upgrade the
 active system first and only upgrade recovery after the new active system is
 healthy:
 
@@ -360,14 +356,14 @@ sudo reboot
 ```
 
 Confirm the VM boots, K3s is healthy, and the previous boot entry or KubeVirt
-snapshot can recover the pilot if the guest does not become healthy.
+snapshot can recover staging if the guest does not become healthy.
 
 ## Management Path Unavailable
 
 Apply the example deny-egress policy only for the failure test:
 
 ```bash
-kubectl apply -f clusters/home/evaluation/kairos-kubevirt/examples/management-path-deny-egress.example.yaml
+kubectl apply -f clusters/home/bootstrap/kairos/overlays/kubevirt-staging/examples/management-path-deny-egress.example.yaml
 ```
 
 Reboot one VM from the console. The installed node should still boot locally,
@@ -387,7 +383,7 @@ kubectl -n vms delete networkpolicy kairos-evaluation-deny-egress
 Suspend reconciliation first:
 
 ```bash
-flux suspend kustomization evaluation-kairos-kubevirt -n flux-system
+flux suspend kustomization staging-kairos-kubevirt -n flux-system
 ```
 
 Stop and remove only the labeled evaluation resources:
@@ -399,7 +395,7 @@ kubectl -n vms delete vm,dv,pvc,svc,virtualmachinesnapshot -l home-server.dev/ev
 kubectl -n vms delete secret kairos-server-user-data kairos-agent-user-data
 ```
 
-Because `longhorn-virtualization` retains volumes, verify that no retained PVs
+Because `longhorn-virtualization-test` retains volumes, verify that no retained PVs
 or Longhorn volumes remain for the evaluation PVCs before considering cleanup
 complete. If the earlier block-mode root DataVolumes were created, delete the
 failed `kairos-*-root` DataVolumes and their `prime-*` PVCs before reconciling
@@ -421,7 +417,7 @@ Current status as of 2026-05-23:
 - No production node was migrated and no evaluation VM was created during this
   read-only preflight.
 
-Sanitized observations still to capture during the live pilot:
+Sanitized observations still to capture during the live staging run:
 
 - Install media checksum result.
 - First boot and post-install boot result.
@@ -456,4 +452,4 @@ Still to capture after this baseline:
 - Upgrade and rollback result.
 - Management-path unavailable behavior.
 
-[trusted-boot-vm-options-example]: ../clusters/home/evaluation/kairos-kubevirt/examples/trusted-boot-vm-options.example.yaml
+[trusted-boot-vm-options-example]: ../clusters/home/bootstrap/kairos/overlays/kubevirt-staging/examples/trusted-boot-vm-options.example.yaml
