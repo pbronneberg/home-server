@@ -439,22 +439,47 @@ spec:
             wait_jsonpath virtualmachineinstance "$1" '{.status.phase}' Running 600 10
           }
 
-          wait_vmi_absent() {
+          wait_vmi_terminal_or_absent() {
             vm="$1"
             timeout_seconds="$2"
             interval_seconds="${3:-10}"
             elapsed=0
+            phase=""
 
             while [ "${elapsed}" -le "${timeout_seconds}" ]; do
-              if ! kubectl -n "${namespace}" get virtualmachineinstance "${vm}" >/dev/null 2>&1; then
+              phase="$(jsonpath virtualmachineinstance "${vm}" '{.status.phase}' 2>/dev/null || true)"
+              if [ -z "${phase}" ]; then
                 log "virtualmachineinstance/${vm} is absent"
+                return 0
+              fi
+              if [ "${phase}" = "Succeeded" ] || [ "${phase}" = "Failed" ]; then
+                log "virtualmachineinstance/${vm} reached terminal phase ${phase}"
                 return 0
               fi
               sleep "${interval_seconds}"
               elapsed=$((elapsed + interval_seconds))
             done
 
-            fail "virtualmachineinstance/${vm} still exists after ${timeout_seconds}s"
+            fail "virtualmachineinstance/${vm} did not stop after ${timeout_seconds}s; last phase: ${phase:-<empty>}"
+          }
+
+          delete_terminal_vmi() {
+            vm="$1"
+            timeout_seconds="$2"
+            interval_seconds="${3:-5}"
+            elapsed=0
+
+            kubectl -n "${namespace}" delete virtualmachineinstance "${vm}" --ignore-not-found --wait=false >/dev/null
+            while [ "${elapsed}" -le "${timeout_seconds}" ]; do
+              if ! kubectl -n "${namespace}" get virtualmachineinstance "${vm}" >/dev/null 2>&1; then
+                log "virtualmachineinstance/${vm} was removed"
+                return 0
+              fi
+              sleep "${interval_seconds}"
+              elapsed=$((elapsed + interval_seconds))
+            done
+
+            fail "virtualmachineinstance/${vm} was terminal but still existed after delete timeout"
           }
 
           install_vm() {
@@ -463,7 +488,8 @@ spec:
             if kubectl -n "${namespace}" get virtualmachineinstance "${vm}" >/dev/null 2>&1; then
               log "stopping existing ${vm} instance before reinstall"
               set_run_strategy "${vm}" Halted
-              wait_vmi_absent "${vm}" 1200 10
+              wait_vmi_terminal_or_absent "${vm}" 1200 10
+              delete_terminal_vmi "${vm}" 300 5
               wait_vm_stopped "${vm}"
             fi
 
@@ -473,7 +499,8 @@ spec:
             wait_vmi_running "${vm}"
 
             log "waiting for ${vm} installer to power off"
-            wait_vmi_absent "${vm}" 1800 10
+            wait_vmi_terminal_or_absent "${vm}" 1800 10
+            delete_terminal_vmi "${vm}" 300 5
             wait_vm_stopped "${vm}"
 
             log "booting ${vm} from installed disk"
