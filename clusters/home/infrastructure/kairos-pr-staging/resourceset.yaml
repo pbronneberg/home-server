@@ -500,6 +500,7 @@ spec:
 
             log "waiting for ${vm} installer to power off"
             wait_vmi_terminal_or_absent "${vm}" 1800 10
+            set_run_strategy "${vm}" Halted
             delete_terminal_vmi "${vm}" 300 5
             wait_vm_stopped "${vm}"
 
@@ -560,6 +561,9 @@ spec:
         backoffLimit: 0
         template:
           metadata:
+            annotations:
+              fluxcd.controlplane.io/checksumFrom: >-
+                ConfigMap/vms/kairos-rehearsal-pr-<< inputs.id >>-<< inputs.sha | trunc 12 >>
             labels:
               app.kubernetes.io/name: kairos-pr-staging
               home-server.dev/evaluation: kairos
