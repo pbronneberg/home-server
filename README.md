@@ -231,15 +231,17 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 ### Flux GitOps
 
 Flux is the intended pull-based reconciler for infrastructure under
-[`clusters/home`](clusters/home). The Flux controllers run inside the cluster
-and authenticate to this GitHub repository using a deploy key or GitHub App
-credentials stored as Kubernetes secrets in `flux-system`. GitHub-hosted
-Actions must not receive kubeconfig or cluster credentials.
+[`clusters/home`](clusters/home). The home Flux `GitRepository` uses Flux
+GitHub App authentication (`spec.provider: github`) with credentials stored in
+the SOPS-encrypted `flux-system/github-app-auth` Secret. GitHub-hosted Actions
+must not receive kubeconfig or cluster credentials.
 
 Flux also decrypts SOPS-encrypted Kubernetes Secret manifests from
-[`private/flux/home`](private/flux/home). Store the local age identity in the
-cluster before or immediately after bootstrap; it is required for the
-`infrastructure-private-secrets` Kustomization:
+[`private/flux/home`](private/flux/home). Store the local age identity and the
+GitHub App Secret in the cluster before or immediately after installing the Flux
+controllers. The GitHub App Secret is required before `GitRepository/flux-system`
+can clone this private repository; without it, source-controller cannot recover
+from a fresh bootstrap or auth migration.
 
 ```bash
 kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f -
@@ -248,38 +250,22 @@ kubectl create secret generic sops-age \
   --from-file=age.agekey=.sops/age/keys.txt \
   --dry-run=client \
   -o yaml | kubectl apply -f -
+SOPS_AGE_KEY_FILE=.sops/age/keys.txt \
+  sops -d private/flux/home/github-app-auth.sops.yaml | kubectl apply -f -
 ```
 
-From a trusted workstation or the devcontainer with your local kubeconfig,
-bootstrap Flux with a short-lived fine-grained GitHub personal access token.
-Create the token for this bootstrap operation only, then expire or revoke it
-after Flux has created the repository deploy key and committed its bootstrap
-manifests.
+The `github-app-auth` Secret contains the GitHub App ID, exactly one installation
+selector (`githubAppInstallationOwner` in this repo), the private key, a `token`
+used by the Flux GitHub webhook Receiver for HMAC validation, and
+`FLUX_WEBHOOK_HOST` for the webhook Ingress hostname. The app needs read-only
+repository contents, pull request metadata, and the default metadata permission
+for `pbronneberg/home-server`. Keep write permissions unset.
 
-Use these fine-grained token settings:
-
-* Resource owner: `pbronneberg`
-* Repository access: only `pbronneberg/home-server`
-* Expiration: short-lived, such as one day or one week
-* Repository permissions:
-  * Contents: read and write, so bootstrap can commit Flux manifests
-  * Administration: read and write, so bootstrap can create the deploy key
-  * Metadata: read-only, added automatically by GitHub
-
-Leave all other permissions unset. Do not pass `--token-auth`; the token is
-only for bootstrap, while Flux should use the repository deploy key for
-steady-state pulls.
-
-```bash
-export GITHUB_TOKEN=<fine-grained-bootstrap-token>
-flux bootstrap github \
-  --owner=pbronneberg \
-  --repository=home-server \
-  --branch=main \
-  --cluster-domain=home-server.bronneberg.local \
-  --path=clusters/home \
-  --personal
-```
+Flux exposes a GitHub Receiver at `Receiver/github-webhook`. After it is ready,
+read `.status.webhookPath` and configure the GitHub App webhook URL as
+`https://<FLUX_WEBHOOK_HOST><webhookPath>`, using the same `token` value as the
+GitHub webhook secret. Subscribe the app webhook to push events; `ping` is only
+needed to validate delivery.
 
 After bootstrap, inspect reconciliation from your kubeconfig:
 

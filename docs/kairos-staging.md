@@ -30,9 +30,9 @@ need a kubeconfig; it can build artifacts and, eventually, add or remove the PR
 label.
 
 Before enabling the trigger, create the GitHub App auth Secret expected by the
-`ResourceSetInputProvider` and generated PR `GitRepository` sources. Download the
-GitHub App private key to an ignored local path, then generate a SOPS-encrypted
-Secret:
+`ResourceSetInputProvider`, generated PR `GitRepository` sources, and Flux
+GitHub webhook Receiver. Download the GitHub App private key to an ignored local
+path, then generate a SOPS-encrypted Secret:
 
 ```bash
 mkdir -p .local/github-app
@@ -46,13 +46,29 @@ flux create secret githubapp github-app-auth \
   --app-private-key=.local/github-app/home-server-flux-staging.private-key.pem \
   --export > private/flux/home/github-app-auth.sops.yaml
 
+export TOKEN=$(openssl rand -hex 32)
+python3 - <<'PY'
+import os
+from pathlib import Path
+path = Path("private/flux/home/github-app-auth.sops.yaml")
+text = path.read_text()
+text = text.replace(
+    "stringData:\n",
+    f"stringData:\n  token: {os.environ['TOKEN']}\n  FLUX_WEBHOOK_HOST: flux-webhook.home.example\n",
+    1,
+)
+path.write_text(text)
+PY
+
 sops --encrypt --encrypted-regex '^(data|stringData)$' \
   --in-place private/flux/home/github-app-auth.sops.yaml
 ```
 
-Add `github-app-auth.sops.yaml` to `private/flux/home/kustomization.yaml` before
-reconciling `infrastructure-private-secrets`. The app needs read-only repository
-contents and pull request metadata permissions for `pbronneberg/home-server`.
+Replace the placeholder `FLUX_WEBHOOK_HOST` value with the real public webhook
+host before configuring the GitHub App webhook. Add `github-app-auth.sops.yaml`
+to `private/flux/home/kustomization.yaml` before reconciling
+`infrastructure-private-secrets`. The app needs read-only repository contents
+and pull request metadata permissions for `pbronneberg/home-server`.
 
 Enable the controller path explicitly:
 
@@ -106,7 +122,7 @@ make staging-verify-agent
 The Kairos server user-data can bootstrap Flux inside the nested cluster when
 `KAIROS_STAGING_FLUX_BOOTSTRAP` is set to `true` by the PR ResourceSet. The
 bootstrap downloads the Flux manifests from the PR branch and patches the nested
-Flux `GitRepository` to follow that branch.
+Flux `GitRepository` to follow that branch. In the home cluster, the PR ResourceSet also creates a per-PR GitHub App-authenticated `GitRepository` so the staging VM manifests are rendered from the PR branch itself.
 
 Create the `sops-age` Secret in the staging cluster before expecting
 `private/flux/staging` to reconcile. That overlay must contain staging-safe

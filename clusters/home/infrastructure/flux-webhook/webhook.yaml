@@ -1,0 +1,51 @@
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  labels:
+    app.kubernetes.io/name: flux-github-webhook
+  name: github-webhook
+  namespace: flux-system
+spec:
+  type: github
+  events:
+    - ping
+    - push
+  secretRef:
+    name: github-app-auth
+  resources:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      name: flux-system
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      name: "*"
+      matchLabels:
+        home-server.dev/github-webhook: "true"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+  labels:
+    app.kubernetes.io/name: flux-github-webhook
+  name: github-webhook
+  namespace: flux-system
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: ${FLUX_WEBHOOK_HOST}
+      http:
+        paths:
+          - backend:
+              service:
+                name: webhook-receiver
+                port:
+                  name: http
+            path: /hook/
+            pathType: Prefix
+  tls:
+    - hosts:
+        - ${FLUX_WEBHOOK_HOST}
+      secretName: flux-github-webhook-tls
