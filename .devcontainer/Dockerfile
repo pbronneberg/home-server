@@ -21,7 +21,7 @@ ARG KUBECTL_VERSION=1.36.1
 # renovate: datasource=github-releases depName=kubevirt/kubevirt extractVersion=^v(?<version>.*)$
 ARG KUBEVIRT_VERSION=1.8.2
 # renovate: datasource=github-releases depName=int128/kubelogin extractVersion=^v(?<version>.*)$
-ARG KUBELOGIN_VERSION=1.36.1
+ARG KUBELOGIN_VERSION=1.36.2
 # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/v(?<version>.*)$
 ARG KUSTOMIZE_VERSION=5.8.1
 # renovate: datasource=github-releases depName=getsops/sops extractVersion=^v(?<version>.*)$
