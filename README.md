@@ -61,7 +61,8 @@ Dependency maintenance is split between GitHub-native Dependabot and Renovate:
   Helm chart dependencies.
 * Renovate is configured in [`renovate.json`](renovate.json) for Flux
   `HelmRelease` versions, Flux controller manifests, Helm values image tags,
-  Dockerfile base images, and repo-local tool version pins.
+  Dockerfile base images, repo-local tool version pins, and Kairos/Hadron
+  install media tags.
 
 Enable the Renovate GitHub App for this repository so it can open dependency
 PRs. Minor and patch updates for repository maintenance tooling can automerge

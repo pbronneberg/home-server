@@ -20,7 +20,7 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 - Nested K3s API Service: `kairos-k3s-api.vms.svc.home-server.bronneberg.local:6443`
 - StorageClass: `longhorn-virtualization-test`
 - Kairos artifact:
-  `kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso`
+  `v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1`
 
 This staging VM path uses the standard Kairos ISO path and does not enable Kairos Trusted
 Boot by default. Trusted Boot requires signed UKI media plus Secure Boot and TPM
@@ -33,19 +33,20 @@ home-cluster lifecycle at the time this evaluation path was added. Verify the
 artifact before use:
 
 ```bash
-VERSION=v4.0.3
-ISO=kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
-BASE=https://github.com/kairos-io/kairos/releases/download/${VERSION}
+# renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
+KAIROS_HADRON_TAG=v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+KAIROS_VERSION="v${KAIROS_HADRON_TAG#*-generic-v}"
+KAIROS_VERSION="${KAIROS_VERSION%%-k3s*}"
+ISO="kairos-hadron-${KAIROS_HADRON_TAG/-k3s1/+k3s1}.iso"
+BASE=https://github.com/kairos-io/kairos/releases/download/${KAIROS_VERSION}
 
 curl -fLO "${BASE}/${ISO}"
 curl -fLO "${BASE}/${ISO}.sha256"
-curl -fLO "${BASE}/${ISO}.sha256.pem"
-curl -fLO "${BASE}/${ISO}.sha256.sig"
+curl -fLO "${BASE}/${ISO}.sha256.bundle"
 
 cosign verify-blob \
-  --cert "${ISO}.sha256.pem" \
-  --signature "${ISO}.sha256.sig" \
-  --certificate-identity "https://github.com/kairos-io/kairos/.github/workflows/reusable-release.yaml@refs/tags/${VERSION}" \
+  --bundle "${ISO}.sha256.bundle" \
+  --certificate-identity-regexp '^https://github\.com/kairos-io/kairos-factory-action/\.github/workflows/reusable-factory\.yaml@.*$' \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   "${ISO}.sha256"
 
@@ -351,7 +352,9 @@ active system first and only upgrade recovery after the new active system is
 healthy:
 
 ```bash
-sudo kairos-agent upgrade --source oci:quay.io/kairos/hadron:v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+# renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
+KAIROS_HADRON_TAG=v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+sudo kairos-agent upgrade --source "oci:quay.io/kairos/hadron:${KAIROS_HADRON_TAG}"
 sudo reboot
 ```
 

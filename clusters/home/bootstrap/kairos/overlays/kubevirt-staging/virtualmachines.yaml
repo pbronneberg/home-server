@@ -19,6 +19,7 @@ spec:
       spec:
         source:
           http:
+            # renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
             url: https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
         pvc:
           accessModes:
@@ -117,6 +118,7 @@ spec:
       spec:
         source:
           http:
+            # renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
             url: https://github.com/kairos-io/kairos/releases/download/v4.0.3/kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
         pvc:
           accessModes:

@@ -24,22 +24,28 @@ identifying.
 
 ## Install Media Verification
 
+Renovate manages the `KAIROS_HADRON_TAG` values in the Kairos runbooks and the
+KubeVirt staging installer URLs. The Renovate rule intentionally permits only
+standard `amd64` K3s `v1.35.x` media; widen that rule deliberately when the
+hardware track is ready for a Kubernetes minor upgrade.
+
 Verify the Kairos artifact before writing USB media or booting hardware:
 
 ```bash
-VERSION=v4.0.3
-ISO=kairos-hadron-v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2+k3s1.iso
-BASE=https://github.com/kairos-io/kairos/releases/download/${VERSION}
+# renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
+KAIROS_HADRON_TAG=v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+KAIROS_VERSION="v${KAIROS_HADRON_TAG#*-generic-v}"
+KAIROS_VERSION="${KAIROS_VERSION%%-k3s*}"
+ISO="kairos-hadron-${KAIROS_HADRON_TAG/-k3s1/+k3s1}.iso"
+BASE=https://github.com/kairos-io/kairos/releases/download/${KAIROS_VERSION}
 
 curl -fLO "${BASE}/${ISO}"
 curl -fLO "${BASE}/${ISO}.sha256"
-curl -fLO "${BASE}/${ISO}.sha256.pem"
-curl -fLO "${BASE}/${ISO}.sha256.sig"
+curl -fLO "${BASE}/${ISO}.sha256.bundle"
 
 cosign verify-blob \
-  --cert "${ISO}.sha256.pem" \
-  --signature "${ISO}.sha256.sig" \
-  --certificate-identity "https://github.com/kairos-io/kairos/.github/workflows/reusable-release.yaml@refs/tags/${VERSION}" \
+  --bundle "${ISO}.sha256.bundle" \
+  --certificate-identity-regexp '^https://github\.com/kairos-io/kairos-factory-action/\.github/workflows/reusable-factory\.yaml@.*$' \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   "${ISO}.sha256"
 

@@ -92,6 +92,31 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "rancher/system-upgrade-controller",
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Kairos Hadron runbook tags",
+      "managerFilePatterns": [
+        "/^docs\\/kairos-(?:evaluation|hardware)\\.md$/",
+        "/^docs\\/kubevirt\\.md$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+KAIROS_HADRON_TAG=(?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Kairos Hadron KubeVirt ISO URLs",
+      "managerFilePatterns": [
+        "/^clusters\\/home\\/bootstrap\\/kairos\\/overlays\\/kubevirt-staging\\/virtualmachines\\.yaml$/"
+      ],
+      "matchStrings": [
+        "(?<indentation>[ \\t]*)# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+\\s*url: https:\\/\\/github\\.com\\/kairos-io\\/kairos\\/releases\\/download\\/v\\d+\\.\\d+\\.\\d+\\/kairos-hadron-(?<currentValueUrl>\\S+)\\.iso"
+      ],
+      "currentValueTemplate": "{{{replace '\\\\+k3s1$' '-k3s1' currentValueUrl}}}",
+      "autoReplaceStringTemplate": "{{{indentation}}}# renovate: datasource={{{datasource}}} depName={{{depName}}} versioning={{{versioning}}}\n{{{indentation}}}url: https://github.com/kairos-io/kairos/releases/download/{{{replace '^.*-(v[0-9]+\\\\.[0-9]+\\\\.[0-9]+)-k3s.*$' '$1' newValue}}}/kairos-hadron-{{{replace '-k3s1$' '+k3s1' newValue}}}.iso",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
     }
   ],
   "major": {
@@ -181,6 +206,23 @@
         "cluster",
         "infrastructure",
         "virtualization"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Keep Kairos Hadron media updates reviewable before importing VM or USB install media",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "quay.io/kairos/hadron"
+      ],
+      "allowedVersions": "/^v\\d+\\.\\d+\\.\\d+-standard-amd64-generic-v\\d+\\.\\d+\\.\\d+-k3sv1\\.35\\.\\d+-k3s1$/",
+      "addLabels": [
+        "cluster",
+        "infrastructure",
+        "kairos"
       ],
       "automerge": false,
       "dependencyDashboardApproval": true
