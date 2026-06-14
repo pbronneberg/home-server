@@ -19,7 +19,7 @@ mongodb:
   image:
     # Use dhi.io/mongodb here if the cluster has Docker Hardened Images registry access.
     repository: mongo
-    tag: "8.3.2"
+    tag: "8.3.4"
     digest: ""
     pullPolicy: IfNotPresent
   auth:
