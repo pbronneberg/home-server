@@ -20,7 +20,7 @@ explicit `virtctl start` step after the cloud-init Secrets exist.
 - Nested K3s API Service: `kairos-k3s-api.vms.svc.home-server.bronneberg.local:6443`
 - StorageClass: `longhorn-virtualization-test`
 - Kairos artifact:
-  `v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1`
+  `v0.2.0-standard-amd64-generic-v4.1.0-k3sv1.35.4-k3s1`
 
 This staging VM path uses the standard Kairos ISO path and does not enable Kairos Trusted
 Boot by default. Trusted Boot requires signed UKI media plus Secure Boot and TPM
@@ -34,7 +34,7 @@ artifact before use:
 
 ```bash
 # renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
-KAIROS_HADRON_TAG=v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+KAIROS_HADRON_TAG=v0.2.0-standard-amd64-generic-v4.1.0-k3sv1.35.4-k3s1
 KAIROS_VERSION="v${KAIROS_HADRON_TAG#*-generic-v}"
 KAIROS_VERSION="${KAIROS_VERSION%%-k3s*}"
 ISO="kairos-hadron-${KAIROS_HADRON_TAG/-k3s1/+k3s1}.iso"
@@ -353,7 +353,7 @@ healthy:
 
 ```bash
 # renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
-KAIROS_HADRON_TAG=v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+KAIROS_HADRON_TAG=v0.2.0-standard-amd64-generic-v4.1.0-k3sv1.35.4-k3s1
 sudo kairos-agent upgrade --source "oci:quay.io/kairos/hadron:${KAIROS_HADRON_TAG}"
 sudo reboot
 ```

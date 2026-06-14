@@ -33,7 +33,7 @@ Verify the Kairos artifact before writing USB media or booting hardware:
 
 ```bash
 # renovate: datasource=docker depName=quay.io/kairos/hadron versioning=docker
-KAIROS_HADRON_TAG=v0.0.4-standard-amd64-generic-v4.0.3-k3sv1.35.2-k3s1
+KAIROS_HADRON_TAG=v0.2.0-standard-amd64-generic-v4.1.0-k3sv1.35.4-k3s1
 KAIROS_VERSION="v${KAIROS_HADRON_TAG#*-generic-v}"
 KAIROS_VERSION="${KAIROS_VERSION%%-k3s*}"
 ISO="kairos-hadron-${KAIROS_HADRON_TAG/-k3s1/+k3s1}.iso"
