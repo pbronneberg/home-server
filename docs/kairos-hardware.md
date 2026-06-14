@@ -71,6 +71,34 @@ Dex `sub` subject live in `clusters/home/infrastructure.yaml`. Prefer stable
 disk IDs such as `/dev/disk/by-id/...`; do not use a mutable `/dev/sdX` path in
 real hardware values.
 
+## Physical Agent Install Media
+
+Physical agent install media is rendered from the Git-backed scaffold in
+`clusters/home/bootstrap/kairos/hardware`:
+
+- `user-data.agent.yaml` is the shared cloud-config scaffold.
+- `nodes.yaml` holds non-secret per-node values, including node names, install
+  disk IDs, K3s API URL, SSH GitHub user, and optional Longhorn data-disk
+  preparation.
+- `private/flux/home/kairos-bootstrap-values.sops.yaml` supplies the decrypted
+  K3s join token at render time.
+
+Render a single node into ignored local artifacts:
+
+```bash
+make kairos-render-node KAIROS_NODE=milliard
+```
+
+Render all physical nodes defined in the inventory:
+
+```bash
+make kairos-render-hardware
+```
+
+The output is written under `.local/kairos/<node>/` and includes the rendered
+`user-data`, cloud-init `cidata/` directory, and `<node>-cidata.iso`. Do not
+commit those rendered files because they contain the decrypted K3s join token.
+
 ## First Boot
 
 Install the server first. After Kairos powers off, boot the installed disk and

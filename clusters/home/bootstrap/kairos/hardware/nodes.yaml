@@ -1,0 +1,21 @@
+nodes:
+  marvin:
+    hostname: marvin
+    nodeName: marvin
+    installDevice: /dev/disk/by-id/ata-Samsung_SSD_860_EVO_M.2_500GB_S414NB0M616470F
+    k3sUrl: https://192.168.1.123:6443
+    sshGithubUser: pbronneberg
+    dataDisk:
+      enabled: false
+  milliard:
+    hostname: milliard
+    nodeName: milliard
+    installDevice: /dev/disk/by-id/nvme-SAMSUNG_MZVLW256HEHP-000L7_S35ENX0JB71020
+    k3sUrl: https://192.168.1.123:6443
+    sshGithubUser: pbronneberg
+    dataDisk:
+      enabled: true
+      device: /dev/disk/by-id/ata-Samsung_SSD_850_EVO_500GB_S2RBNB0J115516X
+      fsLabel: kairos-data
+      mountPoint: /data
+      longhornPath: /data/longhorn

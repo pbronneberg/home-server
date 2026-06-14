@@ -14,6 +14,8 @@ SOPS_DECRYPTED_FILE ?= private/home.decrypted.yaml
 SOPS_OUT_DIR ?= private-decrypted
 SOPS_FILES ?= $(shell find private -type f \( -name '*.sops.yaml' -o -name '*.sops.yml' \) 2>/dev/null | sort)
 YAMLLINT ?= yamllint
+KAIROS_NODE ?=
+KAIROS_HARDWARE_NODES ?= clusters/home/bootstrap/kairos/hardware/nodes.yaml
 
 CHART_DIRS := $(shell find application -name Chart.yaml -exec dirname {} \; | sort)
 FLUX_KUSTOMIZATION_DIRS := $(shell find clusters private/flux application -name kustomization.yaml -exec dirname {} \; 2>/dev/null | sort)
@@ -24,7 +26,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
+.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-render-node kairos-render-hardware kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
 
 help:
 	@printf '%s\n' \
@@ -55,6 +57,8 @@ help:
 		'  scan-history   Scan all Git history for secrets with Gitleaks.' \
 		'  check-public-redactions  Check tracked files for public unsafe topology.' \
 		'  check-history-redactions Check Git history for public unsafe topology.' \
+		'  kairos-render-node   Render one physical Kairos node: KAIROS_NODE=<name> make kairos-render-node.' \
+		'  kairos-render-hardware Render all physical Kairos nodes from the hardware inventory.' \
 		'  kairos-preflight      Check live KubeVirt/CDI/KVM and Kairos VM resources.' \
 		'  kairos-install-server Install kairos-server, switch to root disk, and start it.' \
 		'  kairos-install-agent  Install kairos-agent, switch to root disk, and start it.' \
@@ -215,6 +219,16 @@ check-public-redactions:
 
 check-history-redactions:
 	./scripts/check-history-redactions.sh
+
+kairos-render-node: sops-check-key
+	@test -n "$(KAIROS_NODE)" || { printf '%s\n' 'Set KAIROS_NODE, for example: make kairos-render-node KAIROS_NODE=milliard' >&2; exit 2; }
+	@SOPS="$(SOPS)" SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)" KAIROS_NODE="$(KAIROS_NODE)" ./scripts/render-kairos-node.sh
+
+kairos-render-hardware: sops-check-key
+	@set -euo pipefail; \
+	for node in $$(yq e -r '.nodes | keys | .[]' "$(KAIROS_HARDWARE_NODES)"); do \
+		SOPS="$(SOPS)" SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)" ./scripts/render-kairos-node.sh "$$node"; \
+	done
 
 kairos-preflight:
 	@bash scripts/kairos-kubevirt-check.sh preflight

@@ -1,0 +1,114 @@
+#cloud-config
+hostname: "{{ KAIROS_HOSTNAME }}"
+install:
+  auto: true
+  device: "{{ KAIROS_INSTALL_DEVICE }}"
+  poweroff: true
+k3s-agent:
+  enabled: true
+  env:
+    K3S_TOKEN: "{{ KAIROS_K3S_TOKEN }}"
+    K3S_URL: "{{ KAIROS_K3S_URL }}"
+  args:
+    - "--node-name={{ KAIROS_NODE_NAME }}"
+    - "--kubelet-arg=anonymous-auth=false"
+    - "--kubelet-arg=read-only-port=0"
+users:
+  - name: kairos
+    lock_passwd: true
+    groups:
+      - admin
+    ssh_authorized_keys:
+      - github:{{ KAIROS_SSH_GITHUB_USER }}
+stages:
+  boot:
+    - name: Enable SSH daemon
+      commands:
+        - |
+          set -eu
+          systemctl enable sshd.service || systemctl enable ssh.service || true
+          systemctl start sshd.service || systemctl start ssh.service || true
+    - name: Prepare optional data disk
+      commands:
+        - |
+          set -eu
+
+          enabled="{{ KAIROS_DATA_DISK_ENABLED }}"
+          if [ "$enabled" != "true" ]; then
+            exit 0
+          fi
+
+          disk="{{ KAIROS_DATA_DISK_DEVICE }}"
+          mountpoint="{{ KAIROS_DATA_MOUNT_POINT }}"
+          label="{{ KAIROS_DATA_DISK_LABEL }}"
+          longhorn_path="{{ KAIROS_DATA_LONGHORN_PATH }}"
+
+          attempts=0
+          while [ ! -b "$disk" ] && [ "$attempts" -lt 30 ]; do
+            attempts=$((attempts + 1))
+            sleep 2
+          done
+
+          if [ ! -b "$disk" ]; then
+            echo "warning: data disk $disk not found; skipping $mountpoint setup" >&2
+            exit 0
+          fi
+
+          current_type="$(blkid -s TYPE -o value "$disk" 2>/dev/null || true)"
+          current_label="$(blkid -s LABEL -o value "$disk" 2>/dev/null || true)"
+
+          if [ "$current_type" != "ext4" ] || [ "$current_label" != "$label" ]; then
+            wipefs -a "$disk"
+            mkfs.ext4 -F -L "$label" "$disk"
+          fi
+
+          uuid="$(blkid -s UUID -o value "$disk")"
+
+          mkdir -p "$mountpoint"
+          cp /etc/fstab /etc/fstab.kairos-data.bak
+          awk -v mp="$mountpoint" '$2 != mp { print }' /etc/fstab.kairos-data.bak > /etc/fstab
+          printf 'UUID=%s %s ext4 defaults,noatime,nofail,x-systemd.device-timeout=30 0 2\n' "$uuid" "$mountpoint" >> /etc/fstab
+
+          mount "$mountpoint" || mount -a
+
+          if [ -n "$longhorn_path" ]; then
+            mkdir -p "$longhorn_path"
+            chown root:root "$longhorn_path"
+            chmod 0700 "$longhorn_path"
+          fi
+  network:
+    - name: Refresh operator SSH keys from GitHub
+      commands:
+        - |
+          set -eu
+
+          ssh_dir="/home/kairos/.ssh"
+          tmp="/tmp/kairos-github-authorized-keys.$$"
+
+          mkdir -p "$ssh_dir"
+          chown kairos:kairos "$ssh_dir"
+          chmod 0700 "$ssh_dir"
+
+          if [ ! -s "$ssh_dir/authorized_keys" ]; then
+            attempts=0
+            while [ "$attempts" -lt 6 ]; do
+              attempts=$((attempts + 1))
+              if timeout 5 wget -qO "$tmp" "https://github.com/{{ KAIROS_SSH_GITHUB_USER }}.keys" && [ -s "$tmp" ]; then
+                cp "$tmp" "$ssh_dir/authorized_keys"
+                break
+              fi
+              rm -f "$tmp"
+              sleep 2
+            done
+          fi
+
+          if [ -s "$ssh_dir/authorized_keys" ]; then
+            chown kairos:kairos "$ssh_dir/authorized_keys"
+            chmod 0600 "$ssh_dir/authorized_keys"
+          else
+            echo "warning: no GitHub SSH keys rendered for {{ KAIROS_SSH_GITHUB_USER }}; continuing boot" >&2
+          fi
+
+          rm -f "$tmp"
+          systemctl enable sshd.service || systemctl enable ssh.service || true
+          systemctl start sshd.service || systemctl start ssh.service || true
