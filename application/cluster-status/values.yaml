@@ -15,7 +15,7 @@ checker:
     pullPolicy: IfNotPresent
   kubectlImage:
     repository: alpine/k8s
-    tag: "1.36.1"
+    tag: "1.36.2"
     pullPolicy: IfNotPresent
   automountServiceAccountToken: false
   timeoutSeconds: 8
