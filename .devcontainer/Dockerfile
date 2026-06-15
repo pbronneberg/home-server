@@ -15,9 +15,9 @@ ARG GH_VERSION=2.94.0
 # renovate: datasource=pypi depName=git-filter-repo
 ARG GIT_FILTER_REPO_VERSION=2.47.0
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.*)$
-ARG HELM_VERSION=4.2.0
+ARG HELM_VERSION=4.2.1
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
-ARG KUBECTL_VERSION=1.36.1
+ARG KUBECTL_VERSION=1.36.2
 # renovate: datasource=github-releases depName=kubevirt/kubevirt extractVersion=^v(?<version>.*)$
 ARG KUBEVIRT_VERSION=1.8.3
 # renovate: datasource=github-releases depName=int128/kubelogin extractVersion=^v(?<version>.*)$
