@@ -1,0 +1,93 @@
+apiVersion: infra.homecluster.dev/v1alpha1
+kind: Group
+metadata:
+  name: wol-compute-workers
+  namespace: homelab-autoscaler-system
+spec:
+  scaleDownUtilizationThreshold: "0.1"
+  scaleDownGpuUtilizationThreshold: "0"
+  scaleDownUnneededTime: 1h
+  scaleDownUnreadyTime: 20m
+  maxNodeProvisionTime: 15m
+  zeroOrMaxNodeScaling: false
+  ignoreDaemonSetsUtilization: true
+---
+apiVersion: infra.homecluster.dev/v1alpha1
+kind: Node
+metadata:
+  name: marvin
+  namespace: homelab-autoscaler-system
+  labels:
+    group: wol-compute-workers
+    home-server.dev/node-role: autoscaled-worker
+spec:
+  kubernetesNodeName: marvin
+  powerState: "off"
+  pricing:
+    hourlyRate: "0"
+    podRate: "0"
+  startupPodSpec:
+    image: python:3.12-alpine
+    command:
+      - /bin/sh
+    args:
+      - -ceu
+      - |
+        set -a
+        . /etc/homelab-autoscaler/nodes.env
+        set +a
+        python - <<'PY'
+        import os
+        import socket
+
+        mac = bytes.fromhex(os.environ["MARVIN_MAC_ADDRESS"].replace(":", ""))
+        packet = b"\xff" * 6 + mac * 16
+        target = (os.environ["MARVIN_WAKE_BROADCAST"], 9)
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.sendto(packet, target)
+        PY
+    volumes:
+      - name: node-power-config
+        mountPath: /etc/homelab-autoscaler
+        secretName: homelab-autoscaler-nodes
+  shutdownPodSpec:
+    # Replace with a pinned toolbox image that contains kubectl and openssh-client.
+    image: alpine/k8s:1.32.0
+    command:
+      - /bin/sh
+    args:
+      - -ceu
+      - |
+        node="marvin"
+        if [ "${node}" = "deepthought" ]; then
+          echo "refusing to shut down protected node ${node}" >&2
+          exit 1
+        fi
+        if kubectl get node "${node}" -o jsonpath='{.metadata.labels.home-server\.dev/storage}' | grep -qx permanent; then
+          echo "refusing to shut down permanent storage node ${node}" >&2
+          exit 1
+        fi
+        if kubectl get replicas.longhorn.io -n longhorn-system -o jsonpath='{range .items[*]}{.spec.nodeID}{"\n"}{end}' | grep -qx "${node}"; then
+          echo "refusing to shut down ${node}: Longhorn replicas are present" >&2
+          exit 1
+        fi
+        if kubectl get volumes.longhorn.io -n longhorn-system -o jsonpath='{range .items[*]}{.status.currentNodeID}{"\n"}{end}' | grep -qx "${node}"; then
+          echo "refusing to shut down ${node}: Longhorn volume is attached" >&2
+          exit 1
+        fi
+        kubectl drain "${node}" --ignore-daemonsets --delete-emptydir-data --timeout=10m
+        set -a
+        . /etc/homelab-autoscaler/nodes.env
+        set +a
+        mkdir -p /root/.ssh
+        cp /etc/homelab-autoscaler/ssh_private_key /root/.ssh/id_ed25519
+        chmod 0600 /root/.ssh/id_ed25519
+        printf '%s\n' "${MARVIN_SSH_HOST_KEY}" > /root/.ssh/known_hosts
+        ssh -i /root/.ssh/id_ed25519 -o BatchMode=yes -o UserKnownHostsFile=/root/.ssh/known_hosts "${MARVIN_SSH_USER}@${MARVIN_SSH_HOST}" "sudo /sbin/poweroff"
+    volumes:
+      - name: node-power-config
+        mountPath: /etc/homelab-autoscaler
+        secretName: homelab-autoscaler-nodes
+    serviceAccount: homelab-autoscaler-shutdown

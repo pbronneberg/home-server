@@ -1,0 +1,59 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homelab-autoscaler
+  namespace: homelab-autoscaler-system
+spec:
+  chart:
+    spec:
+      chart: homelab-autoscaler
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: homelab-autoscaler
+        namespace: flux-system
+      version: 0.1.14
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  interval: 30m
+  maxHistory: 5
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: ClusterRole
+              name: manager-role
+            patch: |
+              - op: replace
+                path: /metadata/name
+                value: homelab-autoscaler-manager-role
+  releaseName: homelab-autoscaler
+  timeout: 5m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    certmanager:
+      enable: true
+    clusterAutoscaler:
+      enabled: false
+      scaleDownDelay: 1h
+      scaleDownUnneededTime: 1h
+      scaleDownUtilizationThreshold: 0.1
+      skipNodesWithLocalStorage: true
+      skipNodesWithSystemPods: true
+      extraArgs:
+        - --scale-down-delay-after-failure=15m
+        - --max-node-provision-time=15m
+        - --v=4
+    controllerManager:
+      replicas: 1
+    metrics:
+      enable: true
+    prometheus:
+      enable: false
+    webhook:
+      enable: true

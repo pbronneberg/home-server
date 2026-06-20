@@ -60,8 +60,22 @@ ssh_github_user="$(node_value '.sshGithubUser // ""')"
 data_disk_enabled="$(node_value '.dataDisk.enabled // false')"
 data_disk_device=""
 data_disk_label="kairos-data"
-data_mount_point="/data"
-data_longhorn_path=""
+data_mount_point="$(node_value '.dataDisk.mountPoint // "/data"')"
+data_longhorn_path="$(node_value '.dataDisk.longhornPath // ""')"
+k3s_args="$(
+  printf '    - "--node-name=%s"\n' "$node_name"
+  KAIROS_NODE="$node" "$yq_bin" e -r '
+    [
+      (.nodes[strenv(KAIROS_NODE)].nodeLabels // {} | to_entries[] | "--node-label=" + .key + "=" + (.value | tostring)),
+      (.nodes[strenv(KAIROS_NODE)].nodeTaints // [] | .[] | "--node-taint=" + .key + "=" + ((.value // "") | tostring) + ":" + .effect)
+    ] | .[]
+  ' "$inventory" | while IFS= read -r arg; do
+    [ -n "$arg" ] || continue
+    printf '    - "%s"\n' "$arg"
+  done
+  printf '    - "--kubelet-arg=anonymous-auth=false"\n'
+  printf '    - "--kubelet-arg=read-only-port=0"\n'
+)"
 
 if [ -z "$install_device" ] || [ "$install_device" = "null" ]; then
   printf 'node %s is missing installDevice\n' "$node" >&2
@@ -81,8 +95,6 @@ fi
 if [ "$data_disk_enabled" = "true" ]; then
   data_disk_device="$(node_value '.dataDisk.device // ""')"
   data_disk_label="$(node_value '.dataDisk.fsLabel // "kairos-data"')"
-  data_mount_point="$(node_value '.dataDisk.mountPoint // "/data"')"
-  data_longhorn_path="$(node_value '.dataDisk.longhornPath // ""')"
 
   if [ -z "$data_disk_device" ] || [ "$data_disk_device" = "null" ]; then
     printf 'node %s enables dataDisk but does not set dataDisk.device\n' "$node" >&2
@@ -117,12 +129,23 @@ replace_placeholder() {
   ' "$rendered"
 }
 
+replace_line_placeholder() {
+  local key="$1"
+  local value="$2"
+  PLACEHOLDER="$key" REPLACEMENT="$value" perl -0pi -e '
+    my $placeholder = $ENV{PLACEHOLDER};
+    my $replacement = $ENV{REPLACEMENT};
+    s/^[ \t]*\#\s*\Q$placeholder\E\s*$/$replacement/mg;
+  ' "$rendered"
+}
+
 replace_placeholder KAIROS_HOSTNAME "$hostname"
 replace_placeholder KAIROS_INSTALL_DEVICE "$install_device"
 replace_placeholder KAIROS_K3S_TOKEN "$k3s_token"
 replace_placeholder KAIROS_K3S_URL "$k3s_url"
 replace_placeholder KAIROS_NODE_NAME "$node_name"
 replace_placeholder KAIROS_SSH_GITHUB_USER "$ssh_github_user"
+replace_line_placeholder KAIROS_K3S_ARGS "$k3s_args"
 replace_placeholder KAIROS_DATA_DISK_ENABLED "$data_disk_enabled"
 replace_placeholder KAIROS_DATA_DISK_DEVICE "$data_disk_device"
 replace_placeholder KAIROS_DATA_DISK_LABEL "$data_disk_label"

@@ -25,6 +25,7 @@ spec:
       retries: 3
   values:
     defaultSettings:
+      createDefaultDiskLabeledNodes: true
       defaultDataPath: /data/longhorn
     persistence:
       defaultClassReplicaCount: 2

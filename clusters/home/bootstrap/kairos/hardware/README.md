@@ -6,7 +6,8 @@ reviewable while the rendered media stays ignored under `.local/kairos`.
 
 - `user-data.agent.yaml` is the shared scaffold for physical agent nodes.
 - `nodes.yaml` holds per-node non-secret hardware values such as hostnames,
-  install disks, the K3s API endpoint, and optional data-disk preparation.
+  install disks, the K3s API endpoint, optional node labels/taints, and optional
+  data-disk preparation.
 - `private/flux/home/kairos-bootstrap-values.sops.yaml` holds the K3s join
   token used by the renderer.
 
