@@ -282,8 +282,13 @@ Secret, uses a temporary pinned host-key file, installs only the
 `autoscaler-shutdown` account and sudoers drop-in, and verifies SSH login with
 the dedicated key.
 
-The upstream `Node` CR `startupPodSpec` should send the WOL packet. The
-`shutdownPodSpec` should:
+The upstream `Node` CR `startupPodSpec` should send WOL packets repeatedly and
+then wait for the Kubernetes `Node` to become Ready before it exits. Treat a
+startup job that only sends a packet as insufficient: it proves only that the
+packet was attempted, not that the machine powered on. If manual power-on is
+needed, the WOL test failed even if the autoscaler later reports the node Ready.
+
+The `shutdownPodSpec` should:
 
 1. Refuse protected nodes and permanent-storage nodes.
 2. Refuse nodes with Longhorn replicas.
@@ -294,6 +299,11 @@ The upstream `Node` CR `startupPodSpec` should send the WOL packet. The
 If upstream drain behavior is improved later, keep the Longhorn refusal checks
 in the shutdown job as defense in depth.
 
+If WOL does not wake a node, verify the encrypted MAC address and broadcast
+address, BIOS/firmware WOL settings, NIC power-management settings, switch/VLAN
+broadcast behavior, and whether the node supports wake from the shutdown state
+used by the OS.
+
 ## Test Plan
 
 1. Confirm existing `longhorn` PVCs remain bound and healthy.
@@ -301,11 +311,12 @@ in the shutdown job as defense in depth.
 3. Confirm a `longhorn-local` workload with preferred affinity favors the
    requested local SSD node.
 4. Confirm Home Assistant and monitoring PVCs continue to use `longhorn`.
-5. Wake an autoscaled worker and confirm it joins with local-storage labels and
-   autoscaled taints.
+5. Wake an autoscaled worker without touching the physical power button and
+   confirm it joins with local-storage labels and autoscaled taints.
 6. Create the example `Group` and `Node` CRs for one worker only.
 7. Patch that `Node` CR from `off` to `on` and verify WOL, K3s join, labels,
-   taints, and status progression.
+   taints, and status progression. The startup job must not complete until the
+   Kubernetes node is Ready.
 8. Create a temporary Longhorn local PVC on the worker and verify the shutdown
    job refuses to power off while the replica or attachment exists.
 9. Run a stateless test Deployment that tolerates autoscaled workers.
