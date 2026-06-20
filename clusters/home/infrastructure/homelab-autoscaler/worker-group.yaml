@@ -1,0 +1,13 @@
+apiVersion: infra.homecluster.dev/v1alpha1
+kind: Group
+metadata:
+  name: wol-compute-workers
+  namespace: homelab-autoscaler-system
+spec:
+  scaleDownUtilizationThreshold: "0.1"
+  scaleDownGpuUtilizationThreshold: "0"
+  scaleDownUnneededTime: 1h
+  scaleDownUnreadyTime: 20m
+  maxNodeProvisionTime: 15m
+  zeroOrMaxNodeScaling: false
+  ignoreDaemonSetsUtilization: true
