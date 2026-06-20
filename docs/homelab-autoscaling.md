@@ -71,8 +71,10 @@ The 2026-06-20 WOL checks showed two useful constraints:
 
 - `milliard`: integrated Ethernet WOL works after BIOS WOL was enabled.
 - `marvin`: USB-network WOL reports `Wake-on: g`, but powered-off wake has not
-  succeeded through the relay yet. Keep its desired power state `off` until that
-  is verified.
+  succeeded through the relay. A manual `systemctl suspend` test also entered
+  suspend, but relay WOL did not resume the node within the validation window.
+  Keep its desired power state `off` and treat it as manual-only until USB wake
+  is fixed.
 - Normal pod-network WOL is not reliable for this LAN. WOL packets are sent
   through a small host-network relay pinned to `deepthought`.
 

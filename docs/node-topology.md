@@ -49,7 +49,8 @@ Expected Longhorn tags when local storage is enabled:
 
 - Role: K3s agent.
 - Power policy: autoscaled worker candidate; USB-network Wake-on-LAN is enabled
-  with `Wake-on: g`, but powered-off wake still needs successful validation.
+  with `Wake-on: g`, but relay WOL has not resumed the node from power-off or
+  suspend. Keep it manual-only until USB wake is fixed.
 - Storage role: compute-only unless local Longhorn storage is explicitly
   enabled later.
 - Workload role: stateless workloads or intentionally ephemeral workloads.
