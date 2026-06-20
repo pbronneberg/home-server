@@ -9,9 +9,13 @@ nodes:
       home-server.dev/node-role: autoscaled-worker
       home-server.dev/storage: local
       home-server.dev/autoscaled: "true"
+      home-server.dev/power-mode: manual-wake
       node.longhorn.io/create-default-disk: "false"
     nodeTaints:
       - key: home-server.dev/autoscaled
+        value: "true"
+        effect: NoSchedule
+      - key: home-server.dev/manual-wake
         value: "true"
         effect: NoSchedule
     dataDisk:

@@ -3,6 +3,8 @@ kind: Node
 metadata:
   name: milliard
   namespace: homelab-autoscaler-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
   labels:
     group: wol-compute-workers
     home-server.dev/node-role: autoscaled-worker
@@ -12,6 +14,9 @@ spec:
   pricing:
     hourlyRate: "0"
     podRate: "0"
+  taintsToRemove:
+    - key: node.kubernetes.io/unschedulable
+      effect: NoSchedule
   startupPodSpec:
     image: alpine/k8s:1.32.0
     command:

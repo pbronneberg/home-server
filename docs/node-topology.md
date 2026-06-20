@@ -48,13 +48,14 @@ Expected Longhorn tags when local storage is enabled:
 ### marvin
 
 - Role: K3s agent.
-- Power policy: autoscaled worker candidate; USB-network Wake-on-LAN is enabled
-  with `Wake-on: g`, but relay WOL has not resumed the node from power-off or
-  suspend. Keep it out of the active autoscaler kustomization and manual-only
-  until USB wake is fixed.
+- Power policy: manual-wake autoscaled worker. USB-network Wake-on-LAN is
+  enabled with `Wake-on: g`, but relay WOL has not resumed the node from
+  power-off or suspend. Workloads that require `marvin` must be scheduled first;
+  an operator then powers it on manually during the autoscaler scale-up window.
 - Storage role: compute-only unless local Longhorn storage is explicitly
   enabled later.
-- Workload role: stateless workloads or intentionally ephemeral workloads.
+- Workload role: workloads that explicitly require `marvin`; general autoscaled
+  workloads should prefer `milliard`.
 
 Expected Longhorn tags when local storage is enabled:
 

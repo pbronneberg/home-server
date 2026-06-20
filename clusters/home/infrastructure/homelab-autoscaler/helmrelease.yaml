@@ -47,7 +47,7 @@ spec:
     certmanager:
       enable: true
     clusterAutoscaler:
-      enabled: false
+      enabled: true
       scaleDownDelay: 1h
       scaleDownUnneededTime: 1h
       scaleDownUtilizationThreshold: 0.1

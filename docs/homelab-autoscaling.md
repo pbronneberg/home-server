@@ -38,8 +38,8 @@ the upstream Helm chart, while this repository owns only node inventory, SOPS
 secrets, storage policy, and shutdown safety.
 
 The chart is pinned in
-`clusters/home/infrastructure/homelab-autoscaler/helmrelease.yaml`. Keep
-`clusterAutoscaler.enabled: false` until these checks pass:
+`clusters/home/infrastructure/homelab-autoscaler/helmrelease.yaml`. Cluster
+Autoscaler is enabled for the active pilot after these checks passed:
 
 1. The controller manager, webhooks, and gRPC service reconcile cleanly.
 2. A `Node` CR can wake a powered-off worker with its `startupPodSpec`.
@@ -49,8 +49,7 @@ The chart is pinned in
 5. The same shutdown job drains and powers off the node when only drainable
    stateless workloads are present.
 
-After manual power-state tests pass, enable Cluster Autoscaler in the Helm
-values with:
+The active Helm values keep Cluster Autoscaler on with:
 
 ```yaml
 clusterAutoscaler:
@@ -63,9 +62,8 @@ clusterAutoscaler:
 ```
 
 The upstream project is still young. Installing the operator is only the first
-pilot step. Keep Cluster Autoscaler disabled until manual power-state tests
-pass for every active worker CR. Expect manual recovery for failed jobs or
-stuck power-state transitions.
+pilot step. Expect manual recovery for failed jobs or stuck power-state
+transitions.
 
 The 2026-06-20 WOL checks showed two useful constraints:
 
@@ -73,13 +71,27 @@ The 2026-06-20 WOL checks showed two useful constraints:
 - `marvin`: USB-network WOL reports `Wake-on: g`, but powered-off wake has not
   succeeded through the relay. A manual `systemctl suspend` test also entered
   suspend, but relay WOL did not resume the node within the validation window.
-  Keep it out of the active autoscaler kustomization and treat it as manual-only
-  until USB wake is fixed.
+  Keep it as a manual-wake autoscaler node: workloads must explicitly target it,
+  and an operator must press the power button during the scale-up window.
 - Normal pod-network WOL is not reliable for this LAN. WOL packets are sent
   through a small host-network relay pinned to `deepthought`.
 
-Keep new worker `Node` CRs inactive until WOL is fixed at the firmware, NIC,
-switch, or broadcast configuration layer and verified through the relay.
+The autoscaler `Node` CRs use the Flux server-side apply policy
+`kustomize.toolkit.fluxcd.io/ssa: IfNotPresent`. Flux creates the inventory
+objects, but the autoscaler is allowed to mutate `spec.powerState` afterward.
+Without that policy, Git reconciliation would fight scale-up and scale-down
+decisions.
+
+`marvin` starts from `spec.powerState: "off"`. The expected workflow is:
+
+1. Apply a workload that explicitly requires `marvin`.
+2. Cluster Autoscaler marks `marvin` needed and the startup job sends WOL.
+3. Because USB WOL is unreliable, manually press `marvin`'s power button before
+   `maxNodeProvisionTime` expires.
+4. The startup job waits for the Kubernetes node to become Ready and uncordons
+   it.
+5. After the workload is removed, Cluster Autoscaler waits
+   `scaleDownUnneededTime: 1h`, then runs the normal Longhorn-safe shutdown job.
 
 The upstream 0.1.14 CRDs are the source of truth for pilot manifests. Some
 upstream documentation examples mention fields such as `maxSize` and
@@ -205,6 +217,32 @@ tolerations:
     operator: Equal
     value: "true"
     effect: NoSchedule
+```
+
+General autoscaled workloads should not tolerate `marvin`'s manual-wake taint.
+That keeps `milliard` as the normal autoscaled target. Workloads that really
+need `marvin` must opt in with the extra toleration and a required node
+affinity:
+
+```yaml
+tolerations:
+  - key: home-server.dev/autoscaled
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+  - key: home-server.dev/manual-wake
+    operator: Equal
+    value: "true"
+    effect: NoSchedule
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - marvin
 ```
 
 ## Wake-on-LAN And Poweroff
