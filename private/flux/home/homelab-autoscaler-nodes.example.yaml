@@ -9,8 +9,16 @@ stringData:
     MARVIN_MAC_ADDRESS="00:00:00:00:00:00"
     MARVIN_WAKE_BROADCAST="192.0.2.255"
     MARVIN_SSH_HOST="marvin.home.example"
-    MARVIN_SSH_USER="kairos"
+    MARVIN_SSH_USER="autoscaler-shutdown"
     MARVIN_SSH_HOST_KEY="marvin.example ssh-ed25519 AAAA..."
+
+    MILLIARD_MAC_ADDRESS="00:00:00:00:00:00"
+    MILLIARD_WAKE_BROADCAST="192.0.2.255"
+    MILLIARD_SSH_HOST="milliard.home.example"
+    MILLIARD_SSH_USER="autoscaler-shutdown"
+    MILLIARD_SSH_HOST_KEY="milliard.example ssh-ed25519 AAAA..."
+  ssh_public_key: |
+    ssh-ed25519 AAAA... homelab-autoscaler-shutdown
   ssh_private_key: |
     -----BEGIN OPENSSH PRIVATE KEY-----
     example

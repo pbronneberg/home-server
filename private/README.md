@@ -31,6 +31,12 @@ staging VMs. Rotate staging and hardware K3s tokens separately.
 ephemeral PR staging cluster. Those Secrets should use the same object names as
 home workloads, but with disposable credentials and staging endpoints.
 
+Homelab autoscaler node power inventory lives in
+`homelab-autoscaler-nodes.sops.yaml`. It contains real Wake-on-LAN MAC
+addresses, broadcast addresses, pinned SSH host keys, and the dedicated
+autoscaler shutdown SSH keypair. Keep it encrypted, and refresh the host-key
+entries after reinstalling Kairos worker nodes.
+
 Kairos PR staging uses Flux Operator's GitHub Pull Request ResourceSet pattern.
 Store the GitHub App credentials for the `ResourceSetInputProvider`, generated
 PR `GitRepository` sources, and Flux notification providers as a SOPS-encrypted

@@ -18,8 +18,10 @@ users:
       - admin
     ssh_authorized_keys:
       - github:{{ KAIROS_SSH_GITHUB_USER }}
+  # KAIROS_AUTOSCALER_SHUTDOWN_USER
 stages:
   boot:
+    # KAIROS_AUTOSCALER_SHUTDOWN_BOOT_STAGE
     - name: Enable SSH daemon
       commands:
         - |

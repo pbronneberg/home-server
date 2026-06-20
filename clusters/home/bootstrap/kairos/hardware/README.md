@@ -32,3 +32,10 @@ The renderer writes:
 
 Do not commit rendered `.local` files. They contain the decrypted K3s join
 token.
+
+If `private/flux/home/homelab-autoscaler-nodes.sops.yaml` exists and contains
+`stringData.ssh_public_key`, the renderer also adds a restricted
+`autoscaler-shutdown` SSH user. This keeps autoscaler shutdown access
+reproducible across Kairos reinstalls without using an operator's personal SSH
+key. Refresh the pinned SSH host key in that SOPS Secret after reinstalling a
+node because Kairos host keys may change.

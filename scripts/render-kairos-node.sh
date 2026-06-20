@@ -11,6 +11,7 @@ fi
 inventory="${KAIROS_HARDWARE_NODES:-clusters/home/bootstrap/kairos/hardware/nodes.yaml}"
 template="${KAIROS_HARDWARE_TEMPLATE:-clusters/home/bootstrap/kairos/hardware/user-data.agent.yaml}"
 secrets_file="${KAIROS_BOOTSTRAP_SOPS_FILE:-private/flux/home/kairos-bootstrap-values.sops.yaml}"
+autoscaler_nodes_file="${HOMELAB_AUTOSCALER_NODES_SOPS_FILE:-private/flux/home/homelab-autoscaler-nodes.sops.yaml}"
 out_dir="${KAIROS_RENDER_OUT_DIR:-.local/kairos}/${node}"
 sops_bin="${SOPS:-sops}"
 yq_bin="${YQ:-yq}"
@@ -62,6 +63,9 @@ data_disk_device=""
 data_disk_label="kairos-data"
 data_mount_point="$(node_value '.dataDisk.mountPoint // "/data"')"
 data_longhorn_path="$(node_value '.dataDisk.longhornPath // ""')"
+autoscaler_shutdown_public_key=""
+autoscaler_shutdown_user_block=""
+autoscaler_shutdown_boot_stage=""
 k3s_args="$(
   printf '    - "--node-name=%s"\n' "$node_name"
   KAIROS_NODE="$node" "$yq_bin" e -r '
@@ -112,6 +116,34 @@ if [ -z "$k3s_token" ]; then
   exit 1
 fi
 
+if [ -f "$autoscaler_nodes_file" ]; then
+  autoscaler_shutdown_public_key="$(
+    SOPS_AGE_KEY_FILE="$sops_age_key_file" \
+      "$sops_bin" --decrypt --extract '["stringData"]["ssh_public_key"]' "$autoscaler_nodes_file" 2>/dev/null || true
+  )"
+  autoscaler_shutdown_public_key="${autoscaler_shutdown_public_key//$'\r'/}"
+fi
+
+if [ -n "$autoscaler_shutdown_public_key" ] && [ "$autoscaler_shutdown_public_key" != "null" ]; then
+  autoscaler_shutdown_user_block="$(
+    printf '  - name: autoscaler-shutdown\n'
+    printf '    lock_passwd: true\n'
+    printf '    shell: /bin/sh\n'
+    printf '    ssh_authorized_keys:\n'
+    printf '      - %s\n' "$autoscaler_shutdown_public_key"
+  )"
+  autoscaler_shutdown_boot_stage="$(
+    printf '    - name: Configure autoscaler shutdown user\n'
+    printf '      commands:\n'
+    printf '        - |\n'
+    printf '          set -eu\n'
+    printf '          cat > /etc/sudoers.d/autoscaler-shutdown <<'"'"'EOF'"'"'\n'
+    printf '          autoscaler-shutdown ALL=(root) NOPASSWD: /sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff\n'
+    printf '          EOF\n'
+    printf '          chmod 0440 /etc/sudoers.d/autoscaler-shutdown\n'
+  )"
+fi
+
 mkdir -p "$out_dir/cidata"
 chmod 700 "$out_dir" "$out_dir/cidata"
 
@@ -145,6 +177,8 @@ replace_placeholder KAIROS_K3S_TOKEN "$k3s_token"
 replace_placeholder KAIROS_K3S_URL "$k3s_url"
 replace_placeholder KAIROS_NODE_NAME "$node_name"
 replace_placeholder KAIROS_SSH_GITHUB_USER "$ssh_github_user"
+replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_USER "$autoscaler_shutdown_user_block"
+replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_BOOT_STAGE "$autoscaler_shutdown_boot_stage"
 replace_line_placeholder KAIROS_K3S_ARGS "$k3s_args"
 replace_placeholder KAIROS_DATA_DISK_ENABLED "$data_disk_enabled"
 replace_placeholder KAIROS_DATA_DISK_DEVICE "$data_disk_device"

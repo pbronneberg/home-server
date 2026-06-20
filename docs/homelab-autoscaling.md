@@ -211,8 +211,10 @@ stringData:
     MARVIN_MAC_ADDRESS="00:00:00:00:00:00"
     MARVIN_WAKE_BROADCAST="192.0.2.255"
     MARVIN_SSH_HOST="marvin.home.example"
-    MARVIN_SSH_USER="kairos"
+    MARVIN_SSH_USER="autoscaler-shutdown"
     MARVIN_SSH_HOST_KEY="marvin.example ssh-ed25519 AAAA..."
+  ssh_public_key: |
+    ssh-ed25519 AAAA... homelab-autoscaler-shutdown
   ssh_private_key: |
     -----BEGIN OPENSSH PRIVATE KEY-----
     example
@@ -223,6 +225,50 @@ Before enabling worker `Group` or `Node` CRs, create
 `private/flux/home/homelab-autoscaler-nodes.sops.yaml` from
 `private/flux/home/homelab-autoscaler-nodes.example.yaml`, encrypt it with SOPS,
 and add it to `private/flux/home/kustomization.yaml`.
+
+The SSH key should be dedicated to autoscaler shutdown and should not be an
+operator's personal key. The matching public key is also stored in the SOPS
+Secret so the Kairos hardware renderer can inject a restricted
+`autoscaler-shutdown` user into rebuilt agent nodes. That user may only run the
+host poweroff command through sudo.
+
+### Kairos Reinstall Workflow
+
+Kairos worker nodes can be reinstalled freely, so treat autoscaler SSH as
+install-time configuration plus post-install inventory:
+
+1. Keep `private/flux/home/homelab-autoscaler-nodes.sops.yaml` encrypted and in
+   the private Flux overlay.
+2. Render Kairos hardware media after the autoscaler secret exists:
+
+   ```bash
+   make kairos-render-node KAIROS_NODE=marvin
+   ```
+
+   The rendered user-data includes the `autoscaler-shutdown` user only when the
+   encrypted autoscaler secret contains `stringData.ssh_public_key`.
+3. Reinstall or boot the Kairos node.
+4. Confirm the restricted user exists before enabling autoscaler shutdown:
+
+   ```bash
+   ssh autoscaler-shutdown@marvin 'sudo -n /usr/bin/systemctl --version >/dev/null && echo ok'
+   ```
+
+5. Refresh the pinned SSH host key in
+   `private/flux/home/homelab-autoscaler-nodes.sops.yaml` after every reinstall:
+
+   ```bash
+   ssh-keyscan -T 5 -t ed25519 marvin
+   make sops-edit SOPS_FILE=private/flux/home/homelab-autoscaler-nodes.sops.yaml
+   ```
+
+6. Reconcile `infrastructure-private-secrets` before testing autoscaler
+   shutdown.
+
+Host keys are expected to change after a full Kairos reinstall unless host keys
+are deliberately preserved. Do not work around this with
+`StrictHostKeyChecking=no` in the shutdown job; update the SOPS secret and keep
+the job pinned to the current host key.
 
 The upstream `Node` CR `startupPodSpec` should send the WOL packet. The
 `shutdownPodSpec` should:

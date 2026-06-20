@@ -16,3 +16,4 @@ resources:
   - tls-proxies-values.sops.yaml
   - github-app-auth.sops.yaml
   - github-webhook-token.sops.yaml
+  - homelab-autoscaler-nodes.sops.yaml
