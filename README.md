@@ -331,6 +331,16 @@ In Longhorn, tag storage deliberately:
 - `milliard`: node tag `milliard`, disk tag `local-ssd`
 - `marvin`: node tag `marvin`, disk tag `local-ssd`
 
+Longhorn `Node` resources are runtime-managed by Longhorn and are not committed
+as full GitOps manifests. Apply the `deepthought` permanent-storage tags after
+Longhorn has created the live node and disk:
+
+```bash
+kubectl patch nodes.longhorn.io -n longhorn-system deepthought --type merge -p \
+  '{"spec":{"tags":["deepthought"],"disks":{"data-longhorn":{"tags":["longhorn-data","permanent-ssd"]}}}}'
+kubectl get nodes.longhorn.io -n longhorn-system deepthought -o jsonpath='{.spec.tags}{"\n"}{.spec.disks.data-longhorn.tags}{"\n"}'
+```
+
 Keep the existing OS-disk Longhorn path in place and tag it `longhorn-osdisk`
 so existing volumes remain available and an explicit OS-disk StorageClass is
 available when needed.

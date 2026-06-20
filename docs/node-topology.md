@@ -78,7 +78,7 @@ scale-down.
 
 ## Autoscaler Topology
 
-The autoscaler control plane runs on `deepthought` through the suspended
+The autoscaler control plane runs on `deepthought` through the
 `infrastructure-homelab-autoscaler` Kustomization. It installs the upstream
 `homecluster-dev/homelab-autoscaler` operator in
 `homelab-autoscaler-system`.

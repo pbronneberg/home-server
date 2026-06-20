@@ -15,9 +15,9 @@ explicit tiers so scale-down does not copy large Longhorn replicas between SSDs.
   its chart-managed deployment is explicitly enabled.
 - Shutdown jobs own the final Longhorn safety checks before SSH poweroff.
 
-The autoscaler integration is intentionally a suspended pilot. The active
-Kustomization installs only the upstream HelmRelease shape and namespace. Group
-and Node CR examples live under
+The autoscaler integration is intentionally a gated pilot. The active
+Kustomization installs only the upstream operator HelmRelease, CRDs, and
+namespace. Group and Node CR examples live under
 `clusters/home/infrastructure/homelab-autoscaler/examples/` and must not be
 included until the operator CRDs have been installed and the manual power-state
 tests have passed.
@@ -62,9 +62,10 @@ clusterAutoscaler:
   skipNodesWithSystemPods: true
 ```
 
-The upstream project is still young. Keep the Kustomization suspended until a
-human is ready to run the pilot, and expect manual recovery for failed jobs or
-stuck power-state transitions.
+The upstream project is still young. Installing the operator is only the first
+pilot step. Keep Cluster Autoscaler disabled and leave worker CRs inactive until
+manual power-state tests pass. Expect manual recovery for failed jobs or stuck
+power-state transitions.
 
 The upstream 0.1.14 CRDs are the source of truth for pilot manifests. Some
 upstream documentation examples mention fields such as `maxSize` and
@@ -87,13 +88,13 @@ Land the change in small commits:
    for explicit local SSD workloads.
 2. Node topology: document `deepthought`, `milliard`, `marvin`, expected labels,
    taints, and Longhorn tags.
-3. Autoscaler source: add the upstream HelmRepository and the suspended
+3. Autoscaler source: add the upstream HelmRepository and the
    `homelab-autoscaler` HelmRelease.
 4. Power config: add the SOPS Secret example and keep real WOL/SSH values in the
    private overlay.
 5. Pilot examples: add the upstream `Group` and `Node` CR examples, but leave
    them outside the active Kustomization until CRDs are installed.
-6. Manual pilot: unsuspend only the operator, keep Cluster Autoscaler disabled,
+6. Manual pilot: install only the operator, keep Cluster Autoscaler disabled,
    and test `marvin` power-state transitions by patching the upstream `Node` CR.
 7. Autoscaling pilot: enable chart-managed Cluster Autoscaler only after manual
    WOL, drain, Longhorn refusal, and SSH poweroff checks pass.
@@ -143,6 +144,27 @@ Ephemeral workloads can run anywhere and may opt in to autoscaled workers.
 Permanent workloads should stay on `longhorn` unless they deliberately bind to a
 local storage tier. `longhorn-permanent` is a future migration target, not the
 current default.
+
+### Longhorn Runtime Tags
+
+Longhorn `Node` resources are runtime objects managed by Longhorn, so this
+repository does not commit full `nodes.longhorn.io` manifests. After Longhorn is
+installed and the `deepthought` data disk exists, apply the permanent-storage
+tags as an explicit bootstrap step:
+
+```bash
+kubectl patch nodes.longhorn.io -n longhorn-system deepthought --type merge -p \
+  '{"spec":{"tags":["deepthought"],"disks":{"data-longhorn":{"tags":["longhorn-data","permanent-ssd"]}}}}'
+```
+
+Verify the live tags before creating PVCs that use `longhorn-permanent`:
+
+```bash
+kubectl get nodes.longhorn.io -n longhorn-system deepthought -o jsonpath='{.spec.tags}{"\n"}{.spec.disks.data-longhorn.tags}{"\n"}'
+```
+
+This tag-only patch does not move existing PVCs, replicas, or Longhorn volumes.
+Do not delete Longhorn disks or volumes while applying tags.
 
 ## Autoscaled Worker Scheduling
 
@@ -197,7 +219,7 @@ stringData:
     -----END OPENSSH PRIVATE KEY-----
 ```
 
-Before enabling the suspended autoscaler Kustomization, create
+Before enabling worker `Group` or `Node` CRs, create
 `private/flux/home/homelab-autoscaler-nodes.sops.yaml` from
 `private/flux/home/homelab-autoscaler-nodes.example.yaml`, encrypt it with SOPS,
 and add it to `private/flux/home/kustomization.yaml`.
