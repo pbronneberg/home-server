@@ -35,13 +35,10 @@ Expected Longhorn tags:
 ### milliard
 
 - Role: K3s agent.
-- Power policy: upstream homelab-autoscaler pilot worker candidate while
-  integrated Ethernet WOL is being tested.
-- Storage role: compute-only for the active autoscaler pilot. Optional
-  node-local SSD Longhorn storage can be enabled later, but that should opt the
-  node out of routine autoscale-down while local volumes exist.
-- Workload role: stateless workloads, intentionally ephemeral workloads, or
-  workloads deliberately using `longhorn-local` with affinity for `milliard`.
+- Power policy: manual until integrated Ethernet WOL is fixed.
+- Storage role: optional node-local SSD Longhorn storage.
+- Workload role: workloads intentionally tied to `milliard`, such as scratch
+  workloads, experiments, or VMs.
 
 Expected Longhorn tags when local storage is enabled:
 

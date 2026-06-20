@@ -25,14 +25,10 @@ nodes:
     k3sUrl: https://192.168.1.123:6443
     sshGithubUser: pbronneberg
     nodeLabels:
-      home-server.dev/node-role: autoscaled-worker
+      home-server.dev/node-role: worker
       home-server.dev/storage: local
-      home-server.dev/autoscaled: "true"
-      node.longhorn.io/create-default-disk: "false"
-    nodeTaints:
-      - key: home-server.dev/autoscaled
-        value: "true"
-        effect: NoSchedule
+      home-server.dev/autoscaled: "false"
+      node.longhorn.io/create-default-disk: "true"
     dataDisk:
       enabled: true
       device: /dev/disk/by-id/ata-Samsung_SSD_850_EVO_500GB_S2RBNB0J115516X

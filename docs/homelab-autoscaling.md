@@ -67,6 +67,15 @@ pilot step. Keep Cluster Autoscaler disabled and leave worker CRs inactive until
 manual power-state tests pass. Expect manual recovery for failed jobs or stuck
 power-state transitions.
 
+The 2026-06-20 WOL checks did not wake either tested worker without manual
+power:
+
+- `marvin`: shutdown worked, but WOL did not wake the USB network adapter.
+- `milliard`: shutdown worked, but WOL did not wake integrated Ethernet.
+
+Keep additional worker `Node` CRs inactive until WOL is fixed at the firmware,
+NIC, switch, or broadcast configuration layer.
+
 The upstream 0.1.14 CRDs are the source of truth for pilot manifests. Some
 upstream documentation examples mention fields such as `maxSize` and
 `nodeSelector`, but those fields are not present in the published 0.1.14

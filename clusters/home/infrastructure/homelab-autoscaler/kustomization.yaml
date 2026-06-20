@@ -6,4 +6,4 @@ resources:
   - shutdown-rbac.yaml
   - worker-group.yaml
   - marvin-node.yaml
-  - milliard-node.yaml
+  # milliard-node.yaml is kept inactive until integrated Ethernet WOL is fixed.
