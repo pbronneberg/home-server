@@ -6,3 +6,4 @@ resources:
   - shutdown-rbac.yaml
   - worker-group.yaml
   - marvin-node.yaml
+  - milliard-node.yaml

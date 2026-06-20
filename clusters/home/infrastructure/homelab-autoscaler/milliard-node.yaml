@@ -1,0 +1,103 @@
+apiVersion: infra.homecluster.dev/v1alpha1
+kind: Node
+metadata:
+  name: milliard
+  namespace: homelab-autoscaler-system
+  labels:
+    group: wol-compute-workers
+    home-server.dev/node-role: autoscaled-worker
+spec:
+  kubernetesNodeName: milliard
+  powerState: "on"
+  pricing:
+    hourlyRate: "0"
+    podRate: "0"
+  startupPodSpec:
+    image: alpine/k8s:1.32.0
+    command:
+      - /bin/sh
+    args:
+      - -ceu
+      - |
+        node="milliard"
+        if ! command -v python3 >/dev/null 2>&1; then
+          apk add --no-cache python3
+        fi
+        set -a
+        . /etc/homelab-autoscaler/nodes.env
+        set +a
+        python3 - <<'PY'
+        import os
+        import socket
+        import time
+
+        mac = bytes.fromhex(os.environ["MILLIARD_MAC_ADDRESS"].replace(":", ""))
+        packet = b"\xff" * 6 + mac * 16
+        targets = [os.environ["MILLIARD_WAKE_BROADCAST"]]
+        if "255.255.255.255" not in targets:
+            targets.append("255.255.255.255")
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        deadline = time.time() + 120
+        while time.time() < deadline:
+            for target in targets:
+                for port in (9, 7):
+                    sock.sendto(packet, (target, port))
+            time.sleep(5)
+        PY
+        kubectl wait --for=condition=Ready "node/${node}" --timeout=10m
+        kubectl uncordon "${node}"
+    volumes:
+      - name: node-power-config
+        mountPath: /etc/homelab-autoscaler
+        secretName: homelab-autoscaler-nodes
+    serviceAccount: homelab-autoscaler-shutdown
+    ttlSecondsAfterFinished: 600
+  shutdownPodSpec:
+    image: alpine/k8s:1.32.0
+    command:
+      - /bin/sh
+    args:
+      - -ceu
+      - |
+        node="milliard"
+        if [ "${node}" = "deepthought" ]; then
+          echo "refusing to shut down protected node ${node}" >&2
+          exit 1
+        fi
+        autoscaled="$(kubectl get node "${node}" -o jsonpath='{.metadata.labels.home-server\.dev/autoscaled}')"
+        if [ "${autoscaled}" != "true" ]; then
+          echo "refusing to shut down ${node}: node is not labeled autoscaled" >&2
+          exit 1
+        fi
+        if kubectl get node "${node}" -o jsonpath='{.metadata.labels.home-server\.dev/storage}' | grep -qx permanent; then
+          echo "refusing to shut down permanent storage node ${node}" >&2
+          exit 1
+        fi
+        if kubectl get replicas.longhorn.io -n longhorn-system -o jsonpath='{range .items[*]}{.spec.nodeID}{"\n"}{end}' | grep -qx "${node}"; then
+          echo "refusing to shut down ${node}: Longhorn replicas are present" >&2
+          exit 1
+        fi
+        if kubectl get volumes.longhorn.io -n longhorn-system -o jsonpath='{range .items[*]}{.status.currentNodeID}{"\n"}{end}' | grep -qx "${node}"; then
+          echo "refusing to shut down ${node}: Longhorn volume is attached" >&2
+          exit 1
+        fi
+        if ! command -v ssh >/dev/null 2>&1; then
+          apk add --no-cache openssh-client
+        fi
+        kubectl drain "${node}" --ignore-daemonsets --delete-emptydir-data --timeout=10m
+        set -a
+        . /etc/homelab-autoscaler/nodes.env
+        set +a
+        mkdir -p /root/.ssh
+        cp /etc/homelab-autoscaler/ssh_private_key /root/.ssh/id_ed25519
+        chmod 0600 /root/.ssh/id_ed25519
+        printf '%s\n' "${MILLIARD_SSH_HOST_KEY}" > /root/.ssh/known_hosts
+        ssh -i /root/.ssh/id_ed25519 -o BatchMode=yes -o UserKnownHostsFile=/root/.ssh/known_hosts "${MILLIARD_SSH_USER}@${MILLIARD_SSH_HOST}" "sudo /sbin/poweroff"
+    volumes:
+      - name: node-power-config
+        mountPath: /etc/homelab-autoscaler
+        secretName: homelab-autoscaler-nodes
+    serviceAccount: homelab-autoscaler-shutdown
+    ttlSecondsAfterFinished: 600
