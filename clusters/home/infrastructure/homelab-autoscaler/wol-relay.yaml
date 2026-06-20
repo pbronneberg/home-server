@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homelab-autoscaler-wol-relay
+  namespace: homelab-autoscaler-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: homelab-autoscaler-wol-relay
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: homelab-autoscaler-wol-relay
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: deepthought
+      containers:
+        - name: wol-relay
+          image: python:3.12-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+          args:
+            - -ceu
+            - |
+              set -a
+              . /etc/homelab-autoscaler/nodes.env
+              set +a
+              python - <<'PY'
+              import os
+              import re
+              import socket
+              import threading
+              import time
+              from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+              PORT = int(os.environ.get("WOL_RELAY_PORT", "18080"))
+              NODE_RE = re.compile(r"^[a-z0-9-]+$")
+
+
+              def send_wol(node):
+                  prefix = node.upper().replace("-", "_")
+                  mac_value = os.environ[f"{prefix}_MAC_ADDRESS"]
+                  broadcast = os.environ[f"{prefix}_WAKE_BROADCAST"]
+                  mac = bytes.fromhex(mac_value.replace(":", ""))
+                  packet = b"\xff" * 6 + mac * 16
+                  targets = [broadcast, "255.255.255.255"]
+
+                  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                  sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                  deadline = time.time() + 120
+                  while time.time() < deadline:
+                      for target in dict.fromkeys(targets):
+                          for port in (9, 7):
+                              sock.sendto(packet, (target, port))
+                      time.sleep(5)
+
+
+              class Handler(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      parts = self.path.strip("/").split("/")
+                      if self.path == "/healthz":
+                          self.send_response(200)
+                          self.end_headers()
+                          self.wfile.write(b"ok\n")
+                          return
+                      if len(parts) != 2 or parts[0] != "wake" or not NODE_RE.match(parts[1]):
+                          self.send_response(404)
+                          self.end_headers()
+                          self.wfile.write(b"not found\n")
+                          return
+
+                      node = parts[1]
+                      prefix = node.upper().replace("-", "_")
+                      if f"{prefix}_MAC_ADDRESS" not in os.environ or f"{prefix}_WAKE_BROADCAST" not in os.environ:
+                          self.send_response(404)
+                          self.end_headers()
+                          self.wfile.write(b"unknown node\n")
+                          return
+
+                      threading.Thread(target=send_wol, args=(node,), daemon=True).start()
+                      self.send_response(202)
+                      self.end_headers()
+                      self.wfile.write(f"waking {node}\n".encode())
+
+                  def log_message(self, fmt, *args):
+                      print(f"{self.address_string()} - {fmt % args}", flush=True)
+
+
+              ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+              PY
+          env:
+            - name: WOL_RELAY_PORT
+              value: "18080"
+          ports:
+            - name: http
+              containerPort: 18080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          volumeMounts:
+            - name: node-power-config
+              mountPath: /etc/homelab-autoscaler
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: node-power-config
+          secret:
+            secretName: homelab-autoscaler-nodes
+            items:
+              - key: nodes.env
+                path: nodes.env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homelab-autoscaler-wol-relay
+  namespace: homelab-autoscaler-system
+spec:
+  selector:
+    app.kubernetes.io/name: homelab-autoscaler-wol-relay
+  ports:
+    - name: http
+      port: 18080
+      targetPort: http

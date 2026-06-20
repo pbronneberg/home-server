@@ -35,7 +35,7 @@ Expected Longhorn tags:
 ### milliard
 
 - Role: K3s agent.
-- Power policy: manual until integrated Ethernet WOL is fixed.
+- Power policy: autoscaled worker; integrated Ethernet WOL is enabled in BIOS.
 - Storage role: optional node-local SSD Longhorn storage.
 - Workload role: workloads intentionally tied to `milliard`, such as scratch
   workloads, experiments, or VMs.
@@ -48,7 +48,8 @@ Expected Longhorn tags when local storage is enabled:
 ### marvin
 
 - Role: K3s agent.
-- Power policy: manual until USB-network Wake-on-LAN is fixed.
+- Power policy: autoscaled worker; USB-network Wake-on-LAN is enabled with
+  `Wake-on: g`.
 - Storage role: compute-only unless local Longhorn storage is explicitly
   enabled later.
 - Workload role: stateless workloads or intentionally ephemeral workloads.
@@ -80,6 +81,10 @@ The autoscaler control plane runs on `deepthought` through the
 `infrastructure-homelab-autoscaler` Kustomization. It installs the upstream
 `homecluster-dev/homelab-autoscaler` operator in
 `homelab-autoscaler-system`.
+
+Wake-on-LAN packets are sent through `homelab-autoscaler-wol-relay`, a
+host-network pod pinned to `deepthought`. The upstream `Node` CR startup pod
+calls the relay and then waits for the Kubernetes node to become Ready.
 
 Only worker nodes should be represented by upstream autoscaler `Node` CRs.
 `deepthought` must remain outside all autoscaler `Group` resources and must keep

@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - helmrelease.yaml
   - shutdown-rbac.yaml
+  - wol-relay.yaml
   - worker-group.yaml
+  - marvin-node.yaml
   - milliard-node.yaml
-  # marvin-node.yaml is kept inactive until USB-network Wake-on-LAN is fixed.

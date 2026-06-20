@@ -63,19 +63,20 @@ clusterAutoscaler:
 ```
 
 The upstream project is still young. Installing the operator is only the first
-pilot step. Keep Cluster Autoscaler disabled and leave worker CRs inactive until
-manual power-state tests pass. Expect manual recovery for failed jobs or stuck
-power-state transitions.
+pilot step. Keep Cluster Autoscaler disabled until manual power-state tests
+pass for every active worker CR. Expect manual recovery for failed jobs or
+stuck power-state transitions.
 
-The 2026-06-20 WOL checks did not wake either tested worker without manual
-power:
+The 2026-06-20 WOL checks showed two useful constraints:
 
-- `marvin`: shutdown worked, but WOL did not wake the USB network adapter.
-- `milliard`: shutdown worked, but WOL did not wake integrated Ethernet before
-  BIOS WOL was enabled. It is the active retest candidate after the BIOS change.
+- `milliard`: integrated Ethernet WOL works after BIOS WOL was enabled.
+- `marvin`: USB-network WOL reports `Wake-on: g` and is enabled for the active
+  pilot.
+- Normal pod-network WOL is not reliable for this LAN. WOL packets are sent
+  through a small host-network relay pinned to `deepthought`.
 
-Keep additional worker `Node` CRs inactive until WOL is fixed at the firmware,
-NIC, switch, or broadcast configuration layer.
+Keep new worker `Node` CRs inactive until WOL is fixed at the firmware, NIC,
+switch, or broadcast configuration layer and verified through the relay.
 
 The upstream 0.1.14 CRDs are the source of truth for pilot manifests. Some
 upstream documentation examples mention fields such as `maxSize` and
@@ -105,7 +106,7 @@ Land the change in small commits:
 5. Pilot examples: add the upstream `Group` and `Node` CR examples, but leave
    them outside the active Kustomization until CRDs are installed.
 6. Manual pilot: install only the operator, keep Cluster Autoscaler disabled,
-   and test `marvin` power-state transitions by patching the upstream `Node` CR.
+   and test worker power-state transitions by patching upstream `Node` CRs.
 7. Autoscaling pilot: enable chart-managed Cluster Autoscaler only after manual
    WOL, drain, Longhorn refusal, and SSH poweroff checks pass.
 
@@ -292,11 +293,13 @@ Secret, uses a temporary pinned host-key file, installs only the
 `autoscaler-shutdown` account and sudoers drop-in, and verifies SSH login with
 the dedicated key.
 
-The upstream `Node` CR `startupPodSpec` should send WOL packets repeatedly and
-then wait for the Kubernetes `Node` to become Ready before it exits. Treat a
-startup job that only sends a packet as insufficient: it proves only that the
-packet was attempted, not that the machine powered on. If manual power-on is
-needed, the WOL test failed even if the autoscaler later reports the node Ready.
+The upstream `Node` CR `startupPodSpec` calls the
+`homelab-autoscaler-wol-relay` Service and then waits for the Kubernetes `Node`
+to become Ready before it exits. The relay runs as a host-network pod on
+`deepthought` so WOL packets leave through the LAN interface. Treat a startup
+job that only sends a packet as insufficient: it proves only that the packet was
+attempted, not that the machine powered on. If manual power-on is needed, the
+WOL test failed even if the autoscaler later reports the node Ready.
 
 The `shutdownPodSpec` should:
 
@@ -321,18 +324,19 @@ used by the OS.
 3. Confirm a `longhorn-local` workload with preferred affinity favors the
    requested local SSD node.
 4. Confirm Home Assistant and monitoring PVCs continue to use `longhorn`.
-5. Wake an autoscaled worker without touching the physical power button and
+5. Confirm the `homelab-autoscaler-wol-relay` pod is Ready on `deepthought`.
+6. Wake an autoscaled worker without touching the physical power button and
    confirm it joins with local-storage labels and autoscaled taints.
-6. Create the example `Group` and `Node` CRs for one worker only.
-7. Patch that `Node` CR from `off` to `on` and verify WOL, K3s join, labels,
+7. Create or enable the `Group` and `Node` CRs for one worker at a time.
+8. Patch that `Node` CR from `off` to `on` and verify WOL, K3s join, labels,
    taints, and status progression. The startup job must not complete until the
    Kubernetes node is Ready.
-8. Create a temporary Longhorn local PVC on the worker and verify the shutdown
+9. Create a temporary Longhorn local PVC on the worker and verify the shutdown
    job refuses to power off while the replica or attachment exists.
-9. Run a stateless test Deployment that tolerates autoscaled workers.
-10. Temporarily reduce scale-down delay, delete the test workload, and verify
+10. Run a stateless test Deployment that tolerates autoscaled workers.
+11. Temporarily reduce scale-down delay, delete the test workload, and verify
     drain and poweroff.
-11. Confirm Longhorn reports no replica rebuild or migration during scale-down.
+12. Confirm Longhorn reports no replica rebuild or migration during scale-down.
 
 ## PVC Migration
 
