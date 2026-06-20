@@ -5,3 +5,4 @@ resources:
   - helmrelease.yaml
   - shutdown-rbac.yaml
   - worker-group.yaml
+  - marvin-node.yaml
