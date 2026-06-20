@@ -8,7 +8,7 @@ metadata:
     home-server.dev/node-role: autoscaled-worker
 spec:
   kubernetesNodeName: marvin
-  powerState: "on"
+  powerState: "off"
   pricing:
     hourlyRate: "0"
     podRate: "0"
