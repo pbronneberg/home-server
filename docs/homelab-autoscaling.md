@@ -71,7 +71,8 @@ The 2026-06-20 WOL checks did not wake either tested worker without manual
 power:
 
 - `marvin`: shutdown worked, but WOL did not wake the USB network adapter.
-- `milliard`: shutdown worked, but WOL did not wake integrated Ethernet.
+- `milliard`: shutdown worked, but WOL did not wake integrated Ethernet before
+  BIOS WOL was enabled. Retest after BIOS change is required.
 
 Keep additional worker `Node` CRs inactive until WOL is fixed at the firmware,
 NIC, switch, or broadcast configuration layer.
