@@ -50,8 +50,10 @@ Expected Longhorn tags when local storage is enabled:
 
 - Role: K3s agent.
 - Power policy: upstream homelab-autoscaler pilot worker candidate.
-- Storage role: optional node-local Longhorn storage on the node's single SSD
-  using `/data/longhorn`.
+- Storage role: compute-only for the active autoscaler pilot. Optional
+  node-local Longhorn storage on the node's single SSD using `/data/longhorn`
+  can be enabled later, but that should opt the node out of routine
+  autoscale-down while local volumes exist.
 - Workload role: stateless workloads, intentionally ephemeral workloads, or
   workloads deliberately using `longhorn-local` with affinity for `marvin`.
 

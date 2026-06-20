@@ -9,7 +9,7 @@ nodes:
       home-server.dev/node-role: autoscaled-worker
       home-server.dev/storage: local
       home-server.dev/autoscaled: "true"
-      node.longhorn.io/create-default-disk: "true"
+      node.longhorn.io/create-default-disk: "false"
     nodeTaints:
       - key: home-server.dev/autoscaled
         value: "true"
