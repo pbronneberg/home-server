@@ -29,6 +29,14 @@ spec:
               - op: replace
                 path: /metadata/name
                 value: homelab-autoscaler-manager-role
+          - target:
+              kind: Deployment
+              name: homelab-autoscaler-controller-manager
+            patch: |
+              - op: add
+                path: /spec/template/spec/nodeSelector
+                value:
+                  kubernetes.io/hostname: deepthought
   releaseName: homelab-autoscaler
   timeout: 5m
   upgrade:
@@ -45,6 +53,8 @@ spec:
       scaleDownUtilizationThreshold: 0.1
       skipNodesWithLocalStorage: true
       skipNodesWithSystemPods: true
+      nodeSelector:
+        kubernetes.io/hostname: deepthought
       extraArgs:
         - --scale-down-delay-after-failure=15m
         - --max-node-provision-time=15m
