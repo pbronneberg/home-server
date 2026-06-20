@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: homelab-autoscaler-nodes
+  namespace: homelab-autoscaler-system
+type: Opaque
+stringData:
+  nodes.env: |
+    MARVIN_MAC_ADDRESS="00:00:00:00:00:00"
+    MARVIN_WAKE_BROADCAST="192.0.2.255"
+    MARVIN_SSH_HOST="marvin.home.example"
+    MARVIN_SSH_USER="kairos"
+    MARVIN_SSH_HOST_KEY="marvin.example ssh-ed25519 AAAA..."
+  ssh_private_key: |
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    example
+    -----END OPENSSH PRIVATE KEY-----

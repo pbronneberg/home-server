@@ -5,14 +5,30 @@ nodes:
     installDevice: /dev/disk/by-id/ata-Samsung_SSD_860_EVO_M.2_500GB_S414NB0M616470F
     k3sUrl: https://192.168.1.123:6443
     sshGithubUser: pbronneberg
+    nodeLabels:
+      home-server.dev/node-role: autoscaled-worker
+      home-server.dev/storage: local
+      home-server.dev/autoscaled: "true"
+      node.longhorn.io/create-default-disk: "true"
+    nodeTaints:
+      - key: home-server.dev/autoscaled
+        value: "true"
+        effect: NoSchedule
     dataDisk:
       enabled: false
+      mountPoint: /data
+      longhornPath: /data/longhorn
   milliard:
     hostname: milliard
     nodeName: milliard
     installDevice: /dev/disk/by-id/nvme-SAMSUNG_MZVLW256HEHP-000L7_S35ENX0JB71020
     k3sUrl: https://192.168.1.123:6443
     sshGithubUser: pbronneberg
+    nodeLabels:
+      home-server.dev/node-role: worker
+      home-server.dev/storage: local
+      home-server.dev/autoscaled: "false"
+      node.longhorn.io/create-default-disk: "true"
     dataDisk:
       enabled: true
       device: /dev/disk/by-id/ata-Samsung_SSD_850_EVO_500GB_S2RBNB0J115516X

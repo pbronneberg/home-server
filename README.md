@@ -306,9 +306,12 @@ dependencies in
 
 ### Longhorn data disk preparation
 
-Longhorn standard storage uses the host-mounted data disk at `/data/longhorn`.
-Prepare that directory on the node before adding or tagging the disk in
-Longhorn:
+The node topology and storage tiers are documented in
+[`docs/node-topology.md`](docs/node-topology.md). The autoscaling operating
+model is documented in [`docs/homelab-autoscaling.md`](docs/homelab-autoscaling.md).
+Longhorn permanent storage uses `deepthought`; node-local storage uses
+`/data/longhorn` on the selected worker. Prepare that directory on the node
+before adding or tagging the disk in Longhorn:
 
 ```bash
 findmnt /data
@@ -322,17 +325,27 @@ sudo rm /data/longhorn/.longhorn-write-test
 findmnt -T /data/longhorn
 ```
 
-In Longhorn, tag `/data/longhorn` with `longhorn-data`. Keep the existing
-OS-disk Longhorn path in place and tag it `longhorn-osdisk` so existing volumes
-remain available and an explicit OS-disk StorageClass is available when needed.
+In Longhorn, tag storage deliberately:
+
+- `deepthought`: node tag `deepthought`, disk tag `permanent-ssd`
+- `milliard`: node tag `milliard`, disk tag `local-ssd`
+- `marvin`: node tag `marvin`, disk tag `local-ssd`
+
+Keep the existing OS-disk Longhorn path in place and tag it `longhorn-osdisk`
+so existing volumes remain available and an explicit OS-disk StorageClass is
+available when needed.
 Do not delete PVCs, PVs, Longhorn volumes, or Longhorn disks as part of this
 change.
 
-StorageClass parameters are immutable in Kubernetes. During a maintenance
-window, pause new PVC creation, delete only the `longhorn` and
-`longhorn-retain` StorageClass objects, and let Flux recreate them with the
-same names. Existing PVs/PVCs are not deleted by removing those StorageClass
-objects, but new PVC provisioning should wait until Flux has recreated them.
+`longhorn` remains the current durable/default StorageClass. `longhorn-permanent`
+is reserved for a future explicit migration to deepthought-only durable storage,
+and `longhorn-local` is the generic local SSD tier for workloads that should
+keep their only replica on the node selected by scheduling. Existing PVCs do not
+migrate automatically when StorageClasses are added. Migrate Home Assistant,
+Grafana, Prometheus, or Alertmanager data with an application backup/restore or
+Longhorn backup/restore during a maintenance window. Existing PVs/PVCs are not
+deleted by changing or removing StorageClass objects, but new PVC provisioning
+should wait until Flux has reconciled the intended StorageClasses.
 
 ### GitHub-backed ingress authentication
 

@@ -10,9 +10,7 @@ k3s-agent:
     K3S_TOKEN: "{{ KAIROS_K3S_TOKEN }}"
     K3S_URL: "{{ KAIROS_K3S_URL }}"
   args:
-    - "--node-name={{ KAIROS_NODE_NAME }}"
-    - "--kubelet-arg=anonymous-auth=false"
-    - "--kubelet-arg=read-only-port=0"
+    # KAIROS_K3S_ARGS
 users:
   - name: kairos
     lock_passwd: true
@@ -34,14 +32,19 @@ stages:
           set -eu
 
           enabled="{{ KAIROS_DATA_DISK_ENABLED }}"
-          if [ "$enabled" != "true" ]; then
-            exit 0
-          fi
-
           disk="{{ KAIROS_DATA_DISK_DEVICE }}"
           mountpoint="{{ KAIROS_DATA_MOUNT_POINT }}"
           label="{{ KAIROS_DATA_DISK_LABEL }}"
           longhorn_path="{{ KAIROS_DATA_LONGHORN_PATH }}"
+
+          if [ "$enabled" != "true" ]; then
+            if [ -n "$longhorn_path" ]; then
+              mkdir -p "$longhorn_path"
+              chown root:root "$longhorn_path"
+              chmod 0700 "$longhorn_path"
+            fi
+            exit 0
+          fi
 
           attempts=0
           while [ ! -b "$disk" ] && [ "$attempts" -lt 30 ]; do
