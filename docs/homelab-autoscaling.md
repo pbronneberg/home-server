@@ -82,10 +82,11 @@ objects, but the autoscaler is allowed to mutate `spec.powerState` afterward.
 Without that policy, Git reconciliation would fight scale-up and scale-down
 decisions.
 
-`marvin` is created with `spec.powerState: "on"` so a manual power-on is not
-immediately interpreted as drift to shut down. Because the resource uses
-`IfNotPresent`, Cluster Autoscaler can later mutate `spec.powerState` to `off`
-after the idle window without Flux reverting it. The expected workflow is:
+`marvin` is created with `spec.powerState: "off"` so it remains demand-driven
+while no workload needs it. Because the resource uses `IfNotPresent`, Cluster
+Autoscaler can mutate `spec.powerState` to `on` for a pending Marvin workload
+and later back to `off` after the idle window without Flux reverting it. The
+expected workflow is:
 
 1. Apply a workload that explicitly requires `marvin`.
 2. Cluster Autoscaler marks `marvin` needed and the startup job sends WOL.
@@ -95,6 +96,10 @@ after the idle window without Flux reverting it. The expected workflow is:
    it.
 5. After the workload is removed, Cluster Autoscaler waits
    `scaleDownUnneededTime: 1h`, then runs the normal Longhorn-safe shutdown job.
+
+Do not manually power on `marvin` before applying the workload that requires it.
+If the autoscaler still sees desired state `off`, it is allowed to shut the node
+down again.
 
 The upstream 0.1.14 CRDs are the source of truth for pilot manifests. Some
 upstream documentation examples mention fields such as `maxSize` and
