@@ -28,7 +28,7 @@ spec:
       createDefaultDiskLabeledNodes: true
       defaultDataPath: /data/longhorn
     persistence:
-      defaultClassReplicaCount: 2
+      defaultClassReplicaCount: 1
       defaultDiskSelector:
         enable: true
         selector: longhorn-data
