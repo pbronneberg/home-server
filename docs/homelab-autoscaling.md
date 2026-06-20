@@ -251,7 +251,7 @@ install-time configuration plus post-install inventory:
 4. Confirm the restricted user exists before enabling autoscaler shutdown:
 
    ```bash
-   ssh autoscaler-shutdown@marvin 'sudo -n /usr/bin/systemctl --version >/dev/null && echo ok'
+   ssh autoscaler-shutdown@marvin 'id -un && sudo -n -l /sbin/poweroff >/dev/null'
    ```
 
 5. Refresh the pinned SSH host key in
@@ -269,6 +269,18 @@ Host keys are expected to change after a full Kairos reinstall unless host keys
 are deliberately preserved. Do not work around this with
 `StrictHostKeyChecking=no` in the shutdown job; update the SOPS secret and keep
 the job pinned to the current host key.
+
+For already-installed nodes that were rendered before the autoscaler shutdown
+user existed, bootstrap the restricted user in place:
+
+```bash
+scripts/bootstrap-autoscaler-shutdown-user.sh marvin milliard
+```
+
+The script reads the dedicated keypair from the encrypted autoscaler SOPS
+Secret, uses a temporary pinned host-key file, installs only the
+`autoscaler-shutdown` account and sudoers drop-in, and verifies SSH login with
+the dedicated key.
 
 The upstream `Node` CR `startupPodSpec` should send the WOL packet. The
 `shutdownPodSpec` should:

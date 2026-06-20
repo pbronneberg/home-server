@@ -138,7 +138,7 @@ if [ -n "$autoscaler_shutdown_public_key" ] && [ "$autoscaler_shutdown_public_ke
     printf '        - |\n'
     printf '          set -eu\n'
     printf '          cat > /etc/sudoers.d/autoscaler-shutdown <<'"'"'EOF'"'"'\n'
-    printf '          autoscaler-shutdown ALL=(root) NOPASSWD: /sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff\n'
+    printf '          autoscaler-shutdown ALL=(root) NOPASSWD: /sbin/poweroff, /usr/sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff\n'
     printf '          EOF\n'
     printf '          chmod 0440 /etc/sudoers.d/autoscaler-shutdown\n'
   )"
