@@ -20,7 +20,7 @@ spec:
       - -ceu
       - |
         node="marvin"
-        relay_url="http://homelab-autoscaler-wol-relay.homelab-autoscaler-system.svc.cluster.local:18080/wake/${node}"
+        relay_url="http://homelab-autoscaler-wol-relay:18080/wake/${node}"
         wget -q -O - -T 30 "${relay_url}"
         kubectl wait --for=condition=Ready "node/${node}" --timeout=15m
         kubectl uncordon "${node}"
