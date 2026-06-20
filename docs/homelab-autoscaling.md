@@ -72,7 +72,7 @@ power:
 
 - `marvin`: shutdown worked, but WOL did not wake the USB network adapter.
 - `milliard`: shutdown worked, but WOL did not wake integrated Ethernet before
-  BIOS WOL was enabled. Retest after BIOS change is required.
+  BIOS WOL was enabled. It is the active retest candidate after the BIOS change.
 
 Keep additional worker `Node` CRs inactive until WOL is fixed at the firmware,
 NIC, switch, or broadcast configuration layer.

@@ -1,3 +1,5 @@
+# Inactive pilot manifest. Do not add this file to kustomization.yaml until
+# USB-network Wake-on-LAN has been fixed and verified without manual power-on.
 apiVersion: infra.homecluster.dev/v1alpha1
 kind: Node
 metadata:
