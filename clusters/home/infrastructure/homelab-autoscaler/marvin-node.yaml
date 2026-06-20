@@ -11,7 +11,7 @@ metadata:
     home-server.dev/power-mode: manual-wake
 spec:
   kubernetesNodeName: marvin
-  powerState: "off"
+  powerState: "on"
   pricing:
     hourlyRate: "0"
     podRate: "0"

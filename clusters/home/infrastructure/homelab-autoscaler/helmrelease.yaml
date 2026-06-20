@@ -37,6 +37,15 @@ spec:
                 path: /spec/template/spec/nodeSelector
                 value:
                   kubernetes.io/hostname: deepthought
+          - target:
+              kind: ConfigMap
+              name: homelab-autoscaler-cluster-autoscaler-config
+            patch: |
+              - op: replace
+                path: /data/config.yaml
+                value: |
+                  address: homelab-autoscaler-grpc-service:50051
+                  grpc_timeout: 30s
   releaseName: homelab-autoscaler
   timeout: 5m
   upgrade:

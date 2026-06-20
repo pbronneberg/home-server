@@ -82,7 +82,10 @@ objects, but the autoscaler is allowed to mutate `spec.powerState` afterward.
 Without that policy, Git reconciliation would fight scale-up and scale-down
 decisions.
 
-`marvin` starts from `spec.powerState: "off"`. The expected workflow is:
+`marvin` is created with `spec.powerState: "on"` so a manual power-on is not
+immediately interpreted as drift to shut down. Because the resource uses
+`IfNotPresent`, Cluster Autoscaler can later mutate `spec.powerState` to `off`
+after the idle window without Flux reverting it. The expected workflow is:
 
 1. Apply a workload that explicitly requires `marvin`.
 2. Cluster Autoscaler marks `marvin` needed and the startup job sends WOL.
