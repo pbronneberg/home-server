@@ -22,6 +22,8 @@ nodes:
       enabled: false
       mountPoint: /data
       longhornPath: /data/longhorn
+    wakeOnLan:
+      enabled: true
   milliard:
     hostname: milliard
     nodeName: milliard

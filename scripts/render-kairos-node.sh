@@ -63,6 +63,8 @@ data_disk_device=""
 data_disk_label="kairos-data"
 data_mount_point="$(node_value '.dataDisk.mountPoint // "/data"')"
 data_longhorn_path="$(node_value '.dataDisk.longhornPath // ""')"
+wake_on_lan_enabled="$(node_value '.wakeOnLan.enabled // false')"
+enable_wake_on_lan_network_stage=""
 autoscaler_shutdown_public_key=""
 autoscaler_shutdown_user_block=""
 autoscaler_shutdown_boot_stage=""
@@ -104,6 +106,38 @@ if [ "$data_disk_enabled" = "true" ]; then
     printf 'node %s enables dataDisk but does not set dataDisk.device\n' "$node" >&2
     exit 1
   fi
+fi
+
+if [ "$wake_on_lan_enabled" = "true" ]; then
+  enable_wake_on_lan_network_stage="$(
+    printf '    - name: Enable Wake-on-LAN with systemd-networkd\n'
+    printf '      commands:\n'
+    printf '        - |\n'
+    printf '          set -eu\n'
+    printf '          mkdir -p /etc/systemd/network\n'
+    printf '          cat > /etc/systemd/network/20-kairos-wake-on-lan.link <<'"'"'EOF'"'"'\n'
+    printf '          [Match]\n'
+    printf '          OriginalName=en* eth*\n'
+    printf '\n'
+    printf '          [Link]\n'
+    printf '          WakeOnLan=magic\n'
+    printf '          EOF\n'
+    printf '\n'
+    printf '          if ! command -v networkctl >/dev/null 2>&1; then\n'
+    printf '            echo "warning: networkctl not available; Wake-on-LAN link config written only" >&2\n'
+    printf '            exit 0\n'
+    printf '          fi\n'
+    printf '\n'
+    printf '          udevadm control --reload || true\n'
+    printf '          udevadm trigger --subsystem-match=net --action=add || true\n'
+    printf '\n'
+    printf '          networkctl reload || true\n'
+    printf '          networkctl list --no-legend --no-pager | awk '"'"'$2 != "lo" && $3 == "ether" { print $2 }'"'"' | while IFS= read -r link; do\n'
+    printf '            [ -n "$link" ] || continue\n'
+    printf '            networkctl reconfigure "$link" || true\n'
+    printf '            networkctl status "$link" --no-pager | grep -F "Wake On LAN:" || true\n'
+    printf '          done\n'
+  )"
 fi
 
 k3s_token="$(
@@ -179,6 +213,7 @@ replace_placeholder KAIROS_NODE_NAME "$node_name"
 replace_placeholder KAIROS_SSH_GITHUB_USER "$ssh_github_user"
 replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_USER "$autoscaler_shutdown_user_block"
 replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_BOOT_STAGE "$autoscaler_shutdown_boot_stage"
+replace_line_placeholder KAIROS_WAKE_ON_LAN_NETWORK_STAGE "$enable_wake_on_lan_network_stage"
 replace_line_placeholder KAIROS_K3S_ARGS "$k3s_args"
 replace_placeholder KAIROS_DATA_DISK_ENABLED "$data_disk_enabled"
 replace_placeholder KAIROS_DATA_DISK_DEVICE "$data_disk_device"

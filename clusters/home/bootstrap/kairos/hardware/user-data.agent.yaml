@@ -82,6 +82,7 @@ stages:
             chmod 0700 "$longhorn_path"
           fi
   network:
+    # KAIROS_WAKE_ON_LAN_NETWORK_STAGE
     - name: Refresh operator SSH keys from GitHub
       commands:
         - |
