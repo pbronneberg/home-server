@@ -5,8 +5,6 @@ resources:
   - helmrelease.yaml
   - shutdown-rbac.yaml
   - wol-relay.yaml
-  - longhorn-safe-to-evict-rbac.yaml
-  - longhorn-safe-to-evict.yaml
   - worker-group.yaml
   - marvin-node.yaml
   - milliard-node.yaml

@@ -67,6 +67,7 @@ spec:
       extraArgs:
         - --scale-down-delay-after-failure=15m
         - --max-node-provision-time=15m
+        - --skip-nodes-with-custom-controller-pods=false
         - --v=4
     controllerManager:
       replicas: 1

@@ -31,14 +31,12 @@ The shutdown path must refuse to power off:
 - nodes with attached Longhorn volumes
 
 Cluster Autoscaler also has to pass its scheduler simulation before it will call
-the shutdown job. Longhorn instance-manager pods are not DaemonSets and are not
-replicated, so Cluster Autoscaler treats them as blockers unless they are
-explicitly marked safe to evict. The
-`homelab-autoscaler-longhorn-safe-to-evict` CronJob annotates instance-manager
-pods on autoscaled nodes only when that node has no Longhorn replicas and no
-attached Longhorn volumes. If storage appears on the node, the annotation is
-removed again. The shutdown job still performs the final Longhorn replica and
-attachment checks immediately before SSH poweroff.
+the shutdown job. Longhorn instance-manager pods are owned by Longhorn's
+`InstanceManager` custom resource, so the Cluster Autoscaler deployment sets
+`--skip-nodes-with-custom-controller-pods=false`. This lets idle Longhorn system
+pods on autoscaled workers be considered removable. The shutdown job remains the
+hard storage safety gate: it refuses poweroff if the node has Longhorn replicas
+or attached Longhorn volumes.
 
 ## Upstream Autoscaler
 
@@ -66,9 +64,11 @@ clusterAutoscaler:
   enabled: true
   scaleDownDelay: 1h
   scaleDownUnneededTime: 1h
-  scaleDownUtilizationThreshold: 0.1
+  scaleDownUtilizationThreshold: 0.2
   skipNodesWithLocalStorage: true
   skipNodesWithSystemPods: true
+  extraArgs:
+    - --skip-nodes-with-custom-controller-pods=false
 ```
 
 The upstream project is still young. Installing the operator is only the first
@@ -110,8 +110,10 @@ expected workflow is:
 If an idle worker does not scale down, check the Cluster Autoscaler logs for a
 message like `Node <name> cannot be removed:
 longhorn-system/instance-manager-... is not replicated`. That means the
-safe-to-evict helper has not annotated the Longhorn instance-manager pod, or the
-node still has Longhorn replicas or attached volumes.
+custom-controller pod flag is missing from the active Cluster Autoscaler
+deployment or the chart values have not reconciled. If the shutdown job starts
+but refuses poweroff, check for Longhorn replicas or attached volumes on that
+node.
 
 Do not manually power on `marvin` before applying the workload that requires it.
 If the autoscaler still sees desired state `off`, it is allowed to shut the node
