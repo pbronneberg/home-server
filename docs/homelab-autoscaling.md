@@ -30,6 +30,16 @@ The shutdown path must refuse to power off:
 - nodes with Longhorn replicas
 - nodes with attached Longhorn volumes
 
+Cluster Autoscaler also has to pass its scheduler simulation before it will call
+the shutdown job. Longhorn instance-manager pods are not DaemonSets and are not
+replicated, so Cluster Autoscaler treats them as blockers unless they are
+explicitly marked safe to evict. The
+`homelab-autoscaler-longhorn-safe-to-evict` CronJob annotates instance-manager
+pods on autoscaled nodes only when that node has no Longhorn replicas and no
+attached Longhorn volumes. If storage appears on the node, the annotation is
+removed again. The shutdown job still performs the final Longhorn replica and
+attachment checks immediately before SSH poweroff.
+
 ## Upstream Autoscaler
 
 Use `homecluster-dev/homelab-autoscaler` instead of a repo-owned provider
@@ -96,6 +106,12 @@ expected workflow is:
    it.
 5. After the workload is removed, Cluster Autoscaler waits
    `scaleDownUnneededTime: 1h`, then runs the normal Longhorn-safe shutdown job.
+
+If an idle worker does not scale down, check the Cluster Autoscaler logs for a
+message like `Node <name> cannot be removed:
+longhorn-system/instance-manager-... is not replicated`. That means the
+safe-to-evict helper has not annotated the Longhorn instance-manager pod, or the
+node still has Longhorn replicas or attached volumes.
 
 Do not manually power on `marvin` before applying the workload that requires it.
 If the autoscaler still sees desired state `off`, it is allowed to shut the node
