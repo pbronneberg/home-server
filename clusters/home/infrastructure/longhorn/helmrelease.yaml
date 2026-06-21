@@ -27,6 +27,7 @@ spec:
     defaultSettings:
       createDefaultDiskLabeledNodes: true
       defaultDataPath: /data/longhorn
+      guaranteedInstanceManagerCPU: '{"v1":"6","v2":"10"}'
     persistence:
       defaultClassReplicaCount: 1
       defaultDiskSelector:
