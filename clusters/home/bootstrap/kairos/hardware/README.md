@@ -39,3 +39,8 @@ If `private/flux/home/homelab-autoscaler-nodes.sops.yaml` exists and contains
 reproducible across Kairos reinstalls without using an operator's personal SSH
 key. Refresh the pinned SSH host key in that SOPS Secret after reinstalling a
 node because Kairos host keys may change.
+
+Hadron nodes use an immutable root filesystem. Put worker-local data below
+`/usr/local/data` instead of a root-level `/data` directory. The renderer
+prepares `dataDisk.localPath` with a `.local-path-ready` marker so local-path
+PVC provisioning fails clearly if the data root was not prepared.

@@ -20,8 +20,9 @@ nodes:
         effect: NoSchedule
     dataDisk:
       enabled: false
-      mountPoint: /data
-      longhornPath: /data/longhorn
+      mountPoint: /usr/local/data
+      longhornPath: /usr/local/data/longhorn
+      localPath: /usr/local/data/local-path
     wakeOnLan:
       enabled: true
   milliard:
@@ -43,5 +44,6 @@ nodes:
       enabled: true
       device: /dev/disk/by-id/ata-Samsung_SSD_850_EVO_500GB_S2RBNB0J115516X
       fsLabel: kairos-data
-      mountPoint: /data
-      longhornPath: /data/longhorn
+      mountPoint: /usr/local/data
+      longhornPath: /usr/local/data/longhorn
+      localPath: /usr/local/data/local-path

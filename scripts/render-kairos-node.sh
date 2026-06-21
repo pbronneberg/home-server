@@ -61,8 +61,9 @@ ssh_github_user="$(node_value '.sshGithubUser // ""')"
 data_disk_enabled="$(node_value '.dataDisk.enabled // false')"
 data_disk_device=""
 data_disk_label="kairos-data"
-data_mount_point="$(node_value '.dataDisk.mountPoint // "/data"')"
+data_mount_point="$(node_value '.dataDisk.mountPoint // "/usr/local/data"')"
 data_longhorn_path="$(node_value '.dataDisk.longhornPath // ""')"
+data_local_path="$(node_value '.dataDisk.localPath // ""')"
 wake_on_lan_enabled="$(node_value '.wakeOnLan.enabled // false')"
 enable_wake_on_lan_network_stage=""
 autoscaler_shutdown_public_key=""
@@ -220,6 +221,7 @@ replace_placeholder KAIROS_DATA_DISK_DEVICE "$data_disk_device"
 replace_placeholder KAIROS_DATA_DISK_LABEL "$data_disk_label"
 replace_placeholder KAIROS_DATA_MOUNT_POINT "$data_mount_point"
 replace_placeholder KAIROS_DATA_LONGHORN_PATH "$data_longhorn_path"
+replace_placeholder KAIROS_DATA_LOCAL_PATH "$data_local_path"
 
 if grep -q '{{ ' "$rendered"; then
   printf 'unrendered placeholders remain in %s\n' "$rendered" >&2

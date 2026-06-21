@@ -57,7 +57,11 @@ make security-audit
 
 - The current storage layout is not migrated by this hardening pass.
 - Treat `local-path` PVCs as node-local data until deliberately moved or backed
-  up.
+  up. New worker-node `local-path` volumes should provision below
+  `/usr/local/data/local-path`; `deepthought` keeps the bundled K3s path for
+  existing local-path workloads. Hadron's root filesystem is immutable, so the
+  worker data root lives below `/usr/local` rather than a root-level `/data`
+  directory.
 - Longhorn standard storage is `/data/longhorn` with the `longhorn-data` disk
   tag. Existing OS-disk volumes should stay in place unless a separate
   backup-backed migration is planned.

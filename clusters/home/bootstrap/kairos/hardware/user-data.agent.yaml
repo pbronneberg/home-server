@@ -38,13 +38,26 @@ stages:
           mountpoint="{{ KAIROS_DATA_MOUNT_POINT }}"
           label="{{ KAIROS_DATA_DISK_LABEL }}"
           longhorn_path="{{ KAIROS_DATA_LONGHORN_PATH }}"
+          local_path="{{ KAIROS_DATA_LOCAL_PATH }}"
 
-          if [ "$enabled" != "true" ]; then
+          prepare_storage_paths() {
             if [ -n "$longhorn_path" ]; then
               mkdir -p "$longhorn_path"
               chown root:root "$longhorn_path"
               chmod 0700 "$longhorn_path"
             fi
+
+            if [ -n "$local_path" ]; then
+              mkdir -p "$local_path"
+              chown root:root "$local_path"
+              chmod 0755 "$local_path"
+              touch "$local_path/.local-path-ready"
+              chmod 0644 "$local_path/.local-path-ready"
+            fi
+          }
+
+          if [ "$enabled" != "true" ]; then
+            prepare_storage_paths
             exit 0
           fi
 
@@ -76,11 +89,7 @@ stages:
 
           mount "$mountpoint" || mount -a
 
-          if [ -n "$longhorn_path" ]; then
-            mkdir -p "$longhorn_path"
-            chown root:root "$longhorn_path"
-            chmod 0700 "$longhorn_path"
-          fi
+          prepare_storage_paths
   network:
     # KAIROS_WAKE_ON_LAN_NETWORK_STAGE
     - name: Refresh operator SSH keys from GitHub
