@@ -34,9 +34,10 @@ Cluster Autoscaler also has to pass its scheduler simulation before it will call
 the shutdown job. Longhorn instance-manager pods are owned by Longhorn's
 `InstanceManager` custom resource, so the Cluster Autoscaler deployment sets
 `--skip-nodes-with-custom-controller-pods=false`. This lets idle Longhorn system
-pods on autoscaled workers be considered removable. The shutdown job remains the
-hard storage safety gate: it refuses poweroff if the node has Longhorn replicas
-or attached Longhorn volumes.
+pods on autoscaled workers be considered removable. `skipNodesWithLocalStorage`
+is also disabled for Cluster Autoscaler because Longhorn instance-manager pods
+use hostPath volumes. The shutdown job remains the hard storage safety gate: it
+refuses poweroff if the node has Longhorn replicas or attached Longhorn volumes.
 
 ## Upstream Autoscaler
 
@@ -65,7 +66,7 @@ clusterAutoscaler:
   scaleDownDelay: 1h
   scaleDownUnneededTime: 1h
   scaleDownUtilizationThreshold: 0.2
-  skipNodesWithLocalStorage: true
+  skipNodesWithLocalStorage: false
   skipNodesWithSystemPods: true
   extraArgs:
     - --skip-nodes-with-custom-controller-pods=false

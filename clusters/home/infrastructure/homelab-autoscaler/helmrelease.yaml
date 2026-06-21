@@ -60,7 +60,7 @@ spec:
       scaleDownDelay: 1h
       scaleDownUnneededTime: 1h
       scaleDownUtilizationThreshold: 0.2
-      skipNodesWithLocalStorage: true
+      skipNodesWithLocalStorage: false
       skipNodesWithSystemPods: true
       nodeSelector:
         kubernetes.io/hostname: deepthought
