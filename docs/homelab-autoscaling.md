@@ -36,8 +36,11 @@ the shutdown job. Longhorn instance-manager pods are owned by Longhorn's
 `--skip-nodes-with-custom-controller-pods=false`. This lets idle Longhorn system
 pods on autoscaled workers be considered removable. `skipNodesWithLocalStorage`
 is also disabled for Cluster Autoscaler because Longhorn instance-manager pods
-use hostPath volumes. The shutdown job remains the hard storage safety gate: it
-refuses poweroff if the node has Longhorn replicas or attached Longhorn volumes.
+use hostPath volumes. Longhorn's native
+`kubernetesClusterAutoscalerEnabled` setting is enabled so Longhorn owns the
+Cluster Autoscaler annotation and PDB behavior for instance-manager pods. The
+shutdown job remains the hard storage safety gate: it refuses poweroff if the
+node has Longhorn replicas or attached Longhorn volumes.
 
 ## Upstream Autoscaler
 
@@ -113,9 +116,11 @@ If an idle worker does not scale down, check the Cluster Autoscaler logs for a
 message like `Node <name> cannot be removed:
 longhorn-system/instance-manager-... is not replicated`. That means the
 custom-controller pod flag is missing from the active Cluster Autoscaler
-deployment or the chart values have not reconciled. If the shutdown job starts
-but refuses poweroff, check for Longhorn replicas or attached volumes on that
-node.
+deployment or the chart values have not reconciled. A message about not enough
+PDB budget for a Longhorn instance-manager pod usually means Longhorn's
+`kubernetes-cluster-autoscaler-enabled` setting has not applied yet. If the
+shutdown job starts but refuses poweroff, check for Longhorn replicas or
+attached volumes on that node.
 
 Do not manually power on `marvin` before applying the workload that requires it.
 If the autoscaler still sees desired state `off`, it is allowed to shut the node

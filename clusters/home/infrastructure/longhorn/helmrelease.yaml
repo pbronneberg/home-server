@@ -28,6 +28,7 @@ spec:
       createDefaultDiskLabeledNodes: true
       defaultDataPath: /data/longhorn
       guaranteedInstanceManagerCPU: '{"v1":"6","v2":"10"}'
+      kubernetesClusterAutoscalerEnabled: true
     persistence:
       defaultClassReplicaCount: 1
       defaultDiskSelector:
