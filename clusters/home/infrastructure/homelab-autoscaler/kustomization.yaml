@@ -6,5 +6,6 @@ resources:
   - shutdown-rbac.yaml
   - wol-relay.yaml
   - worker-group.yaml
-  - marvin-node.yaml
+  # homecluster-dev/homelab-autoscaler validates Node CRs against existing
+  # Kubernetes Nodes. Enable marvin-node.yaml after marvin has rejoined.
   - milliard-node.yaml
