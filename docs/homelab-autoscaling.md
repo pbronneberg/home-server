@@ -69,6 +69,7 @@ clusterAutoscaler:
   skipNodesWithLocalStorage: false
   skipNodesWithSystemPods: true
   extraArgs:
+    - --skip-nodes-with-local-storage=false
     - --skip-nodes-with-custom-controller-pods=false
 ```
 
