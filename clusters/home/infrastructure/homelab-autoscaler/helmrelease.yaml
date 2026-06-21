@@ -59,7 +59,7 @@ spec:
       enabled: true
       scaleDownDelay: 1h
       scaleDownUnneededTime: 1h
-      scaleDownUtilizationThreshold: 0.1
+      scaleDownUtilizationThreshold: 0.2
       skipNodesWithLocalStorage: true
       skipNodesWithSystemPods: true
       nodeSelector:
