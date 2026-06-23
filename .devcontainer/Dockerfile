@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 # renovate: datasource=github-releases depName=rhysd/actionlint extractVersion=^v(?<version>.*)$
 ARG ACTIONLINT_VERSION=1.7.12
 # renovate: datasource=npm depName=@openai/codex
-ARG CODEX_VERSION=0.139.0
+ARG CODEX_VERSION=0.141.0
 # renovate: datasource=github-releases depName=sigstore/cosign extractVersion=^v(?<version>.*)$
 ARG COSIGN_VERSION=3.1.1
 # renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.*)$
@@ -11,15 +11,15 @@ ARG FLUX_VERSION=2.8.8
 # renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.*)$
 ARG GITLEAKS_VERSION=8.30.1
 # renovate: datasource=github-releases depName=cli/cli extractVersion=^v(?<version>.*)$
-ARG GH_VERSION=2.94.0
+ARG GH_VERSION=2.95.0
 # renovate: datasource=pypi depName=git-filter-repo
 ARG GIT_FILTER_REPO_VERSION=2.47.0
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.*)$
-ARG HELM_VERSION=4.2.1
+ARG HELM_VERSION=4.2.2
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
 ARG KUBECTL_VERSION=1.36.2
 # renovate: datasource=github-releases depName=kubevirt/kubevirt extractVersion=^v(?<version>.*)$
-ARG KUBEVIRT_VERSION=1.8.3
+ARG KUBEVIRT_VERSION=1.8.4
 # renovate: datasource=github-releases depName=int128/kubelogin extractVersion=^v(?<version>.*)$
 ARG KUBELOGIN_VERSION=1.36.2
 # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/v(?<version>.*)$
