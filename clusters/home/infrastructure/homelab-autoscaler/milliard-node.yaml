@@ -64,19 +64,37 @@ spec:
           apk add --no-cache openssh-client
         fi
         kubectl drain "${node}" --ignore-daemonsets --delete-emptydir-data --timeout=10m
-        set -a
-        . /etc/homelab-autoscaler/nodes.env
-        set +a
+        get_node_config() {
+          key="$1"
+          awk -v key="${key}" '
+            $0 ~ "^[[:space:]]*" key "=" {
+              sub("^[[:space:]]*" key "=", "")
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+              if ($0 ~ /^".*"$/ || $0 ~ /^\047.*\047$/) {
+                print substr($0, 2, length($0) - 2)
+              } else {
+                print
+              }
+              exit
+            }
+          ' /etc/homelab-autoscaler/nodes.env
+        }
         ssh_host="$(kubectl get node "${node}" -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')"
         if [ -z "${ssh_host}" ]; then
-          ssh_host="${MILLIARD_SSH_HOST}"
+          ssh_host="$(get_node_config MILLIARD_SSH_HOST)"
         fi
+        ssh_user="$(get_node_config MILLIARD_SSH_USER)"
+        ssh_host_key="$(get_node_config MILLIARD_SSH_HOST_KEY)"
         mkdir -p /root/.ssh
         cp /etc/homelab-autoscaler/ssh_private_key /root/.ssh/id_ed25519
         chmod 0600 /root/.ssh/id_ed25519
-        set -- ${MILLIARD_SSH_HOST_KEY}
+        set -- ${ssh_host_key}
+        if [ "$#" -lt 3 ]; then
+          echo "refusing to shut down ${node}: SSH host key is missing or malformed" >&2
+          exit 1
+        fi
         printf '%s %s %s\n' "${ssh_host}" "$2" "$3" > /root/.ssh/known_hosts
-        ssh -i /root/.ssh/id_ed25519 -o BatchMode=yes -o UserKnownHostsFile=/root/.ssh/known_hosts "${MILLIARD_SSH_USER}@${ssh_host}" "sudo /sbin/poweroff"
+        ssh -i /root/.ssh/id_ed25519 -o BatchMode=yes -o UserKnownHostsFile=/root/.ssh/known_hosts "${ssh_user}@${ssh_host}" "sudo /sbin/poweroff"
     volumes:
       - name: node-power-config
         mountPath: /etc/homelab-autoscaler

@@ -31,9 +31,6 @@ spec:
           args:
             - -ceu
             - |
-              set -a
-              . /etc/homelab-autoscaler/nodes.env
-              set +a
               python - <<'PY'
               import os
               import re
@@ -44,6 +41,23 @@ spec:
 
               PORT = int(os.environ.get("WOL_RELAY_PORT", "18080"))
               NODE_RE = re.compile(r"^[a-z0-9-]+$")
+
+
+              def load_env_file(path):
+                  with open(path, encoding="utf-8") as handle:
+                      for raw_line in handle:
+                          line = raw_line.strip()
+                          if not line or line.startswith("#") or "=" not in line:
+                              continue
+                          key, value = line.split("=", 1)
+                          key = key.strip()
+                          value = value.strip()
+                          if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                              value = value[1:-1]
+                          os.environ.setdefault(key, value)
+
+
+              load_env_file("/etc/homelab-autoscaler/nodes.env")
 
 
               def send_wol(node):
