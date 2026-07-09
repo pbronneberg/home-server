@@ -11,7 +11,7 @@ checker:
   failedJobsHistoryLimit: 2
   curlImage:
     repository: curlimages/curl
-    tag: "8.20.0"
+    tag: "8.21.0"
     pullPolicy: IfNotPresent
   kubectlImage:
     repository: alpine/k8s
