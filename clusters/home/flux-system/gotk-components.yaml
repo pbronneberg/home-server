@@ -2589,13 +2589,13 @@ spec:
     spec:
       containers:
       - args:
-        - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.cluster.local./
+        - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.home-server.bronneberg.local./
         - --watch-all-namespaces=true
         - --log-level=info
         - --log-encoding=json
         - --enable-leader-election
         - --storage-path=/data
-        - --storage-adv-addr=source-controller.$(RUNTIME_NAMESPACE).svc.cluster.local.
+        - --storage-adv-addr=source-controller.$(RUNTIME_NAMESPACE).svc.home-server.bronneberg.local.
         env:
         - name: RUNTIME_NAMESPACE
           valueFrom:
@@ -3519,7 +3519,7 @@ spec:
     spec:
       containers:
       - args:
-        - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.cluster.local./
+        - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.home-server.bronneberg.local./
         - --watch-all-namespaces=true
         - --log-level=info
         - --log-encoding=json
@@ -5115,7 +5115,7 @@ spec:
     spec:
       containers:
       - args:
-        - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.cluster.local./
+        - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.home-server.bronneberg.local./
         - --watch-all-namespaces=true
         - --log-level=info
         - --log-encoding=json
