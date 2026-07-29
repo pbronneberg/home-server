@@ -44,7 +44,9 @@ jobs:
       - name: Test deterministic evidence analyzer
         run: python3 -m unittest discover --start-directory tests/ai_harness --verbose
       - name: Collect deterministic review evidence
-        run: python3 scripts/review-evidence.py --base "${{ github.event.pull_request.base.sha || 'HEAD^' }}" --output /tmp/home-server-review-evidence.json
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: python3 scripts/review-evidence.py --output /tmp/home-server-review-evidence.json
       - name: Show evidence summary
         if: always()
         run: cat /tmp/home-server-review-evidence.json || true

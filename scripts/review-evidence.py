@@ -20,10 +20,13 @@ SKIP_PARTS = {".git", ".venv", "node_modules", "private-decrypted", "charts"}
 LATEST_RE = re.compile(r"(?:^|[\s\"'])(?:image:\s*[^\s]+:latest|tag:\s*[\"']?latest[\"']?)(?:$|\s)", re.I)
 WRITE_ALL_RE = re.compile(r"^\s*permissions\s*:\s*write-all\s*(?:#.*)?$", re.M)
 KIND_SECRET_RE = re.compile(r"^\s*kind\s*:\s*Secret\s*(?:#.*)?$", re.M)
-SECRET_DATA_RE = re.compile(r"^\s*stringData\s*:\s*(?:\{\s*\})?\s*(?:#.*)?$", re.M)
+STRING_DATA_RE = re.compile(r"^(?P<indent>\s*)stringData\s*:\s*(?:\{\s*\})?\s*(?:#.*)?$", re.M)
 SENSITIVE_DIFF_RE = re.compile(
     r"^\s*(?P<key>existingClaim|claimName|secretName|host|clusterDomain|githubAppInstallationOwner)\s*:\s*(?P<value>.+?)\s*(?:#.*)?$"
 )
+TEMPLATE_MARKERS = ("{{", "}}", "${", "<%", "%>")
+EMPTY_OR_PLACEHOLDER_VALUES = {"", '\"\"', "''", "null", "~", "REPLACE_ME", "CHANGE_ME", "REDACTED"}
+
 
 @dataclass(frozen=True)
 class Finding:
@@ -51,8 +54,62 @@ def tracked_files(root: Path) -> list[Path]:
     return [root / value for value in result.stdout.split("\0") if value]
 
 
+def changed_files(root: Path, base: str, head: str) -> list[Path]:
+    result = run_git(root, "diff", "--name-only", "--diff-filter=ACMR", f"{base}...{head}", "--")
+    if result.returncode != 0:
+        return []
+    files: list[Path] = []
+    for value in result.stdout.splitlines():
+        path = root / value
+        if path.is_file():
+            files.append(path)
+    return files
+
+
 def line_number(text: str, offset: int) -> int:
     return text.count("\n", 0, offset) + 1
+
+
+def latest_match(text: str) -> tuple[int, str] | None:
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        if not line.lstrip().startswith("#"):
+            candidate = line.split("#", 1)[0]
+            match = LATEST_RE.search(candidate)
+            if match:
+                return offset + match.start(), match.group(0).strip()
+        offset += len(line)
+    return None
+
+
+def literal_secret_value(text: str) -> tuple[int, str] | None:
+    """Return the first literal stringData key without exposing its value."""
+    for document in re.split(r"(?m)^---\s*$", text):
+        if not KIND_SECRET_RE.search(document):
+            continue
+        match = STRING_DATA_RE.search(document)
+        if not match:
+            continue
+        parent_indent = len(match.group("indent"))
+        body_offset = match.end()
+        for line in document[body_offset:].splitlines(keepends=True):
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                body_offset += len(line)
+                continue
+            indent = len(line) - len(line.lstrip())
+            if indent <= parent_indent:
+                break
+            if ":" not in stripped:
+                body_offset += len(line)
+                continue
+            key, raw_value = stripped.split(":", 1)
+            value = raw_value.strip().split(" #", 1)[0].strip()
+            if value in EMPTY_OR_PLACEHOLDER_VALUES or any(marker in value for marker in TEMPLATE_MARKERS):
+                body_offset += len(line)
+                continue
+            return body_offset + line.find(key), key.strip()
+    return None
 
 
 def inspect_file(root: Path, path: Path) -> list[Finding]:
@@ -67,13 +124,14 @@ def inspect_file(root: Path, path: Path) -> list[Finding]:
         return []
 
     findings: list[Finding] = []
-    match = LATEST_RE.search(text)
-    if match:
+    latest = latest_match(text)
+    if latest:
+        offset, matched = latest
         findings.append(Finding(
             "HS-IMG-001", "high", "fail",
             "Mutable latest image tag is committed.", rel,
-            line_number(text, match.start()),
-            {"matched": match.group(0).strip()}, False,
+            line_number(text, offset),
+            {"matched": matched}, False,
         ))
 
     if rel.startswith(".github/workflows/"):
@@ -85,13 +143,17 @@ def inspect_file(root: Path, path: Path) -> list[Finding]:
                 line_number(text, match.start()), None, False,
             ))
 
-    secret_kind = KIND_SECRET_RE.search(text)
-    if not rel.endswith((".sops.yaml", ".sops.yml")) and secret_kind and SECRET_DATA_RE.search(text):
-        findings.append(Finding(
-            "HS-SEC-001", "critical", "fail",
-            "Plaintext Kubernetes Secret manifest is committed outside a SOPS file.",
-            rel, line_number(text, secret_kind.start()), None, False,
-        ))
+    is_sops = rel.endswith((".sops.yaml", ".sops.yml"))
+    is_example = ".example." in path.name
+    if not is_sops and not is_example:
+        secret = literal_secret_value(text)
+        if secret:
+            offset, key = secret
+            findings.append(Finding(
+                "HS-SEC-001", "critical", "fail",
+                "Literal Kubernetes Secret stringData is committed outside a SOPS file.",
+                rel, line_number(text, offset), {"key": key}, False,
+            ))
     return findings
 
 
@@ -153,13 +215,28 @@ def changed_sensitive_values(root: Path, base: str, head: str) -> list[Finding]:
     return findings
 
 
-def collect(root: Path, base: str | None, head: str) -> dict[str, object]:
+def collect(root: Path, base: str | None, head: str, scope: str = "changed") -> dict[str, object]:
     findings: list[Finding] = []
-    for path in tracked_files(root):
-        findings.extend(inspect_file(root, path))
-
     skipped: list[dict[str, str]] = []
     resolved_base, base_sha = resolve_base(root, base)
+
+    if scope == "all":
+        files = tracked_files(root)
+        effective_scope = "all"
+    elif resolved_base:
+        files = changed_files(root, resolved_base, head)
+        effective_scope = "changed"
+    else:
+        files = tracked_files(root)
+        effective_scope = "all-fallback"
+        skipped.append({
+            "id": "changed-file-scope",
+            "reason": "No usable base ref was available; static checks used the full repository fallback.",
+        })
+
+    for path in files:
+        findings.extend(inspect_file(root, path))
+
     if resolved_base:
         findings.extend(changed_sensitive_values(root, resolved_base, head))
     else:
@@ -172,10 +249,12 @@ def collect(root: Path, base: str | None, head: str) -> dict[str, object]:
     return {
         "schema_version": SCHEMA_VERSION,
         "repository_root": str(root),
+        "scope": effective_scope,
         "base": resolved_base,
         "base_sha": base_sha,
         "head": head,
         "summary": {
+            "files_inspected": len(files),
             "findings": len(findings),
             "failures": sum(item.status == "fail" for item in findings),
             "warnings": sum(item.status == "warning" for item in findings),
@@ -191,12 +270,13 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--base")
     parser.add_argument("--head", default="HEAD")
+    parser.add_argument("--scope", choices=("changed", "all"), default="changed")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--fail-on", choices=SEVERITY_RANK, default="high")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     root = args.root.resolve()
-    report = collect(root, args.base, args.head)
+    report = collect(root, args.base, args.head, args.scope)
     rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
