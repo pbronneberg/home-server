@@ -93,7 +93,7 @@ extraManifests:
 
 grafana:
   podAnnotations:
-    home-server.bronneberg.org/restarted-at: "2026-07-29T21:39:00+02:00"
+    home-server.bronneberg.org/restarted-at: "2026-07-29T22:50:00+02:00"
   persistence:
     enabled: true
     type: pvc

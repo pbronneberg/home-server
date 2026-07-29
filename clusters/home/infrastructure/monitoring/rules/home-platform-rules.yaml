@@ -88,6 +88,14 @@ spec:
           annotations:
             summary: Autoscaler node has an unknown desired state
             description: Worker {{ $labels.node }} reports desired state {{ $labels.desired_power_state }}.
+        - alert: AutoscalerTelemetryMissing
+          expr: absent(home_autoscaler_node_info)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Autoscaler desired-state telemetry is missing
+            description: kube-state-metrics has not exposed home_autoscaler_node_info for fifteen minutes; node power-state classification is unknown.
         - alert: HomeTargetDown
           expr: |
             (up == 0)
