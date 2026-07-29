@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: home-platform
+  namespace: monitoring
+spec:
+  groups:
+    - name: home-platform.recording
+      interval: 30s
+      rules:
+        - record: home:cluster_cpu_usage:ratio
+          expr: |
+            sum(rate(container_cpu_usage_seconds_total{container!="",image!=""}[5m]))
+            /
+            sum(kube_node_status_allocatable{resource="cpu"})
+        - record: home:cluster_memory_usage:ratio
+          expr: |
+            sum(container_memory_working_set_bytes{container!="",image!=""})
+            /
+            sum(kube_node_status_allocatable{resource="memory"})
+        - record: home:workload_restarts:1h
+          expr: sum(increase(kube_pod_container_status_restarts_total[1h]))
+        - record: home:longhorn_volume_usage:ratio
+          expr: longhorn_volume_usage_bytes / longhorn_volume_capacity_bytes
+        - record: home:flux_not_ready:count
+          expr: sum(gotk_resource_info{ready!="True"})
+        - record: home:certificate_min_expiry_seconds
+          expr: min(certmanager_certificate_expiration_timestamp_seconds - time())
+    - name: home-platform.alerts
+      rules:
+        - alert: HomePublicGrafanaUnavailable
+          expr: probe_success{service="grafana"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Public Grafana endpoint is unavailable
+            description: The blackbox probe for grafana.bronneberg.org has failed for five minutes.
+        - alert: HomeFluxResourceNotReady
+          expr: gotk_resource_info{ready!="True",suspended!="true"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Flux resource is not ready
+            description: '{{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready.'
+        - alert: HomeCertificateExpiringSoon
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 14 * 24 * 3600
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: Certificate expires within 14 days
+            description: Certificate {{ $labels.namespace }}/{{ $labels.name }} is nearing expiry.

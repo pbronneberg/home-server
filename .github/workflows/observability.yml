@@ -1,0 +1,32 @@
+name: observability
+
+on:
+  pull_request:
+    paths:
+      - "clusters/home/infrastructure/monitoring/**"
+      - "clusters/home/infrastructure/longhorn/helmrelease.yaml"
+      - "clusters/home/infrastructure/cert-manager/helmrelease.yaml"
+      - "scripts/check-observability.py"
+      - ".github/workflows/observability.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "clusters/home/infrastructure/monitoring/**"
+      - "clusters/home/infrastructure/longhorn/helmrelease.yaml"
+      - "clusters/home/infrastructure/cert-manager/helmrelease.yaml"
+      - "scripts/check-observability.py"
+      - ".github/workflows/observability.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate observability assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 scripts/check-observability.py
+      - run: python3 -m py_compile scripts/check-observability.py
