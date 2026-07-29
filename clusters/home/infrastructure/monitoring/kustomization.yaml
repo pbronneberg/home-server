@@ -23,6 +23,12 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+  - name: home-observability-diagnostics-dashboard
+    files:
+      - observability-pipeline-diagnostics.json=dashboards/observability-pipeline-diagnostics.json
+    options:
+      labels:
+        grafana_dashboard: "1"
   - name: home-longhorn-storage-dashboard
     files:
       - longhorn-storage.json=dashboards/longhorn-storage.json
