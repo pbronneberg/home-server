@@ -1,0 +1,35 @@
+name: ai-harness
+
+on:
+  pull_request:
+    paths:
+      - ".agents/**"
+      - "scripts/check-agent-skills.py"
+      - "docs/ai-harness.md"
+      - ".github/workflows/ai-harness.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".agents/**"
+      - "scripts/check-agent-skills.py"
+      - "docs/ai-harness.md"
+      - ".github/workflows/ai-harness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-harness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Agent Skills
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Validate skills
+        run: python3 scripts/check-agent-skills.py
