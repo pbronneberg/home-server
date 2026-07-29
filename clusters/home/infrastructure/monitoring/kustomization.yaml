@@ -3,9 +3,34 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - helmrelease.yaml
+  - blackbox-exporter.yaml
+  - monitors/flux-podmonitor.yaml
+  - monitors/grafana-probe.yaml
+  - rules/home-platform-rules.yaml
 configMapGenerator:
   - name: prometheus-stack-values
     files:
       - values.yaml
+  - name: prometheus-stack-observability-values
+    files:
+      - values.yaml=observability-values.yaml
+  - name: home-platform-overview-dashboard
+    files:
+      - home-platform-overview.json=dashboards/home-platform-overview.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+  - name: home-longhorn-storage-dashboard
+    files:
+      - longhorn-storage.json=dashboards/longhorn-storage.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+  - name: home-gitops-certificates-dashboard
+    files:
+      - gitops-certificates.json=dashboards/gitops-certificates.json
+    options:
+      labels:
+        grafana_dashboard: "1"
 generatorOptions:
   disableNameSuffixHash: true

@@ -29,6 +29,9 @@ spec:
       defaultDataPath: /data/longhorn
       guaranteedInstanceManagerCPU: '{"v1":"6","v2":"10"}'
       kubernetesClusterAutoscalerEnabled: true
+    metrics:
+      serviceMonitor:
+        enabled: true
     persistence:
       defaultClassReplicaCount: 1
       defaultDiskSelector:
