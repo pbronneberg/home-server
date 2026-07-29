@@ -1,0 +1,39 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: blackbox-exporter
+  namespace: monitoring
+spec:
+  chart:
+    spec:
+      chart: prometheus-blackbox-exporter
+      interval: 1h
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      version: 11.5.0
+  install:
+    remediation:
+      retries: 3
+  interval: 30m
+  releaseName: blackbox-exporter
+  timeout: 5m
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    fullnameOverride: blackbox-exporter
+    automountServiceAccountToken: false
+    config:
+      modules:
+        http_2xx:
+          prober: http
+          timeout: 10s
+          http:
+            preferred_ip_protocol: ip4
+            follow_redirects: true
+            valid_http_versions: [HTTP/1.1, HTTP/2.0]
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {cpu: 100m, memory: 128Mi}
