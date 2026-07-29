@@ -74,7 +74,7 @@ check_grafana_auth_proxy() {
       if ($0 ~ /auth-github-oauth-forward-auth@kubernetescrd/ && $0 !~ /auth-github-oauth@kubernetescrd/) found_auth=1
       else bad=1
     }
-    in_route && /^[[:space:]]*path:[[:space:]]*\/api[[:space:]]*$/ { found_path=1 }
+    in_route && /^[[:space:]]*-[[:space:]]*path:[[:space:]]*\/api[[:space:]]*$/ { found_path=1 }
     in_route && /^[[:space:]]*pathType:[[:space:]]*Prefix[[:space:]]*$/ { found_prefix=1 }
     END { exit found_auth && found_path && found_prefix && !bad ? 0 : 1 }
   ' "$runtime"; then
