@@ -97,13 +97,15 @@ and understandable.
   confirm it returns a real 302 to GitHub.
 - For Grafana behind oauth2-proxy, keep
   `grafana.auth.proxy.enable_login_token: false` and
-  `grafana.auth.login_cookie_name: grafana_auth_proxy_session`. This avoids
-  reusing stale `grafana_session` login-token cookies from earlier auth-flow
-  experiments.
-- Keep Grafana's `/api/user/auth-tokens/rotate` route on forward auth only,
-  without the OAuth error-page middleware. Grafana can return backend 401s for
-  stale local session tokens; rewriting those 401s into sign-in pages causes
-  redirect loops.
+  `grafana.auth.login_cookie_name: grafana_auth_proxy_session`.
+- Persist Grafana's database so users, preferences, and local session state are
+  not reset when the Grafana pod is recreated.
+- Keep Grafana browser page routes on the normal OAuth sign-in chain, but route
+  the `/api` prefix through forward auth only. Grafana API 401/403 responses
+  must not be converted into oauth2-proxy sign-in pages, because the frontend
+  interprets those redirects as repeated login failures.
+- Apply the dedicated Grafana runtime values layer after private values so this
+  routing and persistence policy cannot be accidentally overridden.
 
 ## Review Checklist
 

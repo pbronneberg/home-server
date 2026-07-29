@@ -35,3 +35,6 @@ spec:
     - kind: Secret
       name: prometheus-stack-private-values
       valuesKey: values.yaml
+    - kind: ConfigMap
+      name: prometheus-stack-grafana-runtime-values
+      valuesKey: values.yaml

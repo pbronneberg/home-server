@@ -1,0 +1,101 @@
+# Runtime hardening for Grafana behind the shared oauth2-proxy edge.
+# This values layer is intentionally applied last by the HelmRelease.
+#
+# Browser page requests continue to use the normal OAuth error-page chain from
+# grafana.ingress. API requests use a higher-priority, forward-auth-only route so
+# Grafana's own API 401/403 responses are not rewritten into OAuth sign-in pages.
+
+# Replace the base extraManifests list. It retains the same-host oauth2-proxy
+# bridge and generalizes the previous token-rotation-only exception to all
+# Grafana API traffic.
+extraManifests:
+  - |
+    {{- if .Values.grafanaOauth2Proxy.enabled }}
+    {{- $host := .Values.grafanaOauth2Proxy.host | default (index .Values.grafana.ingress.hosts 0) -}}
+    {{- $tlsSecret := .Values.grafanaOauth2Proxy.tlsSecretName | default (index (index .Values.grafana.ingress.tls 0) "secretName") -}}
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: {{ .Values.grafanaOauth2Proxy.serviceName }}
+    spec:
+      ports:
+        - name: http
+          port: 80
+          protocol: TCP
+          targetPort: 80
+    ---
+    apiVersion: v1
+    kind: Endpoints
+    metadata:
+      name: {{ .Values.grafanaOauth2Proxy.serviceName }}
+    subsets:
+      - addresses:
+          - ip: {{ .Values.grafanaOauth2Proxy.endpointIP }}
+        ports:
+          - name: http
+            port: 80
+            protocol: TCP
+    ---
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: grafana-oauth2
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        traefik.ingress.kubernetes.io/router.middlewares: {{ join "," .Values.grafanaOauth2Proxy.middlewares }}
+        traefik.ingress.kubernetes.io/router.priority: "10000"
+    spec:
+      ingressClassName: {{ .Values.grafana.ingress.ingressClassName }}
+      tls:
+        - hosts:
+            - {{ $host }}
+          secretName: {{ $tlsSecret }}
+      rules:
+        - host: {{ $host }}
+          http:
+            paths:
+              - path: {{ .Values.grafanaOauth2Proxy.path }}
+                pathType: Prefix
+                backend:
+                  service:
+                    name: {{ .Values.grafanaOauth2Proxy.serviceName }}
+                    port:
+                      number: 80
+    ---
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: grafana-api
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        # Authenticate API requests but never convert Grafana API 401/403
+        # responses into an oauth2-proxy sign-in page.
+        traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd,auth-github-oauth-forward-auth@kubernetescrd
+        traefik.ingress.kubernetes.io/router.priority: "10001"
+    spec:
+      ingressClassName: {{ .Values.grafana.ingress.ingressClassName }}
+      tls:
+        - hosts:
+            - {{ $host }}
+          secretName: {{ $tlsSecret }}
+      rules:
+        - host: {{ $host }}
+          http:
+            paths:
+              - path: /api
+                pathType: Prefix
+                backend:
+                  service:
+                    name: {{ include "grafana.fullname" (index .Subcharts "grafana") }}
+                    port:
+                      number: 80
+    {{- end }}
+
+grafana:
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
