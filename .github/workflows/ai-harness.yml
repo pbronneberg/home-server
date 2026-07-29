@@ -5,7 +5,10 @@ on:
     paths:
       - ".agents/**"
       - "scripts/check-agent-skills.py"
+      - "scripts/review-evidence.py"
+      - "tests/ai_harness/**"
       - "docs/ai-harness.md"
+      - "docs/decisions/**"
       - ".github/workflows/ai-harness.yml"
   push:
     branches:
@@ -13,7 +16,10 @@ on:
     paths:
       - ".agents/**"
       - "scripts/check-agent-skills.py"
+      - "scripts/review-evidence.py"
+      - "tests/ai_harness/**"
       - "docs/ai-harness.md"
+      - "docs/decisions/**"
       - ".github/workflows/ai-harness.yml"
   workflow_dispatch:
 
@@ -26,10 +32,19 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate Agent Skills
+    name: Validate AI harness
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Validate skills
+        with:
+          fetch-depth: 0
+      - name: Validate Agent Skills
         run: python3 scripts/check-agent-skills.py
+      - name: Test deterministic evidence analyzer
+        run: python3 -m unittest discover --start-directory tests/ai_harness --verbose
+      - name: Collect deterministic review evidence
+        run: python3 scripts/review-evidence.py --base "${{ github.event.pull_request.base.sha || 'HEAD^' }}" --output /tmp/home-server-review-evidence.json
+      - name: Show evidence summary
+        if: always()
+        run: cat /tmp/home-server-review-evidence.json || true
