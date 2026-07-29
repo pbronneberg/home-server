@@ -9,43 +9,27 @@ check_stream() {
   local label="$1"
 
   awk -v label="$label" '
-    /^[[:space:]]*#/ {
-      next
-    }
-
-    /^[[:space:]]*provider[[:space:]]*=[[:space:]]*"github"/ {
-      github_provider = 1
-    }
-
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*provider[[:space:]]*=[[:space:]]*"github"/ { github_provider = 1 }
     /^[[:space:]]*github_(org|users)[[:space:]]*=/ {
       value = $0
       sub(/^[^=]*=[[:space:]]*/, "", value)
-      if (value !~ /^""$/ && value !~ /^\[[[:space:]]*\]$/) {
-        github_gate = 1
-      }
+      if (value !~ /^""$/ && value !~ /^\[[[:space:]]*\]$/) github_gate = 1
     }
-
     END {
       if (github_provider && !github_gate) {
         printf "[fail] %s uses the GitHub provider without github_org or github_users\n", label
         exit 1
       }
-
-      if (github_provider) {
-        printf "[ok] %s has a GitHub org/user allowlist\n", label
-      } else {
-        printf "[skip] %s does not configure the GitHub provider\n", label
-      }
+      if (github_provider) printf "[ok] %s has a GitHub org/user allowlist\n", label
+      else printf "[skip] %s does not configure the GitHub provider\n", label
     }
   '
 }
 
 check_file() {
   local path="$1"
-
-  if ! check_stream "$path" <"$path"; then
-    status=1
-  fi
+  if ! check_stream "$path" <"$path"; then status=1; fi
 }
 
 check_traefik_error_middleware() {
@@ -53,7 +37,6 @@ check_traefik_error_middleware() {
 
   if grep -Eq '^[[:space:]]*query:[[:space:]]*/oauth2/start\?rd=\{url\}[[:space:]]*$' "$path"; then
     printf '[fail] %s must not use /oauth2/start as the Traefik error middleware query\n' "$path"
-    printf '[hint] Keep github-oauth-errors on /oauth2/sign_in?rd={url}; /oauth2/start returns a redirect body under Traefik-preserved 401/403 responses.\n'
     status=1
     return
   fi
@@ -67,47 +50,60 @@ check_traefik_error_middleware() {
 }
 
 check_grafana_auth_proxy() {
-  local path="clusters/home/infrastructure/monitoring/values.yaml"
+  local base="clusters/home/infrastructure/monitoring/values.yaml"
+  local runtime="clusters/home/infrastructure/monitoring/grafana-runtime-values.yaml"
+  local release="clusters/home/infrastructure/monitoring/helmrelease.yaml"
 
-  if grep -Eq '^[[:space:]]*enable_login_token:[[:space:]]*true[[:space:]]*$' "$path"; then
-    printf '[fail] %s must keep Grafana auth.proxy enable_login_token disabled behind oauth2-proxy\n' "$path"
-    printf '[hint] Login tokens make Grafana call /api/user/auth-tokens/rotate, which can re-enter the edge auth flow.\n'
-    status=1
-    return
-  fi
-
-  if grep -Eq '^[[:space:]]*enable_login_token:[[:space:]]*false[[:space:]]*$' "$path"; then
-    printf '[ok] %s keeps Grafana auth.proxy login tokens disabled\n' "$path"
+  if grep -Eq '^[[:space:]]*enable_login_token:[[:space:]]*false[[:space:]]*$' "$base"; then
+    printf '[ok] %s keeps Grafana auth.proxy login tokens disabled\n' "$base"
   else
-    printf '[fail] %s must explicitly set Grafana auth.proxy enable_login_token: false\n' "$path"
+    printf '[fail] %s must explicitly keep enable_login_token: false\n' "$base"
     status=1
   fi
 
-  if grep -Eq '^[[:space:]]*login_cookie_name:[[:space:]]*grafana_auth_proxy_session[[:space:]]*$' "$path"; then
-    printf '[ok] %s keeps Grafana on the auth-proxy cookie name\n' "$path"
-  elif grep -Eq '^[[:space:]]*login_cookie_name:' "$path"; then
-    printf '[fail] %s must keep Grafana login_cookie_name at grafana_auth_proxy_session\n' "$path"
-    status=1
+  if grep -Eq '^[[:space:]]*login_cookie_name:[[:space:]]*grafana_auth_proxy_session[[:space:]]*$' "$base"; then
+    printf '[ok] %s keeps the dedicated Grafana auth-proxy cookie name\n' "$base"
   else
-    printf '[fail] %s must set Grafana login_cookie_name to grafana_auth_proxy_session\n' "$path"
+    printf '[fail] %s must keep login_cookie_name: grafana_auth_proxy_session\n' "$base"
     status=1
   fi
 
   if awk '
-    /^[[:space:]]*name:[[:space:]]*grafana-auth-token-rotate[[:space:]]*$/ { in_route=1 }
+    /^[[:space:]]*name:[[:space:]]*grafana-api[[:space:]]*$/ { in_route=1 }
     in_route && /traefik.ingress.kubernetes.io\/router.middlewares:/ {
-      if ($0 ~ /auth-github-oauth-forward-auth@kubernetescrd/ && $0 !~ /auth-github-oauth@kubernetescrd/) {
-        found=1
-      } else {
-        bad=1
-      }
+      if ($0 ~ /auth-github-oauth-forward-auth@kubernetescrd/ && $0 !~ /auth-github-oauth@kubernetescrd/) found_auth=1
+      else bad=1
     }
-    in_route && /^[[:space:]]*\{\{- end \}\}/ { in_route=0 }
-    END { exit found && !bad ? 0 : 1 }
-  ' "$path"; then
-    printf '[ok] %s keeps Grafana token rotation on forward auth only\n' "$path"
+    in_route && /^[[:space:]]*path:[[:space:]]*\/api[[:space:]]*$/ { found_path=1 }
+    in_route && /^[[:space:]]*pathType:[[:space:]]*Prefix[[:space:]]*$/ { found_prefix=1 }
+    END { exit found_auth && found_path && found_prefix && !bad ? 0 : 1 }
+  ' "$runtime"; then
+    printf '[ok] %s routes all Grafana API traffic through forward auth only\n' "$runtime"
   else
-    printf '[fail] %s must route Grafana /api/user/auth-tokens/rotate through forward auth without the OAuth error middleware\n' "$path"
+    printf '[fail] %s must define a /api Prefix route using forward auth without the OAuth error middleware\n' "$runtime"
+    status=1
+  fi
+
+  if awk '
+    /^[[:space:]]*persistence:[[:space:]]*$/ { in_persistence=1; next }
+    in_persistence && /^[[:space:]]*enabled:[[:space:]]*true[[:space:]]*$/ { enabled=1 }
+    in_persistence && /^[[:space:]]*storageClassName:[[:space:]]*longhorn[[:space:]]*$/ { storage=1 }
+    END { exit enabled && storage ? 0 : 1 }
+  ' "$runtime"; then
+    printf '[ok] %s persists the Grafana database on Longhorn\n' "$runtime"
+  else
+    printf '[fail] %s must enable Longhorn-backed Grafana persistence\n' "$runtime"
+    status=1
+  fi
+
+  if awk '
+    /name:[[:space:]]*prometheus-stack-private-values/ { private_line=NR }
+    /name:[[:space:]]*prometheus-stack-grafana-runtime-values/ { runtime_line=NR }
+    END { exit private_line && runtime_line && runtime_line > private_line ? 0 : 1 }
+  ' "$release"; then
+    printf '[ok] %s applies Grafana runtime values after private values\n' "$release"
+  else
+    printf '[fail] %s must apply prometheus-stack-grafana-runtime-values last\n' "$release"
     status=1
   fi
 }

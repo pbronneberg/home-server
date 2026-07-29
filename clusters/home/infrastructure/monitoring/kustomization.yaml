@@ -14,6 +14,9 @@ configMapGenerator:
   - name: prometheus-stack-observability-values
     files:
       - values.yaml=observability-values.yaml
+  - name: prometheus-stack-grafana-runtime-values
+    files:
+      - values.yaml=grafana-runtime-values.yaml
   - name: home-platform-overview-dashboard
     files:
       - home-platform-overview.json=dashboards/home-platform-overview.json
