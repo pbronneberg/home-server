@@ -26,6 +26,15 @@ spec:
           expr: sum(gotk_resource_info{ready!="True"})
         - record: home:certificate_min_expiry_seconds
           expr: min(certmanager_certificate_expiration_timestamp_seconds - time())
+        - record: home:autoscaler_workers_sleeping:count
+          expr: sum(home_autoscaler_node_info{desired_power_state="off"})
+        - record: home:unexpected_targets_down:count
+          expr: |
+            count(
+              (up == 0)
+              unless on(node)
+              home_autoscaler_node_info{desired_power_state="off"} == 1
+            )
     - name: home-platform.alerts
       rules:
         - alert: HomePublicGrafanaUnavailable
@@ -52,3 +61,41 @@ spec:
           annotations:
             summary: Certificate expires within 14 days
             description: Certificate {{ $labels.namespace }}/{{ $labels.name }} is nearing expiry.
+        - alert: AlwaysOnNodeNotReady
+          expr: kube_node_status_condition{node="deepthought",condition="Ready",status="true"} == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Always-on node is not ready
+            description: The permanent control-plane and storage node deepthought has not been Ready for ten minutes.
+        - alert: AutoscaledNodeUnexpectedlyOffline
+          expr: |
+            home_autoscaler_node_info{desired_power_state="on"} == 1
+            unless on(node)
+            kube_node_status_condition{condition="Ready",status="true"} == 1
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: Autoscaled worker is unexpectedly offline
+            description: Worker {{ $labels.node }} is desired on but has not reported Ready for fifteen minutes.
+        - alert: AutoscalerDesiredStateUnknown
+          expr: home_autoscaler_node_info{desired_power_state!~"on|off"} == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Autoscaler node has an unknown desired state
+            description: Worker {{ $labels.node }} reports desired state {{ $labels.desired_power_state }}.
+        - alert: HomeTargetDown
+          expr: |
+            (up == 0)
+            unless on(node)
+            home_autoscaler_node_info{desired_power_state="off"} == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Monitoring target is unexpectedly down
+            description: Target {{ $labels.job }} {{ $labels.instance }} is down and is not attached to an intentionally sleeping worker.
