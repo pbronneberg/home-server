@@ -1,3 +1,14 @@
+defaultRules:
+  # K3s embeds scheduler/controller-manager/proxy differently from kubeadm, and
+  # autoscaled workers are deliberately powered off. Replace these generic
+  # alerts with the autoscaler-aware rules in home-platform-rules.yaml.
+  disabled:
+    KubeControllerManagerDown: true
+    KubeSchedulerDown: true
+    KubeProxyDown: true
+    KubeNodeNotReady: true
+    TargetDown: true
+
 prometheus:
   prometheusSpec:
     retention: 30d
@@ -35,6 +46,9 @@ kube-state-metrics:
         verbs: [list, watch]
       - apiGroups: [helm.toolkit.fluxcd.io]
         resources: [helmreleases]
+        verbs: [list, watch]
+      - apiGroups: [infra.homecluster.dev]
+        resources: [nodes]
         verbs: [list, watch]
   customResourceState:
     enabled: true
@@ -86,3 +100,18 @@ kube-state-metrics:
                   ready: [status, conditions, "[type=Ready]", status]
                   revision: [status, history, "0", chartVersion]
                   chart_name: [spec, chart, spec, chart]
+          - groupVersionKind: {group: infra.homecluster.dev, version: v1alpha1, kind: Node}
+            metricNamePrefix: home_autoscaler
+            metrics:
+              - name: node_info
+                help: Desired power state of a homelab autoscaler node.
+                each:
+                  type: Info
+                  info:
+                    labelsFromPath:
+                      node: [spec, kubernetesNodeName]
+                labelsFromPath:
+                  exported_namespace: [metadata, namespace]
+                  resource_name: [metadata, name]
+                  desired_power_state: [spec, powerState]
+                  group: [metadata, labels, group]
