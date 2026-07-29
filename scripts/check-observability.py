@@ -21,9 +21,21 @@ REQUIRED_RECORDS = {
     "home:certificate_min_expiry_seconds",
 }
 
+
+def iter_panels(dashboard: dict) -> list[dict]:
+    panels: list[dict] = []
+    stack = list(dashboard.get("panels", []))
+    while stack:
+        panel = stack.pop()
+        panels.append(panel)
+        stack.extend(panel.get("panels", []))
+    return panels
+
+
 def main() -> int:
     errors: list[str] = []
     seen: set[str] = set()
+    dashboards: dict[str, dict] = {}
     for path in sorted(DASHBOARDS.glob("*.json")):
         try:
             dashboard = json.loads(path.read_text(encoding="utf-8"))
@@ -37,6 +49,7 @@ def main() -> int:
             errors.append(f"{path.relative_to(ROOT)}: duplicate uid {uid}")
         else:
             seen.add(uid)
+            dashboards[uid] = dashboard
         if not dashboard.get("title"):
             errors.append(f"{path.relative_to(ROOT)}: missing title")
         if "home" not in dashboard.get("tags", []):
@@ -49,10 +62,43 @@ def main() -> int:
     if missing:
         errors.append(f"missing dashboards: {', '.join(sorted(missing))}")
 
+    overview = dashboards.get("home-platform-overview")
+    if overview:
+        panels = iter_panels(overview)
+        titles = {panel.get("title") for panel in panels}
+        for title in ["Platform status", "Firing alerts — action required", "Scrape targets currently down"]:
+            if title not in titles:
+                errors.append(f"home-platform-overview: missing required panel {title}")
+        alert_panels = [p for p in panels if p.get("title") in {"Platform status", "Critical alerts", "Warning alerts"}]
+        for panel in alert_panels:
+            defaults = panel.get("fieldConfig", {}).get("defaults", {})
+            if defaults.get("color", {}).get("mode") != "thresholds":
+                errors.append(f"home-platform-overview: {panel.get('title')} must use threshold colors")
+            if panel.get("options", {}).get("colorMode") != "background":
+                errors.append(f"home-platform-overview: {panel.get('title')} must use background severity coloring")
+        links = overview.get("links", [])
+        if not any(link.get("url") == "/alerting/list" for link in links):
+            errors.append("home-platform-overview: missing dashboard-level alerting drill-down")
+        if not any(
+            link.get("url") == "/alerting/list"
+            for panel in panels
+            for link in panel.get("links", []) + panel.get("fieldConfig", {}).get("defaults", {}).get("links", [])
+        ):
+            errors.append("home-platform-overview: missing panel alerting drill-down")
+
     rules = (MONITORING / "rules/home-platform-rules.yaml").read_text(encoding="utf-8")
     for record in sorted(REQUIRED_RECORDS):
         if f"record: {record}" not in rules:
             errors.append(f"recording rule missing: {record}")
+
+    values = (MONITORING / "observability-values.yaml").read_text(encoding="utf-8")
+    for required in [
+        "ruleSelectorNilUsesHelmValues: false",
+        "ruleSelector: {}",
+        "ruleNamespaceSelector: {}",
+    ]:
+        if required not in values:
+            errors.append(f"PrometheusRule discovery setting missing: {required}")
 
     kustomization = (MONITORING / "kustomization.yaml").read_text(encoding="utf-8")
     for dashboard in sorted(DASHBOARDS.glob("*.json")):
@@ -69,6 +115,7 @@ def main() -> int:
         return 1
     print(f"Validated {len(seen)} dashboards and {len(REQUIRED_RECORDS)} recording rules.")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
