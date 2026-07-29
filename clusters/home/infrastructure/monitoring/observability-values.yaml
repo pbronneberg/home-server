@@ -20,6 +20,9 @@ prometheus:
     probeSelectorNilUsesHelmValues: false
     probeSelector: {}
     probeNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector: {}
+    ruleNamespaceSelector: {}
 
 kube-state-metrics:
   rbac:
