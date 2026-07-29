@@ -26,8 +26,36 @@ spec:
           expr: sum(gotk_resource_info{ready!="True"})
         - record: home:certificate_min_expiry_seconds
           expr: min(certmanager_certificate_expiration_timestamp_seconds - time())
+        - record: home:autoscaler_sleeping_nodes:count
+          expr: sum(homelab_autoscaler_node_info{desired_power_state="off"}) or vector(0)
+        - record: home:autoscaler_unexpectedly_not_ready:count
+          expr: |
+            sum(
+              (kube_node_status_condition{condition="Ready",status="true"} == 0)
+              and on(node)
+              homelab_autoscaler_node_info{desired_power_state="on"}
+            ) or vector(0)
     - name: home-platform.alerts
       rules:
+        - alert: HomeAlwaysOnNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true",node="deepthought"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Always-on home-server node is not ready
+            description: The permanent control-plane and storage node deepthought has been NotReady for five minutes.
+        - alert: HomeAutoscaledNodeUnexpectedlyNotReady
+          expr: |
+            (kube_node_status_condition{condition="Ready",status="true"} == 0)
+            and on(node)
+            homelab_autoscaler_node_info{desired_power_state="on"}
+          for: 20m
+          labels:
+            severity: warning
+          annotations:
+            summary: Autoscaled node is expected online but remains unavailable
+            description: Autoscaler desired state for {{ $labels.node }} is on, but Kubernetes has reported it NotReady for twenty minutes.
         - alert: HomePublicGrafanaUnavailable
           expr: probe_success{service="grafana"} == 0
           for: 5m

@@ -19,6 +19,18 @@ REQUIRED_RECORDS = {
     "home:longhorn_volume_usage:ratio",
     "home:flux_not_ready:count",
     "home:certificate_min_expiry_seconds",
+    "home:autoscaler_sleeping_nodes:count",
+    "home:autoscaler_unexpectedly_not_ready:count",
+}
+REQUIRED_ALERTS = {
+    "HomeAlwaysOnNodeNotReady",
+    "HomeAutoscaledNodeUnexpectedlyNotReady",
+}
+DISABLED_UPSTREAM_ALERTS = {
+    "KubeControllerManagerDown",
+    "KubeNodeNotReady",
+    "KubeProxyDown",
+    "KubeSchedulerDown",
 }
 
 
@@ -66,39 +78,56 @@ def main() -> int:
     if overview:
         panels = iter_panels(overview)
         titles = {panel.get("title") for panel in panels}
-        for title in ["Platform status", "Firing alerts — action required", "Scrape targets currently down"]:
+        for title in [
+            "Actionable platform status",
+            "Action required",
+            "Expected power-saving state",
+            "Alerts explained by sleeping nodes",
+            "Scrape targets currently down",
+        ]:
             if title not in titles:
                 errors.append(f"home-platform-overview: missing required panel {title}")
-        alert_panels = [p for p in panels if p.get("title") in {"Platform status", "Critical alerts", "Warning alerts"}]
+        dashboard_json = json.dumps(overview)
+        for required in [
+            'homelab_autoscaler_node_info{desired_power_state=\\"off\\"}',
+            'unless on(node)',
+            'and on(node)',
+        ]:
+            if required not in dashboard_json:
+                errors.append(f"home-platform-overview: missing autoscaler-aware query fragment {required}")
+        alert_panels = [
+            p for p in panels
+            if p.get("title") in {"Actionable platform status", "Actionable criticals", "Actionable warnings"}
+        ]
         for panel in alert_panels:
             defaults = panel.get("fieldConfig", {}).get("defaults", {})
             if defaults.get("color", {}).get("mode") != "thresholds":
                 errors.append(f"home-platform-overview: {panel.get('title')} must use threshold colors")
             if panel.get("options", {}).get("colorMode") != "background":
                 errors.append(f"home-platform-overview: {panel.get('title')} must use background severity coloring")
-        links = overview.get("links", [])
-        if not any(link.get("url") == "/alerting/list" for link in links):
-            errors.append("home-platform-overview: missing dashboard-level alerting drill-down")
-        if not any(
-            link.get("url") == "/alerting/list"
-            for panel in panels
-            for link in panel.get("links", []) + panel.get("fieldConfig", {}).get("defaults", {}).get("links", [])
-        ):
-            errors.append("home-platform-overview: missing panel alerting drill-down")
 
     rules = (MONITORING / "rules/home-platform-rules.yaml").read_text(encoding="utf-8")
     for record in sorted(REQUIRED_RECORDS):
         if f"record: {record}" not in rules:
             errors.append(f"recording rule missing: {record}")
+    for alert in sorted(REQUIRED_ALERTS):
+        if f"alert: {alert}" not in rules:
+            errors.append(f"alerting rule missing: {alert}")
 
     values = (MONITORING / "observability-values.yaml").read_text(encoding="utf-8")
     for required in [
         "ruleSelectorNilUsesHelmValues: false",
         "ruleSelector: {}",
         "ruleNamespaceSelector: {}",
+        "group: infra.homecluster.dev",
+        "kind: Node",
+        "desired_power_state: [spec, powerState]",
     ]:
         if required not in values:
-            errors.append(f"PrometheusRule discovery setting missing: {required}")
+            errors.append(f"observability configuration missing: {required}")
+    for alert in sorted(DISABLED_UPSTREAM_ALERTS):
+        if f"{alert}: true" not in values:
+            errors.append(f"K3s/autoscaler-incompatible upstream alert not disabled: {alert}")
 
     kustomization = (MONITORING / "kustomization.yaml").read_text(encoding="utf-8")
     for dashboard in sorted(DASHBOARDS.glob("*.json")):
@@ -113,7 +142,7 @@ def main() -> int:
         for error in errors:
             print(f"- {error}", file=sys.stderr)
         return 1
-    print(f"Validated {len(seen)} dashboards and {len(REQUIRED_RECORDS)} recording rules.")
+    print(f"Validated {len(seen)} dashboards, {len(REQUIRED_RECORDS)} recording rules, and autoscaler-aware alert policy.")
     return 0
 
 

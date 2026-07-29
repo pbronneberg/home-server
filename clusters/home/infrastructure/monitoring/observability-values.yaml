@@ -1,3 +1,10 @@
+defaultRules:
+  disabled:
+    KubeControllerManagerDown: true
+    KubeNodeNotReady: true
+    KubeProxyDown: true
+    KubeSchedulerDown: true
+
 prometheus:
   prometheusSpec:
     retention: 30d
@@ -35,6 +42,9 @@ kube-state-metrics:
         verbs: [list, watch]
       - apiGroups: [helm.toolkit.fluxcd.io]
         resources: [helmreleases]
+        verbs: [list, watch]
+      - apiGroups: [infra.homecluster.dev]
+        resources: [nodes]
         verbs: [list, watch]
   customResourceState:
     enabled: true
@@ -86,3 +96,18 @@ kube-state-metrics:
                   ready: [status, conditions, "[type=Ready]", status]
                   revision: [status, history, "0", chartVersion]
                   chart_name: [spec, chart, spec, chart]
+          - groupVersionKind: {group: infra.homecluster.dev, version: v1alpha1, kind: Node}
+            metricNamePrefix: homelab_autoscaler
+            metrics:
+              - name: node_info
+                help: Desired power state and inventory metadata for a homelab autoscaler node.
+                each:
+                  type: Info
+                  info:
+                    labelsFromPath:
+                      name: [metadata, name]
+                labelsFromPath:
+                  node: [spec, kubernetesNodeName]
+                  desired_power_state: [spec, powerState]
+                  group: [metadata, labels, group]
+                  power_mode: [metadata, labels, home-server.dev/power-mode]
