@@ -2,7 +2,10 @@
 set -euo pipefail
 
 expected_domain="home-server.bronneberg.local"
-mapfile -t flux_components < <(find clusters -path '*/flux-system/gotk-components.yaml' -type f | sort)
+flux_components=()
+while IFS= read -r components; do
+  flux_components+=("$components")
+done < <(find clusters -path '*/flux-system/gotk-components.yaml' -type f | sort)
 
 search_file() {
   local pattern="$1"

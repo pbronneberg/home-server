@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    reconcile.fluxcd.io/watch: Enabled
+  name: longhorn-backup-values
+  namespace: longhorn-system
+type: Opaque
+stringData:
+  values.yaml: |
+    defaultBackupStore:
+      backupTarget: nfs://backup-host.example:/srv/longhorn-backup?nfsOptions=vers=4.2
+      backupTargetCredentialSecret: ""
+      pollInterval: 300

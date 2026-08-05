@@ -32,6 +32,16 @@ Expected Longhorn tags:
 - Node tag: `deepthought`
 - Disk tag: `permanent-ssd`
 
+The only registered Longhorn disk on `deepthought` is the permanent SSD at
+`/data/longhorn`. Do not re-add `/var/lib/longhorn` as a Longhorn disk; keeping
+replicas off the OS filesystem isolates durable volume growth from kubelet and
+container-runtime storage.
+
+A separate USB SSD is mounted at `/srv/longhorn-backup` and exported over NFSv4
+as Longhorn's backupstore. It is a backup target only: never register this path
+as a Longhorn replica disk. The encrypted private values contain the real target
+URL; see [Longhorn backups](longhorn-backups.md) for operations and recovery.
+
 ### milliard
 
 - Role: K3s agent.

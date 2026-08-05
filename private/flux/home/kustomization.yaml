@@ -9,6 +9,7 @@ resources:
   - kairos-bootstrap-values.sops.yaml
   - kairos-staging-values.sops.yaml
   - longhorn-admin-values.sops.yaml
+  - longhorn-backup-values.sops.yaml
   - monitoring-values.sops.yaml
   - oauth2-proxy-values.sops.yaml
   - photobooth-api-values.sops.yaml

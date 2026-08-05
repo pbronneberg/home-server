@@ -7,7 +7,8 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
-  channel: https://update.k3s.io/v1-release/channels/stable
+  # renovate: datasource=github-releases depName=k3s-io/k3s versioning=loose
+  version: v1.36.2+k3s1
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
@@ -37,7 +38,8 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
-  channel: https://update.k3s.io/v1-release/channels/stable
+  # renovate: datasource=github-releases depName=k3s-io/k3s versioning=loose
+  version: v1.36.2+k3s1
   nodeSelector:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane

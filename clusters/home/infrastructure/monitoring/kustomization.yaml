@@ -7,6 +7,7 @@ resources:
   - monitors/flux-podmonitor.yaml
   - monitors/grafana-probe.yaml
   - rules/home-platform-rules.yaml
+  - rules/longhorn-backup-rules.yaml
 configMapGenerator:
   - name: prometheus-stack-values
     files:

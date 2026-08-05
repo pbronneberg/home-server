@@ -28,6 +28,7 @@ stringData:
         - "--kube-apiserver-arg=anonymous-auth=false"
         - "--kube-apiserver-arg=profiling=false"
         - "--kube-controller-manager-arg=profiling=false"
+        - "--kube-controller-manager-arg=terminated-pod-gc-threshold=500"
         - "--kube-scheduler-arg=profiling=false"
         - "--kubelet-arg=anonymous-auth=false"
         - "--kubelet-arg=read-only-port=0"
@@ -105,24 +106,24 @@ stringData:
           repo_url="${KAIROS_STAGING_GIT_URL}"
           raw_base="${KAIROS_STAGING_GIT_RAW_BASE}/${KAIROS_STAGING_GIT_BRANCH}"
           work_dir="/run/kairos-staging-flux-bootstrap"
-          sync_file="${work_dir}/gotk-sync.yaml"
+          sync_file="$${work_dir}/gotk-sync.yaml"
 
-          mkdir -p "${work_dir}"
+          mkdir -p "$${work_dir}"
 
           until /usr/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
             sleep 5
           done
 
-          wget -qO - "${raw_base}/clusters/staging/flux-system/gotk-components.yaml" \
+          wget -qO - "$${raw_base}/clusters/staging/flux-system/gotk-components.yaml" \
             | /usr/bin/k3s kubectl apply -f -
 
-          wget -qO "${sync_file}" \
-            "${raw_base}/clusters/staging/flux-system/gotk-sync.yaml"
+          wget -qO "$${sync_file}" \
+            "$${raw_base}/clusters/staging/flux-system/gotk-sync.yaml"
           sed -i \
-            -e "s|url: .*|url: ${repo_url}|" \
-            -e "s|branch: .*|branch: ${branch}|" \
-            "${sync_file}"
-          /usr/bin/k3s kubectl apply -f "${sync_file}"
+            -e "s|url: .*|url: $${repo_url}|" \
+            -e "s|branch: .*|branch: $${branch}|" \
+            "$${sync_file}"
+          /usr/bin/k3s kubectl apply -f "$${sync_file}"
       - path: /etc/systemd/system/kairos-staging-flux-bootstrap.service
         permissions: "0644"
         owner: root:root

@@ -23,12 +23,18 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  valuesFrom:
+    - kind: Secret
+      name: longhorn-backup-values
+      valuesKey: values.yaml
   values:
     defaultSettings:
+      allowRecurringJobWhileVolumeDetached: true
       createDefaultDiskLabeledNodes: true
       defaultDataPath: /data/longhorn
       guaranteedInstanceManagerCPU: '{"v1":"6","v2":"10"}'
       kubernetesClusterAutoscalerEnabled: true
+      restoreVolumeRecurringJobs: true
     metrics:
       serviceMonitor:
         enabled: true

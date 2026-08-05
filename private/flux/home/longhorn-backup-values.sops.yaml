@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    reconcile.fluxcd.io/watch: Enabled
+  name: longhorn-backup-values
+  namespace: longhorn-system
+type: Opaque
+stringData:
+  values.yaml: ENC[AES256_GCM,data:HwcTbM/IoDWtV00brRyaUyOF/9bhuE1kjMET/rpx0Cgnn/I/RpAel1VL1rRtl1tc0tmzL6TbmoI0KJtlJ6Mzjove32O5kDZWuOrTw4a0Kxq8dcK1Ks4AqcME/SxmnlJDi5rwHvfk1wkwnZETdDQjZGoXIL30zN7e1/T1eKNHgb9sBNfWvqYPMEPOrqHWX2q9qpvgoWRt,iv:6KqmzWBGFW+oXmK/K/RlF4fr7HvA2usgjWhi1Rd6L5Y=,tag:XoSaD85Ktr25iQMLOcuxkQ==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB6U0FTbEoxT0h4dnZTYTQx
+        UFhmaGFOL1RjbzZ0TWt5NFhuMW1kK0V1dEJZCng1ZHJ4cDA4UkJNd25EQ3cwUHp3
+        NDBaS2FxcnBQNkNpUnZuaUV0V3RTWEEKLS0tIGVRem5jd0dGTXZPTnhkRksxYktP
+        VzJXdFh5WUZxMHcrVCtiK3lvakdPb2sKb2cPsTwqThs9NKCA8qzqLxEnRSbDOlDa
+        HOB54Q/4nCoU57Gri0J47TYCq9azWK8LCszRrNbD2MHLYW84ZNoChg==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1gtjn7ra9z50kyzfxlnrthq44msj44tqgkyawafps450w820mk4vql8mgpv
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-08-05T10:51:03Z"
+  mac: ENC[AES256_GCM,data:zX7JkXny3UIP3zPVRwllLlVgqC0zm6wk9sw/5Scj8YDChoyuU1KpvuCUvUVrUbYlDwiNv5n6nEnoBV95r3VBdSsEjTtTXM+dek/3OAm1yA3SFY2+BY3thl8aevq2I8uYAJ3b5yaMNS2pSzzIYwjFyy2aneOexpRx5vWBHkPiP9o=,iv:vGOi6Qr6+dR6g1RWHxvP4CxcMEhsgnbSHpub1WCdxx0=,tag:y5dTTncEJBe3e+MzI4uRaw==,type:str]
+  version: 3.13.2

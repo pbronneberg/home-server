@@ -63,14 +63,17 @@ make security-audit
   worker data root lives below `/usr/local` rather than a root-level `/data`
   directory.
 - Longhorn standard storage is `/data/longhorn` with the `longhorn-data` disk
-  tag. Existing OS-disk volumes should stay in place unless a separate
-  backup-backed migration is planned.
+  tag. All Longhorn replicas on the permanent node have been evacuated from
+  `/var/lib/longhorn`; the OS filesystem must not be registered as a Longhorn
+  disk again.
 - StorageClass parameter changes require deleting and recreating only the
   StorageClass objects during a maintenance window; do not delete PVCs, PVs,
   Longhorn volumes, or Longhorn disks.
 - Watch image filesystem pressure during upgrades and after large image churn.
-- Keep Longhorn backup target health and restore drills on the recovery backlog;
-  do not rely on snapshots as the only copy of important data.
+- Longhorn writes daily volume backups and weekly Longhorn system backups to the
+  dedicated USB backup filesystem. Alerts cover stale backups, a missing mount,
+  and low target capacity. Run the restore drill in `docs/longhorn-backups.md`
+  after storage or Longhorn changes; replica isolation is still not a backup.
 - Home Assistant keeps `NET_RAW` so DHCP/LAN discovery integrations can open
   raw sockets. Treat it as a workload-specific exception rather than a default
   for other app charts.

@@ -1,0 +1,29 @@
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: daily-volume-backup
+  namespace: longhorn-system
+spec:
+  concurrency: 1
+  cron: "17 2 * * *"
+  groups:
+    - default
+  labels:
+    backup-policy: daily
+  parameters:
+    full-backup-interval: "7"
+  retain: 14
+  task: backup
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: weekly-system-backup
+  namespace: longhorn-system
+spec:
+  concurrency: 1
+  cron: "47 3 * * 0"
+  parameters:
+    volume-backup-policy: if-not-present
+  retain: 8
+  task: system-backup

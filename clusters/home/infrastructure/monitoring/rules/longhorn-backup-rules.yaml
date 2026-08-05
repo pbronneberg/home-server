@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: home-longhorn-backups
+  namespace: monitoring
+spec:
+  groups:
+    - name: home-longhorn-backups.alerts
+      rules:
+        - alert: HomeLonghornBackupMissingOrStale
+          expr: time() - longhorn_volume_last_backup_at > 36 * 3600
+          for: 30m
+          labels:
+            severity: critical
+          annotations:
+            summary: Longhorn volume backup is missing or stale
+            description: Longhorn volume {{ $labels.volume }} has not completed a backup within 36 hours.
+        - alert: HomeLonghornBackupTargetMissing
+          expr: absent(node_filesystem_size_bytes{mountpoint="/srv/longhorn-backup",fstype="ext4"})
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Longhorn USB backup target is not mounted
+            description: The dedicated Longhorn backup filesystem has been absent from node-exporter for ten minutes.
+        - alert: HomeLonghornBackupTargetLow
+          expr: |
+            node_filesystem_avail_bytes{mountpoint="/srv/longhorn-backup",fstype="ext4"}
+            /
+            node_filesystem_size_bytes{mountpoint="/srv/longhorn-backup",fstype="ext4"}
+            < 0.15
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Longhorn USB backup target is low on space
+            description: The dedicated Longhorn backup filesystem has less than 15% free space.

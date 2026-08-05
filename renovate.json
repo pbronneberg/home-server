@@ -95,6 +95,17 @@
     },
     {
       "customType": "regex",
+      "description": "Propose reviewed K3s upgrade plan versions",
+      "managerFilePatterns": [
+        "/^clusters\\/home\\/infrastructure\\/system-upgrade-plans\\/plans\\.yaml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+) versioning=(?<versioning>\\S+)\\s+version: (?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "{{{versioning}}}"
+    },
+    {
+      "customType": "regex",
       "description": "Update Kairos Hadron runbook tags",
       "managerFilePatterns": [
         "/^docs\\/kairos-(?:evaluation|hardware)\\.md$/",
@@ -189,6 +200,26 @@
         "infrastructure"
       ],
       "automerge": false
+    },
+    {
+      "description": "Require explicit approval for K3s node upgrades",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "k3s-io/k3s"
+      ],
+      "matchFileNames": [
+        "clusters/home/infrastructure/system-upgrade-plans/plans.yaml"
+      ],
+      "addLabels": [
+        "cluster",
+        "infrastructure",
+        "k3s"
+      ],
+      "groupName": "k3s node upgrade",
+      "automerge": false,
+      "dependencyDashboardApproval": true
     },
     {
       "description": "Keep KubeVirt and CDI updates reviewable before Flux reconciles them",

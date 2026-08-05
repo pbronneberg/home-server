@@ -133,8 +133,9 @@ and then to repository-driven reconciliation.
 
 ## Follow-Up Work
 
-- Define the NAS-backed backup baseline, including K3s datastore and Longhorn
-  backup procedures.
+- Add an off-host copy of the USB Longhorn backupstore and define the K3s
+  datastore backup procedure; the local USB target does not survive loss of the
+  physical host.
 - Modernize the K3s lifecycle and decide the supported topology before changing
   OS or automated upgrade strategy.
 - Keep SOPS and age recovery tested for in-cluster GitOps decryption.

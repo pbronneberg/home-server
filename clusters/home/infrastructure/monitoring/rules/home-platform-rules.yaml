@@ -35,6 +35,8 @@ spec:
               unless on(node)
               home_autoscaler_node_info{desired_power_state="off"} == 1
             )
+        - record: home:terminated_pods:count
+          expr: sum(kube_pod_status_phase{phase=~"Failed|Succeeded"} == 1)
     - name: home-platform.alerts
       rules:
         - alert: HomePublicGrafanaUnavailable
@@ -69,6 +71,26 @@ spec:
           annotations:
             summary: Always-on node is not ready
             description: The permanent control-plane and storage node deepthought has not been Ready for ten minutes.
+        - alert: HomeNodeRootFilesystemLow
+          expr: |
+            node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+            /
+            node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+            < 0.15
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: Node root filesystem is low
+            description: Node {{ $labels.instance }} has less than 15% free on its root filesystem; image pulls may trigger kubelet eviction.
+        - alert: HomeTerminatedPodsAccumulating
+          expr: home:terminated_pods:count > 500
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: Terminated pods are accumulating
+            description: More than 500 Failed or Succeeded pods remain and can retain logs or API state.
         - alert: AutoscaledNodeUnexpectedlyOffline
           expr: |
             home_autoscaler_node_info{desired_power_state="on"} == 1
