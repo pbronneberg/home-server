@@ -2,6 +2,11 @@
 {{- $host := (index .Values.ingress.hosts 0).host }}
 {{- $tlsSecret := (index .Values.ingress.tls 0).secretName }}
 {{- $serviceName := .Values.resourceNames.service | default (include "home-assistant.fullname" .) }}
+{{- $middlewares := deepCopy .Values.einkDashboardIngress.middlewares }}
+{{- if .Values.forwardedHeaders.stripForHomeAssistant.enabled }}
+{{- $stripMiddleware := printf "%s-%s@kubernetescrd" .Release.Namespace (printf "%s-strip-forwarded-headers" (include "home-assistant.fullname" .)) }}
+{{- $middlewares = append $middlewares $stripMiddleware }}
+{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -10,7 +15,7 @@ metadata:
     {{- include "home-assistant.labels" . | nindent 4 }}
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," .Values.einkDashboardIngress.middlewares | quote }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," $middlewares | quote }}
     traefik.ingress.kubernetes.io/router.priority: {{ .Values.einkDashboardIngress.priority | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
