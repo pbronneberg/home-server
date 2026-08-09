@@ -23,7 +23,7 @@ spec:
       http:
         paths:
           - path: {{ .Values.einkDashboardIngress.path | quote }}
-            pathType: Exact
+            pathType: {{ .Values.einkDashboardIngress.pathType }}
             backend:
               service:
                 name: {{ $serviceName }}
