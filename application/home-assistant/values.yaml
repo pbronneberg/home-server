@@ -117,6 +117,9 @@ einkDashboardIngress:
   priority: 100
   middlewares:
     - default-redirect-https@kubernetescrd
+  localOnly:
+    enabled: false
+    sourceRanges: []
 
 resources:
   limits:

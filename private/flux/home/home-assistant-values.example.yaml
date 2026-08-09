@@ -31,3 +31,8 @@ stringData:
     forwardedHeaders:
       stripForHomeAssistant:
         enabled: true
+    einkDashboardIngress:
+      localOnly:
+        enabled: true
+        sourceRanges:
+          - 192.0.2.0/24
