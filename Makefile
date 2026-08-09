@@ -26,7 +26,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check upgrade-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-render-node kairos-render-hardware kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
+.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check upgrade-policy-check longhorn-backup-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-render-node kairos-render-hardware kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
 
 help:
 	@printf '%s\n' \
@@ -38,6 +38,7 @@ help:
 		'  lint-yaml      Lint YAML values, manifests, and workflows with yamllint.' \
 		'  flux-build     Build all Flux/Kustomize cluster and private overlays.' \
 		'  upgrade-policy-check Validate reviewed, pinned K3s upgrade plans.' \
+		'  longhorn-backup-policy-check Validate explicit Longhorn backup enrollment.' \
 		'  helm-repos     Configure Helm repositories used by chart dependencies.' \
 		'  helm-deps      Build dependencies for charts that declare them.' \
 		'  helm-lint      Lint all Helm charts under application/.' \
@@ -72,7 +73,7 @@ help:
 		'  staging-verify-flux Check Flux and platform smoke in the staging cluster.' \
 		'  staging-verify       Run staging VM and Flux acceptance checks.'
 
-ci: lint auth-policy-check upgrade-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
+ci: lint auth-policy-check upgrade-policy-check longhorn-backup-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -156,6 +157,9 @@ auth-policy-check:
 
 upgrade-policy-check:
 	@bash scripts/check-system-upgrade-policy.sh
+
+longhorn-backup-policy-check:
+	@bash scripts/check-longhorn-backup-policy.sh
 
 security-audit:
 	@bash scripts/security-audit.sh

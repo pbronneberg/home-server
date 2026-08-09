@@ -7,7 +7,7 @@ spec:
   concurrency: 1
   cron: "17 2 * * *"
   groups:
-    - default
+    - durable-volumes
   labels:
     backup-policy: daily
   parameters:

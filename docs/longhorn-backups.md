@@ -13,8 +13,9 @@ The real target URL is kept in
 
 - `daily-volume-backup` runs at 02:17 UTC, retains 14 backups per volume, and
   performs a full block refresh after seven incremental backups.
-- The `default` recurring-job group covers volumes that do not have an explicit
-  recurring-job selector.
+- The `durable-volumes` recurring-job group is opt-in. Longhorn's special
+  `default` group is deliberately not used because it would also enroll test,
+  disposable, and future volumes without an explicit recovery decision.
 - Detached volumes are temporarily attached for their scheduled backup.
 - `weekly-system-backup` runs Sundays at 03:47 UTC and retains eight Longhorn
   system-resource bundles. It creates a volume backup only when the latest one
@@ -24,6 +25,47 @@ The real target URL is kept in
 
 Longhorn owns backup retention. Do not add filesystem-level deletion or rotation
 inside the backupstore.
+
+Enroll an existing durable Longhorn volume explicitly:
+
+```bash
+kubectl -n longhorn-system label volume/<volume-name> \
+  recurring-job-group.longhorn.io/durable-volumes=enabled
+kubectl -n longhorn-system label volume/<volume-name> \
+  recurring-job-group.longhorn.io/default-
+```
+
+Changing the RecurringJob does not migrate runtime volume labels. When this
+policy first reconciles, enroll each reviewed existing volume immediately after
+the job switches to `durable-volumes`. Existing backups remain available during
+that short scheduling gap; do not use `--all`, because the point of this policy
+is to make the recovery decision volume by volume.
+
+For a GitOps-managed PVC, make the PVC the recurring-job source and opt it into
+the group. These labels are copied to the associated Longhorn volume and keep
+the recovery decision next to the claim:
+
+```yaml
+metadata:
+  labels:
+    recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/durable-volumes: enabled
+```
+
+PVC labels override the recurring-job labels on their associated Longhorn
+volume. Do not set the source label without also declaring every recurring-job
+or group label that the volume requires. StorageClass parameters are immutable,
+so do not retrofit `recurringJobSelector` onto an existing class; use PVC labels
+or introduce a reviewed replacement StorageClass for a future class-wide policy.
+
+Audit enrollment before and after changing schedules:
+
+```bash
+kubectl -n longhorn-system get volumes.longhorn.io \
+  -l recurring-job-group.longhorn.io/durable-volumes=enabled
+kubectl -n longhorn-system get volumes.longhorn.io \
+  -l '!recurring-job-group.longhorn.io/durable-volumes'
+```
 
 ## Host preparation
 
@@ -60,7 +102,8 @@ Check the target, schedules, and latest backup timestamps:
 
 ```bash
 kubectl -n longhorn-system get backuptarget default
-kubectl -n longhorn-system get recurringjobs.longhorn.io
+kubectl -n longhorn-system get recurringjob daily-volume-backup \
+  -o jsonpath='{.spec.groups}{"\\n"}'
 kubectl -n longhorn-system get backups.longhorn.io
 kubectl -n longhorn-system get systembackups.longhorn.io
 kubectl get --raw \
