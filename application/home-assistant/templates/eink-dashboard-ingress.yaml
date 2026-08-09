@@ -1,0 +1,32 @@
+{{- if .Values.einkDashboardIngress.enabled }}
+{{- $host := (index .Values.ingress.hosts 0).host }}
+{{- $tlsSecret := (index .Values.ingress.tls 0).secretName }}
+{{- $serviceName := .Values.resourceNames.service | default (include "home-assistant.fullname" .) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "home-assistant.fullname" . }}-eink-dashboard
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," .Values.einkDashboardIngress.middlewares | quote }}
+    traefik.ingress.kubernetes.io/router.priority: {{ .Values.einkDashboardIngress.priority | quote }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  tls:
+    - hosts:
+        - {{ $host | quote }}
+      secretName: {{ $tlsSecret }}
+  rules:
+    - host: {{ $host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.einkDashboardIngress.path | quote }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}
