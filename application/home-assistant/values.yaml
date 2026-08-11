@@ -107,19 +107,16 @@ ingress:
       hosts:
         - homeassistant.home.example
 
-# The e-ink display cannot complete the browser-based OAuth flow. Expose only
-# its dashboard endpoint and generated assets; every other Home Assistant route
-# continues to use the authenticated ingress above.
+# The e-ink display cannot complete the browser-based OAuth flow. Expose its
+# one generated image as an opaque capability URL; every other Home Assistant
+# route, including the e-ink editor API, continues to use the authenticated
+# ingress above. Override this placeholder in encrypted values.
 einkDashboardIngress:
   enabled: true
-  path: /api/eink_dashboard
-  pathType: Prefix
+  publicImagePath: /api/eink_dashboard/replace-with-dashboard-id/image.png
   priority: 100
   middlewares:
     - default-redirect-https@kubernetescrd
-  localOnly:
-    enabled: false
-    sourceRanges: []
 
 resources:
   limits:

@@ -32,12 +32,4 @@ stringData:
       stripForHomeAssistant:
         enabled: true
     einkDashboardIngress:
-      localOnly:
-        enabled: true
-        sourceRanges:
-          # Substitute the real trusted, IoT, and homelab VLAN ranges only in
-          # the SOPS-encrypted values. Traefik applies this allow-list to the
-          # direct connection source address.
-          - 192.0.2.0/24 # trusted devices (example)
-          - 198.51.100.0/24 # IoT and e-paper devices (example)
-          - 203.0.113.0/24 # homelab (example)
+      publicImagePath: /api/eink_dashboard/replace-with-dashboard-id/image.png
