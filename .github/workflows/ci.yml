@@ -66,7 +66,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -96,7 +96,16 @@ jobs:
           echo "${HOME}/go/bin" >> "${GITHUB_PATH}"
 
       - name: Run repository checks
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
         run: make ci
+
+      - name: Show review evidence summary
+        if: always()
+        run: |
+          if [ -f /tmp/home-server-review-evidence.json ]; then
+            python3 -c 'import json; print(json.load(open("/tmp/home-server-review-evidence.json"))["summary"])'
+          fi
 
       - name: Scan working tree for secrets
         run: make scan-secrets
