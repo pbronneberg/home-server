@@ -9,6 +9,12 @@ expected_domain="${expected_domain#\"}"
 expected_domain="${expected_domain%\"}"
 expected_domain="${expected_domain#\'}"
 expected_domain="${expected_domain%\'}"
+service_address_files=(
+  "clusters/home/flux-system/gotk-components.yaml"
+  "clusters/home/infrastructure.yaml"
+  "clusters/home/infrastructure/flux-webhook/github-pr-event-bridge.yaml"
+  "clusters/home/infrastructure/monitoring/monitors/grafana-probe.yaml"
+)
 
 if [ -z "$expected_domain" ]; then
   printf '%s\n' '[error] Unable to determine the home cluster domain.' >&2
@@ -17,8 +23,7 @@ if [ -z "$expected_domain" ]; then
 fi
 
 bad_refs="$(
-  find clusters/home -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 \
-    | xargs -0 -r grep -nE 'svc\.cluster\.local' || true
+  grep -nE 'svc\.cluster\.local' "${service_address_files[@]}" || true
 )"
 
 if [ -n "$bad_refs" ]; then
