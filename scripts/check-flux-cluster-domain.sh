@@ -8,7 +8,6 @@ search_roots=(
   "private/flux/home"
 )
 existing_search_roots=()
-service_address_files=()
 bad_refs=()
 for root in "${search_roots[@]}"; do
   if [ -d "$root" ]; then
@@ -19,7 +18,6 @@ done
 if [ "${#existing_search_roots[@]}" -gt 0 ]; then
   while IFS= read -r -d '' path; do
     if grep -q 'svc\.' "$path"; then
-      service_address_files+=("$path")
       while IFS= read -r match; do
         if [ -n "$match" ]; then
           bad_refs+=("$match")
