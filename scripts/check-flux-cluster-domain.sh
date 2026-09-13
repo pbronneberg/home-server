@@ -27,7 +27,7 @@ while IFS= read -r path; do
   service_address_files+=("$path")
 done < <(
   find clusters/home -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 \
-    | xargs -0 -r grep -lE 'svc\.[A-Za-z0-9.-]+' \
+    | xargs -0 -r grep -l 'svc\.' \
     | sort
 )
 
