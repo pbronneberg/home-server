@@ -21,7 +21,7 @@ if [ "${#existing_search_roots[@]}" -gt 0 ]; then
       if [ -n "$match" ]; then
         bad_refs+=("$match")
       fi
-    done < <(grep -HnE 'svc\.cluster\.local' "$path" || true)
+    done < <(grep -HnE 'svc\.cluster\.local\.?' "$path" || true)
   done < <(
     find "${existing_search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0
   )
