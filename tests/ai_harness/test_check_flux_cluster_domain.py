@@ -113,6 +113,27 @@ class CheckFluxClusterDomainTests(unittest.TestCase):
             self.assertIn("must not use svc.cluster.local", result.stderr)
             self.assertIn("private/flux/home/example.yaml:4", result.stderr)
 
+    def test_does_not_flag_longer_non_default_domains(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(
+                root / "private/flux/home/example.yaml",
+                """
+                apiVersion: v1
+                kind: ConfigMap
+                data:
+                  receiver: webhook-receiver.flux-system.svc.cluster.local.example.com
+                """,
+            )
+            result = subprocess.run(
+                ["bash", str(SCRIPT)],
+                cwd=root,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
