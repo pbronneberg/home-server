@@ -16,3 +16,14 @@
 ## Deployment Notes
 
 <!-- Manual deployment commands, rollback notes, or "None". -->
+
+## Agent Evidence (when applicable)
+
+<!-- Link the work item and specification revision; name the full or light path
+and rationale. For gated work, link the existing Gate A approval and leave Gate B
+pending until the human accepts this candidate's evidence. -->
+
+<!-- Record candidate commit/diff identity, criteria covered, commands and results,
+skipped checks with reasons, independent reviewers, unresolved findings and claims
+not established. Distinguish static checks from live verification. Do not paste
+private topology, credentials, or raw operational logs. -->

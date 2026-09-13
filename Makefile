@@ -33,6 +33,8 @@ help:
 		'Available targets:' \
 		'  ci             Run all local checks used by GitHub Actions.' \
 		'  public-check   Run CI checks, secret scans, history scan, and redaction checks.' \
+		'  ai-harness-check Validate agents, skills, and deterministic evidence.' \
+		'  agent-pipeline-check Validate pipeline agent packaging.' \
 		'  lint           Run workflow and YAML linting.' \
 		'  lint-actions   Lint GitHub Actions workflows with actionlint.' \
 		'  lint-yaml      Lint YAML values, manifests, and workflows with yamllint.' \
@@ -73,7 +75,7 @@ help:
 		'  staging-verify-flux Check Flux and platform smoke in the staging cluster.' \
 		'  staging-verify       Run staging VM and Flux acceptance checks.'
 
-ci: lint auth-policy-check upgrade-policy-check longhorn-backup-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
+ci: ai-harness-check lint auth-policy-check upgrade-policy-check longhorn-backup-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -272,3 +274,12 @@ staging-verify-flux:
 
 staging-verify:
 	@bash scripts/kairos-kubevirt-check.sh staging
+
+.PHONY: agent-pipeline-check ai-harness-check
+agent-pipeline-check:
+	python3 scripts/check-agent-pipeline.py
+
+ai-harness-check: agent-pipeline-check
+	python3 scripts/check-agent-skills.py
+	python3 -m unittest discover --start-directory tests/ai_harness --verbose
+	python3 scripts/review-evidence.py --output /tmp/home-server-review-evidence.json

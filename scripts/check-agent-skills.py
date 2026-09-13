@@ -107,6 +107,33 @@ def validate_skill(skill_dir: Path, errors: list[str]) -> None:
     else:
         validate_links(skill_dir, skill_file, body, errors)
 
+    # References are progressively loaded, but must be complete at packaging time.
+    for reference in sorted(skill_dir.rglob('*.md')):
+        if reference != skill_file:
+            validate_links(skill_dir, reference, reference.read_text(encoding='utf-8'), errors)
+
+    header = re.match(r'\A---\n(.*?)\n---(?:\n|$)', skill_file.read_text(encoding='utf-8'), re.S)
+    frontmatter = header[1] if header else ''
+    dependency = re.search(r'^[ \t]+requires-skills:[ \t]*(.*)$', frontmatter, re.M)
+    if dependency:
+        for name in dependency.group(1).strip('\"\'').split(','):
+            name = name.strip()
+            if not name and not dependency.group(1).strip('\"\' '):
+                continue
+            if not NAME_PATTERN.fullmatch(name) or not (SKILLS_ROOT / name / 'SKILL.md').is_file():
+                fail(errors, skill_file, f'unresolved skill dependency: {name!r}')
+
+    invocation = skill_dir / 'agents' / 'openai.yaml'
+    if invocation.is_file():
+        # This repository supports only the optional invocation policy here.
+        # Broader host metadata needs deliberate parser support, not silent acceptance.
+        lines = [line for line in invocation.read_text().splitlines()
+                 if line.strip() and not line.lstrip().startswith('#')]
+        if (len(lines) != 2 or lines[0] != 'policy:'
+                or lines[1] not in ('  allow_implicit_invocation: true',
+                                    '  allow_implicit_invocation: false')):
+            fail(errors, invocation, 'expected policy.allow_implicit_invocation boolean only')
+
 
 def main() -> int:
     errors: list[str] = []

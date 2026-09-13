@@ -451,3 +451,17 @@ the agent plan during the configured maintenance windows.
 kubectl -n system-upgrade get plans -o wide
 kubectl -n system-upgrade get jobs
 ```
+
+## Agent-assisted development
+
+The [AI harness](docs/ai-harness.md) combines AIHero shaping skills with a
+specialist delivery pipeline and the repository's deterministic platform checks.
+Start with `pipeline-coordinator` for development or `wayfinder` for a large
+effort with unresolved decisions.
+Codex roles live under `.codex/agents/`, with skills under `.agents/skills/`.
+Thin Copilot entry points support GitHub fixes; see the
+[Codex-first layout](docs/ai-harness.md#codex-first-layout). Compatible hosts discover
+skills automatically; other hosts can read
+the selected `SKILL.md` directly. Run `make ai-harness-check` to validate the
+harness locally. See [tracker conventions](docs/agents/issue-tracker.md) for
+issue, approval, and handoff records.

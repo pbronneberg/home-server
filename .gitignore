@@ -54,3 +54,6 @@ override.tf.json
 #Helm
 Chart.lock
 *.tgz
+
+# Python validation caches.
+__pycache__/

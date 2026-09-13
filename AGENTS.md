@@ -5,5 +5,10 @@ Follow the shared repository instructions in
 
 Also follow more specific instruction files when they apply.
 
-Treat `.github/agents/` as active specialized-agent guidance and read the
-relevant agent file before work that touches its domain.
+When taking a specialist role, read its `.codex/agents/*.toml` file and follow
+its `developer_instructions`.
+Mandatory domain instructions apply regardless of role and are routed by the
+shared repository instructions.
+
+Discover reusable workflows in `.agents/skills/`; use the shared repository
+instructions to select the delivery path.
