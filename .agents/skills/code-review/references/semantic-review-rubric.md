@@ -1,6 +1,9 @@
 # Semantic Review Rubric
 
-Use this rubric only after deterministic evidence has been collected. Do not turn conclusively decidable rules back into prompt-only checks.
+During candidate review, apply this rubric after collecting available deterministic
+evidence and recording unavailable checks. During specification planning, use
+its questions to define the evidence that will be needed; execution is not yet
+required. Do not turn conclusively decidable rules back into prompt-only checks.
 
 ## Severity
 
@@ -14,6 +17,13 @@ Use this rubric only after deterministic evidence has been collected. Do not tur
 - Does the solution match the home-lab use case, or add machinery without a proportionate operational benefit?
 - Are boundaries, ownership, and dependencies understandable from the repository?
 - Is the change additive and reversible where practical?
+
+## Security and trust boundaries
+
+- What assets and trust boundaries are affected, and which plausible threats does the change introduce or worsen?
+- Which existing controls address those threats, and what evidence demonstrates their effectiveness?
+- Assess credentials, permission scope, secret handling, network exposure, and recovery where relevant. Distinguish verified controls from assumptions and missing evidence.
+- Report concrete risks with severity, supporting evidence, and an owning stage. Static checks alone do not establish security or compliance assurances.
 
 ## Migration and state
 
@@ -39,3 +49,5 @@ Use this rubric only after deterministic evidence has been collected. Do not tur
 - Do not repeat secret values.
 - Do not claim checks passed without observed evidence.
 - Explain why a deterministic warning is acceptable before approving it.
+
+- Can a human assess an agent-authored change from its diff and verification output without reconstructing hidden reasoning or local state?

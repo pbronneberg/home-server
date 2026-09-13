@@ -4,6 +4,16 @@ on:
   pull_request:
     paths:
       - ".agents/**"
+      - ".codex/**"
+      - ".github/agents/**"
+      - ".github/instructions/**"
+      - ".github/copilot-instructions.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - "AGENTS.md"
+      - "Makefile"
+      - "README.md"
+      - "docs/agents/**"
+      - "scripts/check-agent-pipeline.py"
       - "scripts/check-agent-skills.py"
       - "scripts/review-evidence.py"
       - "tests/ai_harness/**"
@@ -15,6 +25,16 @@ on:
       - main
     paths:
       - ".agents/**"
+      - ".codex/**"
+      - ".github/agents/**"
+      - ".github/instructions/**"
+      - ".github/copilot-instructions.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - "AGENTS.md"
+      - "Makefile"
+      - "README.md"
+      - "docs/agents/**"
+      - "scripts/check-agent-pipeline.py"
       - "scripts/check-agent-skills.py"
       - "scripts/review-evidence.py"
       - "tests/ai_harness/**"
@@ -39,14 +59,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Validate Agent Skills
-        run: python3 scripts/check-agent-skills.py
-      - name: Test deterministic evidence analyzer
-        run: python3 -m unittest discover --start-directory tests/ai_harness --verbose
-      - name: Collect deterministic review evidence
+      - name: Validate harness and collect deterministic evidence
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
-        run: python3 scripts/review-evidence.py --output /tmp/home-server-review-evidence.json
+        run: make ai-harness-check
       - name: Show evidence summary
         if: always()
         run: cat /tmp/home-server-review-evidence.json || true

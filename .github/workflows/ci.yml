@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - ".github/**"
+      - ".agents/**"
+      - ".codex/**"
+      - "tests/ai_harness/**"
       - ".devcontainer/**"
       - ".sops.yaml"
       - "AGENTS.md"
@@ -20,6 +23,9 @@ on:
       - main
     paths:
       - ".github/**"
+      - ".agents/**"
+      - ".codex/**"
+      - "tests/ai_harness/**"
       - ".devcontainer/**"
       - ".sops.yaml"
       - "AGENTS.md"

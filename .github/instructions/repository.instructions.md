@@ -21,8 +21,9 @@ surfaces.
   AGENTS files.
 - Keep `.github/copilot-instructions.md` as a thin entry point for GitHub
   Copilot.
-- Do not duplicate full instruction blocks across `AGENTS.md`,
-  `.github/copilot-instructions.md`, and `.github/instructions/`.
+- Keep agent instructions in `.codex/agents/*.toml` and skills in `.agents/skills/`.
+  `.github/agents/` contains thin Copilot entry points that load the Codex roles.
+- Do not duplicate full instruction blocks across entry points or role adapters.
 - When adding new guidance, put it in the narrowest applicable
   `.github/instructions/*.instructions.md` file.
 
@@ -68,7 +69,25 @@ surfaces.
 - Avoid workflows that deploy to the home cluster without an explicit manual
   gate and a documented rollback path.
 
-## Specialized Agent Guidance
+## Domain Instructions and Specialist Agents
 
-- Read `.github/agents/home-platform.agent.md` for Kubernetes, Helm, storage,
-  DNS, ingress, TLS, observability, and operational maintenance.
+- For Kubernetes, Helm, Flux, storage, DNS, ingress, TLS, observability, and
+  operational maintenance, read [home-platform.instructions.md](home-platform.instructions.md).
+  These rules apply to every agent, including implementation and refactoring;
+  do not wait until platform review to load them.
+- For shared authentication and Grafana routing, also read
+  [platform-auth.instructions.md](platform-auth.instructions.md). Follow this
+  semantic routing even when the changed file falls outside an `applyTo` filter.
+- Use domain skills for platform and security expertise within the current role.
+  Agent files define the four distinct responsibilities: coordination,
+  specification, implementation, and independent review. Skills provide task
+  procedures; instructions own mandatory rules. Read a role when acting as it.
+
+## Agent Delivery Workflow
+
+For development work, follow `.github/instructions/agent-pipeline.instructions.md`.
+It defines proportional routing, risk-based gates, and specialist handoffs.
+Discover reusable skills under `.agents/skills/` and use
+`docs/agents/issue-tracker.md` for work records. Run `make ai-harness-check`
+when changing agents, skills, or harness guidance. Harness rules do not grant
+permission to change live systems or publish to external services.
