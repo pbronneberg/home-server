@@ -2,6 +2,11 @@
 set -euo pipefail
 
 domain_source="clusters/home/infrastructure.yaml"
+search_roots=(
+  "application"
+  "clusters/home"
+  "private/flux/home"
+)
 expected_domain="$(
   python3 - "$domain_source" <<'PY'
 import sys
@@ -26,7 +31,7 @@ service_address_files=()
 while IFS= read -r path; do
   service_address_files+=("$path")
 done < <(
-  find clusters/home -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 \
+  find "${search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 2>/dev/null \
     | xargs -0 -r grep -l 'svc\.' \
     | sort
 )
