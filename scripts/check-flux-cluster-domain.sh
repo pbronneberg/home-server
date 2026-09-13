@@ -5,6 +5,10 @@ domain_source="clusters/home/infrastructure.yaml"
 expected_domain="$(
   awk '/KAIROS_CLUSTER_DOMAIN:/ { print $2; exit }' "$domain_source"
 )"
+expected_domain="${expected_domain#\"}"
+expected_domain="${expected_domain%\"}"
+expected_domain="${expected_domain#\'}"
+expected_domain="${expected_domain%\'}"
 
 if [ -z "$expected_domain" ]; then
   printf '%s\n' '[error] Unable to determine the home cluster domain.' >&2
