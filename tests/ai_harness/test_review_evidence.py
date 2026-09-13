@@ -17,7 +17,8 @@ spec.loader.exec_module(module)
 
 def commit(root: Path, message: str) -> str:
     subprocess.run(["git", "add", "."], cwd=root, check=True)
-    subprocess.run(["git", "commit", "-qm", message], cwd=root, check=True)
+    # Fixture commits must not invoke a developer's signing key or agent.
+    subprocess.run(["git", "-c", "commit.gpgsign=false", "commit", "-qm", message], cwd=root, check=True)
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
 
 
