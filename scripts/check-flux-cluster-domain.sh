@@ -8,6 +8,8 @@ search_roots=(
   "private/flux/home"
 )
 existing_search_roots=()
+service_address_files=()
+bad_refs=()
 expected_domain="$(
   python3 - "$domain_source" <<'PY'
 import sys
@@ -28,24 +30,6 @@ with open(sys.argv[1], encoding="utf-8") as handle:
             break
 PY
 )"
-service_address_files=()
-while IFS= read -r path; do
-  service_address_files+=("$path")
-done < <(
-  for root in "${search_roots[@]}"; do
-    if [ -d "$root" ]; then
-      existing_search_roots+=("$root")
-    fi
-  done
-
-  if [ "${#existing_search_roots[@]}" -eq 0 ]; then
-    exit 0
-  fi
-
-  find "${existing_search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 \
-    | xargs -0 -r grep -l 'svc\.' \
-    | sort
-)
 
 if [ -z "$expected_domain" ]; then
   printf '%s\n' '[error] Unable to determine the home cluster domain.' >&2
@@ -53,18 +37,32 @@ if [ -z "$expected_domain" ]; then
   exit 1
 fi
 
-bad_refs=""
-if [ "${#service_address_files[@]}" -gt 0 ]; then
-  bad_refs="$(
-    grep -nE 'svc\.cluster\.local' "${service_address_files[@]}" || true
-  )"
+for root in "${search_roots[@]}"; do
+  if [ -d "$root" ]; then
+    existing_search_roots+=("$root")
+  fi
+done
+
+if [ "${#existing_search_roots[@]}" -gt 0 ]; then
+  while IFS= read -r -d '' path; do
+    if grep -q 'svc\.' "$path"; then
+      service_address_files+=("$path")
+      while IFS= read -r match; do
+        if [ -n "$match" ]; then
+          bad_refs+=("$match")
+        fi
+      done < <(grep -HnE 'svc\.cluster\.local' "$path" || true)
+    fi
+  done < <(
+    find "${existing_search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0
+  )
 fi
 
-if [ -n "$bad_refs" ]; then
+if [ "${#bad_refs[@]}" -gt 0 ]; then
   printf '%s\n' '[error] Home cluster service addresses must use the configured K3s cluster domain.' >&2
   printf '%s\n' "Source: $domain_source" >&2
   printf '%s\n' "Expected service suffix: svc.${expected_domain}" >&2
-  printf '%s\n' "$bad_refs" >&2
+  printf '%s\n' "${bad_refs[@]}" >&2
   exit 1
 fi
 
