@@ -156,6 +156,28 @@ class CheckFluxClusterDomainTests(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("private/flux/home/example.yaml:4", result.stderr)
 
+    def test_flags_cluster_local_with_port_suffix(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(
+                root / "private/flux/home/example.yaml",
+                """
+                apiVersion: v1
+                kind: ConfigMap
+                data:
+                  receiver: webhook-receiver.flux-system.svc.cluster.local:80
+                """,
+            )
+            result = subprocess.run(
+                ["bash", str(SCRIPT)],
+                cwd=root,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("private/flux/home/example.yaml:4", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
