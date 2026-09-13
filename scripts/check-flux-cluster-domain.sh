@@ -17,13 +17,11 @@ done
 
 if [ "${#existing_search_roots[@]}" -gt 0 ]; then
   while IFS= read -r -d '' path; do
-    if grep -q 'svc\.' "$path"; then
-      while IFS= read -r match; do
-        if [ -n "$match" ]; then
-          bad_refs+=("$match")
-        fi
-      done < <(grep -HnE 'svc\.cluster\.local' "$path" || true)
-    fi
+    while IFS= read -r match; do
+      if [ -n "$match" ]; then
+        bad_refs+=("$match")
+      fi
+    done < <(grep -HnE 'svc\.cluster\.local' "$path" || true)
   done < <(
     find "${existing_search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0
   )
