@@ -7,6 +7,7 @@ search_roots=(
   "clusters/home"
   "private/flux/home"
 )
+existing_search_roots=()
 expected_domain="$(
   python3 - "$domain_source" <<'PY'
 import sys
@@ -31,7 +32,17 @@ service_address_files=()
 while IFS= read -r path; do
   service_address_files+=("$path")
 done < <(
-  find "${search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 2>/dev/null \
+  for root in "${search_roots[@]}"; do
+    if [ -d "$root" ]; then
+      existing_search_roots+=("$root")
+    fi
+  done
+
+  if [ "${#existing_search_roots[@]}" -eq 0 ]; then
+    exit 0
+  fi
+
+  find "${existing_search_roots[@]}" -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 \
     | xargs -0 -r grep -l 'svc\.' \
     | sort
 )
