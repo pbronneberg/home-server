@@ -73,7 +73,7 @@ spec:
       KAIROS_AGENT_HOSTNAME: kairos-agent
       KAIROS_AGENT_INSTALL_DEVICE: /dev/vda
       KAIROS_AGENT_NODE_NAME: kairos-agent
-      KAIROS_AGENT_K3S_URL: https://kairos-k3s-api.vms.svc.cluster.local:6443
+      KAIROS_AGENT_K3S_URL: https://kairos-k3s-api.vms.svc.home-server.bronneberg.local:6443
       KAIROS_CLUSTER_CIDR: 10.244.0.0/16
       KAIROS_SERVICE_CIDR: 10.245.0.0/16
       KAIROS_CLUSTER_DNS: 10.245.0.10

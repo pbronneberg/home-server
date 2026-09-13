@@ -71,7 +71,7 @@ data:
     RECEIVER_NAMESPACE = os.environ.get("FLUX_RECEIVER_NAMESPACE", "flux-system")
     RECEIVER_HOST = os.environ.get(
         "FLUX_RECEIVER_HOST",
-        "webhook-receiver.flux-system.svc.cluster.local",
+        "webhook-receiver.flux-system.svc.home-server.bronneberg.local",
     )
     RECEIVER_PORT = int(os.environ.get("FLUX_RECEIVER_PORT", "80"))
     TARGET_NAMESPACE = os.environ.get("TARGET_NAMESPACE", "flux-system")
