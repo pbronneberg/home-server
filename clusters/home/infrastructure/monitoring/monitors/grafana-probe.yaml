@@ -7,7 +7,7 @@ spec:
   interval: 60s
   module: http_2xx
   prober:
-    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+    url: blackbox-exporter.monitoring.svc.home-server.bronneberg.local:9115
   targets:
     staticConfig:
       static:
