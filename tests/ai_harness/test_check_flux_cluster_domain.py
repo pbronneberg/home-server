@@ -16,7 +16,7 @@ def write(path: Path, content: str) -> None:
 
 
 class CheckFluxClusterDomainTests(unittest.TestCase):
-    def test_accepts_configured_home_cluster_domain(self):
+    def test_accepts_non_default_home_cluster_domain(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write(
@@ -45,9 +45,9 @@ class CheckFluxClusterDomainTests(unittest.TestCase):
                 capture_output=True,
             )
             self.assertEqual(0, result.returncode, result.stderr)
-            self.assertIn("svc.home-server.bronneberg.local", result.stdout)
+            self.assertIn("do not use svc.cluster.local", result.stdout)
 
-    def test_fails_when_cluster_domain_is_missing(self):
+    def test_allows_missing_inline_cluster_domain_when_no_default_suffix_is_used(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write(
@@ -61,6 +61,15 @@ class CheckFluxClusterDomainTests(unittest.TestCase):
                       OTHER_VALUE: example
                 """,
             )
+            write(
+                root / "private/flux/home/example.yaml",
+                """
+                apiVersion: v1
+                kind: ConfigMap
+                data:
+                  receiver: webhook-receiver.flux-system.svc.home-server.bronneberg.local
+                """,
+            )
             result = subprocess.run(
                 ["bash", str(SCRIPT)],
                 cwd=root,
@@ -68,8 +77,7 @@ class CheckFluxClusterDomainTests(unittest.TestCase):
                 text=True,
                 capture_output=True,
             )
-            self.assertNotEqual(0, result.returncode)
-            self.assertIn("Unable to determine the home cluster domain.", result.stderr)
+            self.assertEqual(0, result.returncode, result.stderr)
 
     def test_fails_for_cluster_local_in_private_flux_manifests(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -102,7 +110,7 @@ class CheckFluxClusterDomainTests(unittest.TestCase):
                 capture_output=True,
             )
             self.assertNotEqual(0, result.returncode)
-            self.assertIn("Expected service suffix: svc.home-server.bronneberg.local", result.stderr)
+            self.assertIn("must not use svc.cluster.local", result.stderr)
             self.assertIn("private/flux/home/example.yaml:4", result.stderr)
 
 

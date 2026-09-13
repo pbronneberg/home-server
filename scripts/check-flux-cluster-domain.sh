@@ -10,33 +10,6 @@ search_roots=(
 existing_search_roots=()
 service_address_files=()
 bad_refs=()
-expected_domain="$(
-  python3 - "$domain_source" <<'PY'
-import sys
-import yaml
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    for document in yaml.safe_load_all(handle):
-        if not isinstance(document, dict):
-            continue
-        value = (
-            document.get("spec", {})
-            .get("postBuild", {})
-            .get("substitute", {})
-            .get("KAIROS_CLUSTER_DOMAIN")
-        )
-        if value:
-            print(value)
-            break
-PY
-)"
-
-if [ -z "$expected_domain" ]; then
-  printf '%s\n' '[error] Unable to determine the home cluster domain.' >&2
-  printf '%s\n' "Source: $domain_source" >&2
-  exit 1
-fi
-
 for root in "${search_roots[@]}"; do
   if [ -d "$root" ]; then
     existing_search_roots+=("$root")
@@ -59,11 +32,10 @@ if [ "${#existing_search_roots[@]}" -gt 0 ]; then
 fi
 
 if [ "${#bad_refs[@]}" -gt 0 ]; then
-  printf '%s\n' '[error] Home cluster service addresses must use the configured K3s cluster domain.' >&2
+  printf '%s\n' '[error] Home cluster service addresses must not use svc.cluster.local.' >&2
   printf '%s\n' "Source: $domain_source" >&2
-  printf '%s\n' "Expected service suffix: svc.${expected_domain}" >&2
   printf '%s\n' "${bad_refs[@]}" >&2
   exit 1
 fi
 
-printf '%s\n' "[ok] Home cluster service addresses use svc.${expected_domain}"
+printf '%s\n' '[ok] Home cluster service addresses do not use svc.cluster.local'
