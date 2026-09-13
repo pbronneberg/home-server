@@ -3,22 +3,42 @@ set -euo pipefail
 
 domain_source="clusters/home/infrastructure.yaml"
 expected_domain="$(
-  awk '/KAIROS_CLUSTER_DOMAIN:/ { print $2; exit }' "$domain_source"
+  python3 - "$domain_source" <<'PY'
+import sys
+import yaml
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    for document in yaml.safe_load_all(handle):
+        if not isinstance(document, dict):
+            continue
+        value = (
+            document.get("spec", {})
+            .get("postBuild", {})
+            .get("substitute", {})
+            .get("KAIROS_CLUSTER_DOMAIN")
+        )
+        if value:
+            print(value)
+            break
+PY
 )"
-expected_domain="${expected_domain#\"}"
-expected_domain="${expected_domain%\"}"
-expected_domain="${expected_domain#\'}"
-expected_domain="${expected_domain%\'}"
-service_address_files=(
-  "clusters/home/flux-system/gotk-components.yaml"
-  "clusters/home/infrastructure.yaml"
-  "clusters/home/infrastructure/flux-webhook/github-pr-event-bridge.yaml"
-  "clusters/home/infrastructure/monitoring/monitors/grafana-probe.yaml"
+service_address_files=()
+while IFS= read -r path; do
+  service_address_files+=("$path")
+done < <(
+  find clusters/home -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 \
+    | xargs -0 -r grep -lE 'svc\.[A-Za-z0-9.-]+' \
+    | sort
 )
 
 if [ -z "$expected_domain" ]; then
   printf '%s\n' '[error] Unable to determine the home cluster domain.' >&2
   printf '%s\n' "Source: $domain_source" >&2
+  exit 1
+fi
+
+if [ "${#service_address_files[@]}" -eq 0 ]; then
+  printf '%s\n' '[error] No home cluster service address manifests found.' >&2
   exit 1
 fi
 
