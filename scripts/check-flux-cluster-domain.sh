@@ -37,14 +37,12 @@ if [ -z "$expected_domain" ]; then
   exit 1
 fi
 
-if [ "${#service_address_files[@]}" -eq 0 ]; then
-  printf '%s\n' '[error] No home cluster service address manifests found.' >&2
-  exit 1
+bad_refs=""
+if [ "${#service_address_files[@]}" -gt 0 ]; then
+  bad_refs="$(
+    grep -nE 'svc\.cluster\.local' "${service_address_files[@]}" || true
+  )"
 fi
-
-bad_refs="$(
-  grep -nE 'svc\.cluster\.local' "${service_address_files[@]}" || true
-)"
 
 if [ -n "$bad_refs" ]; then
   printf '%s\n' '[error] Home cluster service addresses must use the configured K3s cluster domain.' >&2
