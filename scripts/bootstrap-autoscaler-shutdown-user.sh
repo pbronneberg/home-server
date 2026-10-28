@@ -8,8 +8,8 @@ fi
 
 sops_bin="${SOPS:-sops}"
 sops_age_key_file="${SOPS_AGE_KEY_FILE:-.sops/age/keys.txt}"
-secret_file="${HOMELAB_AUTOSCALER_NODES_SOPS_FILE:-private/flux/home/homelab-autoscaler-nodes.sops.yaml}"
-ssh_source_user="${AUTOSCALER_BOOTSTRAP_SSH_USER:-kairos}"
+secret_file="${MANUAL_WORKER_POWER_SOPS_FILE:-private/flux/home/homelab-autoscaler-nodes.sops.yaml}"
+ssh_source_user="${MANUAL_WORKER_BOOTSTRAP_SSH_USER:-kairos}"
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -29,16 +29,16 @@ if [ ! -f "$sops_age_key_file" ]; then
 fi
 
 if [ ! -f "$secret_file" ]; then
-  printf 'missing autoscaler node secret: %s\n' "$secret_file" >&2
+  printf 'missing manual worker power Secret: %s\n' "$secret_file" >&2
   exit 1
 fi
 
-workdir="$(mktemp -d /private/tmp/autoscaler-bootstrap.XXXXXX)"
+workdir="$(mktemp -d /private/tmp/manual-worker-bootstrap.XXXXXX)"
 trap 'rm -rf "$workdir"' EXIT
 
 public_key_file="$workdir/shutdown_id_ed25519.pub"
 private_key_file="$workdir/shutdown_id_ed25519"
-remote_script="$workdir/bootstrap-autoscaler-shutdown.sh"
+remote_script="$workdir/bootstrap-manual-worker-lifecycle.sh"
 
 SOPS_AGE_KEY_FILE="$sops_age_key_file" \
   "$sops_bin" --decrypt --extract '["stringData"]["ssh_public_key"]' "$secret_file" > "$public_key_file"
@@ -50,7 +50,7 @@ cat > "$remote_script" <<'REMOTE'
 #!/bin/sh
 set -eu
 
-user=autoscaler-shutdown
+user=manual-worker-lifecycle
 
 if ! id "$user" >/dev/null 2>&1; then
   if command -v useradd >/dev/null 2>&1; then
@@ -71,18 +71,18 @@ fi
 
 group="$(id -gn "$user")"
 install -d -m 0700 -o "$user" -g "$group" "$home/.ssh"
-install -m 0600 -o "$user" -g "$group" /tmp/autoscaler-shutdown.pub "$home/.ssh/authorized_keys"
+install -m 0600 -o "$user" -g "$group" /tmp/manual-worker-lifecycle.pub "$home/.ssh/authorized_keys"
 
-cat > /etc/sudoers.d/autoscaler-shutdown <<'EOF'
-autoscaler-shutdown ALL=(root) NOPASSWD: /sbin/poweroff, /usr/sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff
+cat > /etc/sudoers.d/manual-worker-lifecycle <<'EOF'
+manual-worker-lifecycle ALL=(root) NOPASSWD: /sbin/poweroff, /usr/sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff
 EOF
 
-chmod 0440 /etc/sudoers.d/autoscaler-shutdown
+chmod 0440 /etc/sudoers.d/manual-worker-lifecycle
 if command -v visudo >/dev/null 2>&1; then
-  visudo -cf /etc/sudoers.d/autoscaler-shutdown >/dev/null
+  visudo -cf /etc/sudoers.d/manual-worker-lifecycle >/dev/null
 fi
 
-rm -f /tmp/autoscaler-shutdown.pub /tmp/bootstrap-autoscaler-shutdown.sh
+rm -f /tmp/manual-worker-lifecycle.pub /tmp/bootstrap-manual-worker-lifecycle.sh
 REMOTE
 chmod 0700 "$remote_script"
 
@@ -99,19 +99,19 @@ for node in "${nodes[@]}"; do
     -o ConnectTimeout=5 \
     -o UserKnownHostsFile="$known_hosts" \
     -o StrictHostKeyChecking=yes \
-    "$public_key_file" "$ssh_source_user@$node:/tmp/autoscaler-shutdown.pub"
+    "$public_key_file" "$ssh_source_user@$node:/tmp/manual-worker-lifecycle.pub"
   scp -q \
     -o BatchMode=yes \
     -o ConnectTimeout=5 \
     -o UserKnownHostsFile="$known_hosts" \
     -o StrictHostKeyChecking=yes \
-    "$remote_script" "$ssh_source_user@$node:/tmp/bootstrap-autoscaler-shutdown.sh"
+    "$remote_script" "$ssh_source_user@$node:/tmp/bootstrap-manual-worker-lifecycle.sh"
   ssh \
     -o BatchMode=yes \
     -o ConnectTimeout=5 \
     -o UserKnownHostsFile="$known_hosts" \
     -o StrictHostKeyChecking=yes \
-    "$ssh_source_user@$node" 'sudo /bin/sh /tmp/bootstrap-autoscaler-shutdown.sh'
+    "$ssh_source_user@$node" 'sudo /bin/sh /tmp/bootstrap-manual-worker-lifecycle.sh'
 
   printf '%s bootstrapped\n' "$node"
 
@@ -121,5 +121,5 @@ for node in "${nodes[@]}"; do
     -o ConnectTimeout=5 \
     -o UserKnownHostsFile="$known_hosts" \
     -o StrictHostKeyChecking=yes \
-    "autoscaler-shutdown@$node" 'id -un && sudo -n -l /sbin/poweroff >/dev/null && echo sudo-poweroff-listed'
+    "manual-worker-lifecycle@$node" 'id -un && sudo -n -l /sbin/poweroff >/dev/null && echo sudo-poweroff-listed'
 done

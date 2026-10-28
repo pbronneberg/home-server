@@ -11,7 +11,7 @@ fi
 inventory="${KAIROS_HARDWARE_NODES:-clusters/home/bootstrap/kairos/hardware/nodes.yaml}"
 template="${KAIROS_HARDWARE_TEMPLATE:-clusters/home/bootstrap/kairos/hardware/user-data.agent.yaml}"
 secrets_file="${KAIROS_BOOTSTRAP_SOPS_FILE:-private/flux/home/kairos-bootstrap-values.sops.yaml}"
-autoscaler_nodes_file="${HOMELAB_AUTOSCALER_NODES_SOPS_FILE:-private/flux/home/homelab-autoscaler-nodes.sops.yaml}"
+manual_worker_power_file="${MANUAL_WORKER_POWER_SOPS_FILE:-private/flux/home/homelab-autoscaler-nodes.sops.yaml}"
 out_dir="${KAIROS_RENDER_OUT_DIR:-.local/kairos}/${node}"
 sops_bin="${SOPS:-sops}"
 yq_bin="${YQ:-yq}"
@@ -64,11 +64,9 @@ data_disk_label="kairos-data"
 data_mount_point="$(node_value '.dataDisk.mountPoint // "/usr/local/data"')"
 data_longhorn_path="$(node_value '.dataDisk.longhornPath // ""')"
 data_local_path="$(node_value '.dataDisk.localPath // ""')"
-wake_on_lan_enabled="$(node_value '.wakeOnLan.enabled // false')"
-enable_wake_on_lan_network_stage=""
-autoscaler_shutdown_public_key=""
-autoscaler_shutdown_user_block=""
-autoscaler_shutdown_boot_stage=""
+manual_worker_power_public_key=""
+manual_worker_power_user_block=""
+manual_worker_power_boot_stage=""
 k3s_args="$(
   printf '    - "--node-name=%s"\n' "$node_name"
   KAIROS_NODE="$node" "$yq_bin" e -r '
@@ -109,38 +107,6 @@ if [ "$data_disk_enabled" = "true" ]; then
   fi
 fi
 
-if [ "$wake_on_lan_enabled" = "true" ]; then
-  enable_wake_on_lan_network_stage="$(
-    printf '    - name: Enable Wake-on-LAN with systemd-networkd\n'
-    printf '      commands:\n'
-    printf '        - |\n'
-    printf '          set -eu\n'
-    printf '          mkdir -p /etc/systemd/network\n'
-    printf '          cat > /etc/systemd/network/20-kairos-wake-on-lan.link <<'"'"'EOF'"'"'\n'
-    printf '          [Match]\n'
-    printf '          OriginalName=en* eth*\n'
-    printf '\n'
-    printf '          [Link]\n'
-    printf '          WakeOnLan=magic\n'
-    printf '          EOF\n'
-    printf '\n'
-    printf '          if ! command -v networkctl >/dev/null 2>&1; then\n'
-    printf '            echo "warning: networkctl not available; Wake-on-LAN link config written only" >&2\n'
-    printf '            exit 0\n'
-    printf '          fi\n'
-    printf '\n'
-    printf '          udevadm control --reload || true\n'
-    printf '          udevadm trigger --subsystem-match=net --action=add || true\n'
-    printf '\n'
-    printf '          networkctl reload || true\n'
-    printf '          networkctl list --no-legend --no-pager | awk '"'"'$2 != "lo" && $3 == "ether" { print $2 }'"'"' | while IFS= read -r link; do\n'
-    printf '            [ -n "$link" ] || continue\n'
-    printf '            networkctl reconfigure "$link" || true\n'
-    printf '            networkctl status "$link" --no-pager | grep -F "Wake On LAN:" || true\n'
-    printf '          done\n'
-  )"
-fi
-
 k3s_token="$(
   SOPS_AGE_KEY_FILE="$sops_age_key_file" \
     "$sops_bin" --decrypt --extract '["stringData"]["KAIROS_K3S_TOKEN"]' "$secrets_file"
@@ -151,31 +117,31 @@ if [ -z "$k3s_token" ]; then
   exit 1
 fi
 
-if [ -f "$autoscaler_nodes_file" ]; then
-  autoscaler_shutdown_public_key="$(
+if [ -f "$manual_worker_power_file" ]; then
+  manual_worker_power_public_key="$(
     SOPS_AGE_KEY_FILE="$sops_age_key_file" \
-      "$sops_bin" --decrypt --extract '["stringData"]["ssh_public_key"]' "$autoscaler_nodes_file" 2>/dev/null || true
+      "$sops_bin" --decrypt --extract '["stringData"]["ssh_public_key"]' "$manual_worker_power_file" 2>/dev/null || true
   )"
-  autoscaler_shutdown_public_key="${autoscaler_shutdown_public_key//$'\r'/}"
+  manual_worker_power_public_key="${manual_worker_power_public_key//$'\r'/}"
 fi
 
-if [ -n "$autoscaler_shutdown_public_key" ] && [ "$autoscaler_shutdown_public_key" != "null" ]; then
-  autoscaler_shutdown_user_block="$(
-    printf '  - name: autoscaler-shutdown\n'
+if [ -n "$manual_worker_power_public_key" ] && [ "$manual_worker_power_public_key" != "null" ]; then
+  manual_worker_power_user_block="$(
+    printf '  - name: manual-worker-lifecycle\n'
     printf '    lock_passwd: true\n'
     printf '    shell: /bin/sh\n'
     printf '    ssh_authorized_keys:\n'
-    printf '      - %s\n' "$autoscaler_shutdown_public_key"
+    printf '      - %s\n' "$manual_worker_power_public_key"
   )"
-  autoscaler_shutdown_boot_stage="$(
-    printf '    - name: Configure autoscaler shutdown user\n'
+  manual_worker_power_boot_stage="$(
+    printf '    - name: Configure manual worker lifecycle poweroff user\n'
     printf '      commands:\n'
     printf '        - |\n'
     printf '          set -eu\n'
-    printf '          cat > /etc/sudoers.d/autoscaler-shutdown <<'"'"'EOF'"'"'\n'
-    printf '          autoscaler-shutdown ALL=(root) NOPASSWD: /sbin/poweroff, /usr/sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff\n'
+    printf '          cat > /etc/sudoers.d/manual-worker-lifecycle <<'"'"'EOF'"'"'\n'
+    printf '          manual-worker-lifecycle ALL=(root) NOPASSWD: /sbin/poweroff, /usr/sbin/poweroff, /usr/bin/systemctl poweroff, /bin/systemctl poweroff\n'
     printf '          EOF\n'
-    printf '          chmod 0440 /etc/sudoers.d/autoscaler-shutdown\n'
+    printf '          chmod 0440 /etc/sudoers.d/manual-worker-lifecycle\n'
   )"
 fi
 
@@ -212,9 +178,8 @@ replace_placeholder KAIROS_K3S_TOKEN "$k3s_token"
 replace_placeholder KAIROS_K3S_URL "$k3s_url"
 replace_placeholder KAIROS_NODE_NAME "$node_name"
 replace_placeholder KAIROS_SSH_GITHUB_USER "$ssh_github_user"
-replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_USER "$autoscaler_shutdown_user_block"
-replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_BOOT_STAGE "$autoscaler_shutdown_boot_stage"
-replace_line_placeholder KAIROS_WAKE_ON_LAN_NETWORK_STAGE "$enable_wake_on_lan_network_stage"
+replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_USER "$manual_worker_power_user_block"
+replace_line_placeholder KAIROS_AUTOSCALER_SHUTDOWN_BOOT_STAGE "$manual_worker_power_boot_stage"
 replace_line_placeholder KAIROS_K3S_ARGS "$k3s_args"
 replace_placeholder KAIROS_DATA_DISK_ENABLED "$data_disk_enabled"
 replace_placeholder KAIROS_DATA_DISK_DEVICE "$data_disk_device"

@@ -35,10 +35,11 @@ token.
 
 If `private/flux/home/homelab-autoscaler-nodes.sops.yaml` exists and contains
 `stringData.ssh_public_key`, the renderer also adds a restricted
-`autoscaler-shutdown` SSH user. This keeps autoscaler shutdown access
+`manual-worker-lifecycle` SSH user. This keeps lifecycle poweroff access
 reproducible across Kairos reinstalls without using an operator's personal SSH
 key. Refresh the pinned SSH host key in that SOPS Secret after reinstalling a
-node because Kairos host keys may change.
+node because Kairos host keys may change. The account is restricted to the
+poweroff commands listed in its sudoers file; it cannot start a worker.
 
 Hadron nodes use an immutable root filesystem. Put worker-local data below
 `/usr/local/data` instead of a root-level `/data` directory. The renderer
