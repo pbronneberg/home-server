@@ -38,7 +38,8 @@ shutdown() {
   node="$1"
   [ "$(kubectl get node "$node" -o jsonpath='{.metadata.annotations.home-server\.dev/shutdown-phase}')" != "blocked" ] || return 0
   [ "$(kubectl get node "$node" -o jsonpath='{.spec.unschedulable}')" = "true" ] || { block "$node" "shutdown-request-requires-cordon"; return; }
-  if kubectl get node "$node" -o jsonpath='{.metadata.labels.node-role\.kubernetes\.io/control-plane}' | grep -q .; then block "$node" "control-plane-node"; return; fi
+  node_json="$(kubectl get node "$node" -o json)" || { block "$node" "node-inspection-failed"; return; }
+  if printf '%s\n' "$node_json" | grep -q '"node-role.kubernetes.io/control-plane"[[:space:]]*:'; then block "$node" "control-plane-node"; return; fi
   if active_upgrade "$node"; then block "$node" "k3s-upgrade-active"; return; fi
   if strict_local_replica "$node"; then block "$node" "strict-local-volume"; return; fi
   kubectl patch nodes.longhorn.io -n "$namespace" "$node" --type merge -p '{"spec":{"allowScheduling":false,"evictionRequested":true}}' 2>/dev/null || true
