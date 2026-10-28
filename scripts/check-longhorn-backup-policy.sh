@@ -2,16 +2,39 @@
 set -euo pipefail
 
 policy_file="clusters/home/infrastructure/longhorn/backup-recurring-jobs.yaml"
-expected_group="durable-volumes"
+home_assistant_pvc="application/home-assistant/templates/pvc.yaml"
+backup_alerts="clusters/home/infrastructure/monitoring/rules/longhorn-backup-rules.yaml"
 
-if grep -Eq '(^|[[:space:]\[,])default([[:space:]\],#]|$)' "$policy_file"; then
-  printf '%s\n' 'Longhorn backup jobs must not use the implicit default recurring-job group.' >&2
+if grep -q 'name: weekly-system-backup' "$policy_file"; then
+  printf '%s\n' 'Longhorn system backups must remain disabled.' >&2
   exit 1
 fi
 
-if ! grep -Eq "^[[:space:]]+- ${expected_group}[[:space:]]*$" "$policy_file"; then
-  printf 'Longhorn backup policy must use the explicit %s group.\n' "$expected_group" >&2
+if grep -A12 'name: daily-volume-backup' "$policy_file" | grep -q 'groups:'; then
+  printf '%s\n' 'Daily volume backups must not select a recurring-job group.' >&2
   exit 1
 fi
 
-printf 'Longhorn backups use explicit opt-in group %s.\n' "$expected_group"
+for label in \
+  'recurring-job.longhorn.io/source: "enabled"' \
+  'recurring-job.longhorn.io/daily-volume-backup: "enabled"'; do
+  grep -Fq "$label" "$home_assistant_pvc" || {
+    printf 'Home Assistant PVC is missing the required label: %s\n' "$label" >&2
+    exit 1
+  }
+done
+
+grep -A10 'name: prometheus-snapshot-prune' "$policy_file" | grep -Fq 'retain: 2' || {
+  printf '%s\n' 'Prometheus snapshot pruning must retain two snapshots.' >&2
+  exit 1
+}
+grep -Fq 'task: snapshot-delete' "$policy_file" || {
+  printf '%s\n' 'Prometheus snapshot pruning must use Longhorn snapshot-delete.' >&2
+  exit 1
+}
+grep -Fq 'pvc_namespace="homeassistant"' "$backup_alerts" || {
+  printf '%s\n' 'Backup freshness alert must be scoped to Home Assistant.' >&2
+  exit 1
+}
+
+printf '%s\n' 'Longhorn backups are limited to Home Assistant; Prometheus local snapshots retain two.'
