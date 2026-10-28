@@ -5,6 +5,8 @@ metadata:
   name: {{ .Values.persistence.name | default (printf "%s-config" (include "home-assistant.fullname" .)) }}
   labels:
     {{- include "home-assistant.labels" . | nindent 4 }}
+    recurring-job.longhorn.io/source: "enabled"
+    recurring-job.longhorn.io/daily-volume-backup: "enabled"
 spec:
   accessModes:
     {{- toYaml .Values.persistence.accessModes | nindent 4 }}

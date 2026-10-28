@@ -6,8 +6,6 @@ metadata:
 spec:
   concurrency: 1
   cron: "17 2 * * *"
-  groups:
-    - durable-volumes
   labels:
     backup-policy: daily
   parameters:
@@ -18,12 +16,10 @@ spec:
 apiVersion: longhorn.io/v1beta2
 kind: RecurringJob
 metadata:
-  name: weekly-system-backup
+  name: prometheus-snapshot-prune
   namespace: longhorn-system
 spec:
   concurrency: 1
-  cron: "47 3 * * 0"
-  parameters:
-    volume-backup-policy: if-not-present
-  retain: 8
-  task: system-backup
+  cron: "17 5 * * *"
+  retain: 2
+  task: snapshot-delete
