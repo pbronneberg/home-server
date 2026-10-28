@@ -10,17 +10,29 @@ metadata:
   name: manual-worker-lifecycle
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "pods", "events"]
-    verbs: ["get", "list", "watch", "patch", "update", "create"]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
   - apiGroups: [""]
     resources: ["pods/eviction"]
     verbs: ["create"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["daemonsets"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["longhorn.io"]
-    resources: ["nodes", "replicas", "volumes", "volumeattachments"]
-    verbs: ["get", "list", "watch", "patch", "update"]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: ["longhorn.io"]
+    resources: ["replicas", "volumes"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

@@ -34,4 +34,4 @@ spec:
                 defaultMode: 0555
             - name: power-config
               secret:
-                name: manual-worker-power
+                secretName: manual-worker-power

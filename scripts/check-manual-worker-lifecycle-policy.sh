@@ -7,8 +7,15 @@ rg -q 'home-server.dev/power-policy: manual-start' "$inventory" || { echo 'manua
 rg -q 'home-server.dev/k3s-upgrade' "$plans" || { echo 'agent plan must require explicit upgrade opt-in' >&2; exit 1; }
 rg -q 'manual-start' "$root/scripts/worker-shutdown.sh" || { echo 'shutdown command must validate manual-worker policy' >&2; exit 1; }
 rg -q 'manual-start' "$root/scripts/worker-cancel-shutdown.sh" || { echo 'cancel command must validate manual-worker policy' >&2; exit 1; }
-for token in 'shutdown-request' shutdown-request-requires-cordon control-plane-node k3s-upgrade-active strict-local-volume longhorn-evacuation-timeout poweroff-failed; do rg -q "$token" "$lifecycle/reconcile.sh" || { echo "missing lifecycle guard: $token" >&2; exit 1; }; done
-rg -q '\[ -n "\$request" \] && shutdown' "$lifecycle/reconcile.sh" || { echo 'raw cordons must be ignored without a request marker' >&2; exit 1; }
+for token in 'shutdown-request' shutdown-request-requires-cordon control-plane-node k3s-upgrade-active strict-local-volume longhorn-evacuation-timeout poweroff-uncertain; do rg -q "$token" "$lifecycle/reconcile.sh" || { echo "missing lifecycle guard: $token" >&2; exit 1; }; done
+rg -q 'if \[ -z "\$request" \]' "$lifecycle/reconcile.sh" || { echo 'raw cordons must be ignored without a request marker' >&2; exit 1; }
+rg -q 'cancel-requested' "$lifecycle/reconcile.sh" || { echo 'cancellation must be reconciler-coordinated' >&2; exit 1; }
+rg -q 'shutdown-boot-id' "$lifecycle/reconcile.sh" || { echo 'restart restoration must require a changed boot ID' >&2; exit 1; }
+rg -q 'longhorn-detachment-timeout' "$lifecycle/reconcile.sh" || { echo 'post-drain attachment wait must be bounded' >&2; exit 1; }
+rg -q 'namespace: manual-worker-lifecycle-system' "$lifecycle/kustomization.yaml" || { echo 'generated script ConfigMap must share the CronJob namespace' >&2; exit 1; }
+rg -q 'secretName: manual-worker-power' "$lifecycle/cronjob.yaml" || { echo 'power credential volume must name its Secret' >&2; exit 1; }
+! rg -q 'resources: \["nodes", "pods", "events"\]' "$lifecycle/rbac.yaml" || { echo 'Pod access must not include mutation verbs' >&2; exit 1; }
+rg -q 'resources: \["daemonsets"\]' "$lifecycle/rbac.yaml" || { echo 'drain role must read DaemonSets' >&2; exit 1; }
 rg -q 'restore_after_manual_start' "$lifecycle/reconcile.sh" || { echo 'manually started workers must be restored when Ready' >&2; exit 1; }
 eviction_line="$(rg -n 'evictionRequested.:true' "$lifecycle/reconcile.sh" | cut -d: -f1 | head -1)"; drain_line="$(rg -n 'kubectl drain' "$lifecycle/reconcile.sh" | cut -d: -f1 | head -1)"
 [ -n "$eviction_line" ] && [ -n "$drain_line" ] && [ "$eviction_line" -lt "$drain_line" ] || { echo 'Longhorn eviction must be requested before drain' >&2; exit 1; }
