@@ -24,7 +24,7 @@ for label in \
   }
 done
 
-grep -A10 'name: prometheus-snapshot-prune' "$policy_file" | grep -Fq 'retain: 2' || {
+grep -A10 'name: prometheus-snapshot-prune' "$policy_file" | grep -Eq '^[[:space:]]*retain:[[:space:]]*2[[:space:]]*$' || {
   printf '%s\n' 'Prometheus snapshot pruning must retain two snapshots.' >&2
   exit 1
 }
