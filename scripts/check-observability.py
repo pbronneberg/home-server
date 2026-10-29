@@ -134,6 +134,15 @@ def main() -> int:
     for alert in sorted(REQUIRED_ALERTS):
         if f"alert: {alert}" not in rules:
             errors.append(f"manual-worker lifecycle alert missing: {alert}")
+    for fragment in [
+        'max by (namespace) (kube_job_status_failed',
+        'kube_job_status_active{namespace="manual-worker-lifecycle-system"',
+        'annotation_home_server_dev_shutdown_phase=~"blocked|poweroff-starting|poweroff-uncertain"',
+    ]:
+        if fragment not in rules:
+            errors.append(f"manual-worker lifecycle rule is missing required behavior: {fragment}")
+    if rules.count("unless on(node_ip)") < 2:
+        errors.append("both target-down rules must exclude lifecycle-confirmed powered-off workers")
 
     values = (MONITORING / "observability-values.yaml").read_text(encoding="utf-8")
     for alert in sorted(DISABLED_GENERIC_ALERTS):

@@ -102,17 +102,21 @@ spec:
             summary: Manual worker lifecycle reconciliation failed
             description: Inspect the latest manual-worker-lifecycle Job before retrying a shutdown request.
         - alert: ManualWorkerLifecycleBlocked
-          expr: kube_node_annotations{annotation_home_server_dev_shutdown_phase="blocked"} == 1
+          expr: kube_node_annotations{annotation_home_server_dev_shutdown_phase=~"blocked|poweroff-starting|poweroff-uncertain"} == 1
           for: 5m
           labels:
             severity: warning
           annotations:
-            summary: Manual worker shutdown is safety-blocked
-            description: Inspect the node shutdown annotations and resolve the reason before cancelling or re-requesting shutdown.
+            summary: Manual worker lifecycle needs operator attention
+            description: Inspect the shutdown phase and reason; verify physical power state before retrying or restoring the worker.
         - alert: ManualWorkerLifecycleNotRunning
           expr: |
-            absent(kube_job_created{namespace="manual-worker-lifecycle-system",job_name=~"manual-worker-lifecycle-.*"})
-            or time() - max(kube_job_created{namespace="manual-worker-lifecycle-system",job_name=~"manual-worker-lifecycle-.*"}) > 300
+            (
+              absent(kube_job_created{namespace="manual-worker-lifecycle-system",job_name=~"manual-worker-lifecycle-.*"})
+              or time() - max by (namespace) (kube_job_created{namespace="manual-worker-lifecycle-system",job_name=~"manual-worker-lifecycle-.*"}) > 300
+            )
+            unless on(namespace)
+            max by (namespace) (kube_job_status_active{namespace="manual-worker-lifecycle-system",job_name=~"manual-worker-lifecycle-.*"} > 0)
           for: 5m
           labels:
             severity: warning
