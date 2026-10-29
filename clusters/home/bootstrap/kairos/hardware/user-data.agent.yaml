@@ -91,7 +91,6 @@ stages:
 
           prepare_storage_paths
   network:
-    # KAIROS_WAKE_ON_LAN_NETWORK_STAGE
     - name: Refresh operator SSH keys from GitHub
       commands:
         - |

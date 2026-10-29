@@ -6,16 +6,12 @@ nodes:
     k3sUrl: https://192.168.42.123:6443
     sshGithubUser: pbronneberg
     nodeLabels:
-      home-server.dev/node-role: autoscaled-worker
+      home-server.dev/node-role: manual-worker
       home-server.dev/storage: local
-      home-server.dev/autoscaled: "true"
-      home-server.dev/power-mode: manual-wake
+      home-server.dev/power-policy: manual-start
       node.longhorn.io/create-default-disk: "false"
     nodeTaints:
-      - key: home-server.dev/autoscaled
-        value: "true"
-        effect: NoSchedule
-      - key: home-server.dev/manual-wake
+      - key: home-server.dev/manual-worker
         value: "true"
         effect: NoSchedule
     dataDisk:
@@ -23,8 +19,6 @@ nodes:
       mountPoint: /usr/local/data
       longhornPath: /usr/local/data/longhorn
       localPath: /usr/local/data/local-path
-    wakeOnLan:
-      enabled: true
   milliard:
     hostname: milliard
     nodeName: milliard
@@ -32,12 +26,12 @@ nodes:
     k3sUrl: https://192.168.42.123:6443
     sshGithubUser: pbronneberg
     nodeLabels:
-      home-server.dev/node-role: autoscaled-worker
+      home-server.dev/node-role: manual-worker
       home-server.dev/storage: local
-      home-server.dev/autoscaled: "true"
+      home-server.dev/power-policy: manual-start
       node.longhorn.io/create-default-disk: "false"
     nodeTaints:
-      - key: home-server.dev/autoscaled
+      - key: home-server.dev/manual-worker
         value: "true"
         effect: NoSchedule
     dataDisk:

@@ -13,7 +13,7 @@ broadcast addresses. Put those values in SOPS-encrypted private overlays.
 - Storage role: permanent Longhorn storage.
 - Workload role: default target for durable services such as Home Assistant and
   Grafana.
-- Autoscaler policy: excluded from all autoscaler node groups.
+- Lifecycle policy: excluded from manual-worker shutdown control.
 
 Expected live labels and annotations:
 
@@ -22,9 +22,6 @@ metadata:
   labels:
     home-server.dev/node-role: core
     home-server.dev/storage: permanent
-    home-server.dev/autoscaled: "false"
-  annotations:
-    cluster-autoscaler.kubernetes.io/scale-down-disabled: "true"
 ```
 
 Expected Longhorn tags:
@@ -45,7 +42,7 @@ URL; see [Longhorn backups](longhorn-backups.md) for operations and recovery.
 ### milliard
 
 - Role: K3s agent.
-- Power policy: autoscaled worker; integrated Ethernet WOL is enabled in BIOS.
+- Power policy: manual-start worker; an operator uses the physical power button.
 - Storage role: optional node-local SSD Longhorn storage.
 - Workload role: workloads intentionally tied to `milliard`, such as scratch
   workloads, experiments, or VMs.
@@ -58,14 +55,11 @@ Expected Longhorn tags when local storage is enabled:
 ### marvin
 
 - Role: K3s agent.
-- Power policy: manual-wake autoscaled worker. USB-network Wake-on-LAN is
-  enabled with `Wake-on: g`, but relay WOL has not resumed the node from
-  power-off or suspend. Workloads that require `marvin` must be scheduled first;
-  an operator then powers it on manually during the autoscaler scale-up window.
+- Power policy: manual-start worker; an operator uses the physical power button
+  before workloads requiring `marvin` can schedule.
 - Storage role: compute-only unless local Longhorn storage is explicitly
   enabled later.
-- Workload role: workloads that explicitly require `marvin`; general autoscaled
-  workloads should prefer `milliard`.
+- Workload role: workloads that explicitly require `marvin`.
 
 Expected Longhorn tags when local storage is enabled:
 
@@ -84,21 +78,13 @@ Expected Longhorn tags when local storage is enabled:
   `WaitForFirstConsumer`, so Kubernetes chooses the node first and Longhorn keeps
   the only replica local to the attached workload.
 
-Autoscaling must not trigger Longhorn replica evacuation or rebuilds. Any node
-with Longhorn replicas or attached Longhorn volumes is outside routine
-scale-down.
+Manual shutdown requests use Longhorn's explicit eviction workflow before drain
+and poweroff. Strict-local volumes and failed or timed-out evacuation block the
+request and leave the node powered on.
 
-## Autoscaler Topology
+## Manual Worker Lifecycle
 
-The autoscaler control plane runs on `deepthought` through the
-`infrastructure-homelab-autoscaler` Kustomization. It installs the upstream
-`homecluster-dev/homelab-autoscaler` operator in
-`homelab-autoscaler-system`.
-
-Wake-on-LAN packets are sent through `homelab-autoscaler-wol-relay`, a
-host-network pod pinned to `deepthought`. The upstream `Node` CR startup pod
-calls the relay and then waits for the Kubernetes node to become Ready.
-
-Only worker nodes should be represented by upstream autoscaler `Node` CRs.
-`deepthought` must remain outside all autoscaler `Group` resources and must keep
-the `cluster-autoscaler.kubernetes.io/scale-down-disabled: "true"` annotation.
+The `infrastructure-manual-worker-lifecycle` Kustomization runs a
+single-concurrency reconciler on `deepthought`. It responds only to explicit
+shutdown requests; ordinary cordons, including K3s upgrades, never power off a
+worker. See [Manual worker lifecycle](manual-worker-lifecycle.md).

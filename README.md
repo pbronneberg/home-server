@@ -308,7 +308,7 @@ dependencies in
 
 The node topology and storage tiers are documented in
 [`docs/node-topology.md`](docs/node-topology.md). The autoscaling operating
-model is documented in [`docs/homelab-autoscaling.md`](docs/homelab-autoscaling.md).
+model is documented in [`docs/manual-worker-lifecycle.md`](docs/manual-worker-lifecycle.md).
 Longhorn permanent storage uses `deepthought`; node-local storage uses
 `/data/longhorn` on the selected worker. Prepare that directory on the node
 before adding or tagging the disk in Longhorn:

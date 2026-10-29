@@ -56,15 +56,6 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: homelab-autoscaler
-  namespace: flux-system
-spec:
-  interval: 1h
-  url: https://homecluster-dev.github.io/homelab-autoscaler
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
   name: prometheus-community
   namespace: flux-system
 spec:

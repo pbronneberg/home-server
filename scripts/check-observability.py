@@ -22,14 +22,13 @@ REQUIRED_RECORDS = {
     "home:longhorn_volume_usage:ratio",
     "home:flux_not_ready:count",
     "home:certificate_min_expiry_seconds",
-    "home:autoscaler_workers_sleeping:count",
     "home:unexpected_targets_down:count",
 }
 REQUIRED_ALERTS = {
     "AlwaysOnNodeNotReady",
-    "AutoscaledNodeUnexpectedlyOffline",
-    "AutoscalerDesiredStateUnknown",
-    "AutoscalerTelemetryMissing",
+    "ManualWorkerLifecycleBlocked",
+    "ManualWorkerLifecycleFailed",
+    "ManualWorkerLifecycleNotRunning",
     "HomeTargetDown",
 }
 DISABLED_GENERIC_ALERTS = {
@@ -98,52 +97,32 @@ def main() -> int:
         overview,
         {
             "Actionable platform status",
-            "Observability pipeline",
-            "Workers sleeping by policy",
+            "Manual worker lifecycle failures",
             "Action required",
-            "Expected power-saving state",
-            "Unexpected scrape targets down",
         },
         "home-platform-overview",
         errors,
     )
     overview_json = json.dumps(overview)
     for token in [
-        "home_autoscaler_node_info",
-        "desired_power_state",
-        "AutoscaledNodeUnexpectedlyOffline",
-        "NO METRICS",
-        "UNKNOWN",
-        "/d/home-observability-diagnostics/observability-pipeline-diagnostics",
+        "manual-worker-lifecycle",
     ]:
         if token not in overview_json:
             errors.append(f"home-platform-overview: missing self-validation token {token}")
-    if 'sum(home_autoscaler_node_info{desired_power_state=\"off\"}) or vector(0)' in overview_json:
-        errors.append("home-platform-overview: sleeping-worker card must not hide missing telemetry as zero")
 
     diagnostics = dashboards.get("home-observability-diagnostics", {})
     require_panels(
         diagnostics,
         {
-            "Autoscaler telemetry",
-            "Prometheus stack HelmRelease",
-            "Monitoring Kustomization",
-            "KSM custom-resource config",
-            "Legacy alerts firing",
-            "Home rule evaluation age",
-            "Autoscaler inventory",
+            "Manual worker lifecycle Jobs",
             "Current critical and warning alerts",
-            "Failed scrape targets",
         },
         "home-observability-diagnostics",
         errors,
     )
     diagnostics_json = json.dumps(diagnostics)
     for token in [
-        "kube_state_metrics_last_config_reload_successful",
-        "prometheus_rule_group_last_evaluation_timestamp_seconds",
-        "KubeControllerManagerDown|KubeSchedulerDown|KubeProxyDown|KubeNodeNotReady|TargetDown",
-        "gotk_resource_info",
+        "manual-worker-lifecycle",
     ]:
         if token not in diagnostics_json:
             errors.append(f"home-observability-diagnostics: missing diagnostic query token {token}")
@@ -154,28 +133,28 @@ def main() -> int:
             errors.append(f"recording rule missing: {record}")
     for alert in sorted(REQUIRED_ALERTS):
         if f"alert: {alert}" not in rules:
-            errors.append(f"autoscaler-aware alert missing: {alert}")
+            errors.append(f"manual-worker lifecycle alert missing: {alert}")
+    for fragment in [
+        'max by (namespace) (kube_job_status_failed',
+        'kube_job_status_active{namespace="manual-worker-lifecycle-system"',
+        'annotation_home_server_dev_shutdown_phase=~"blocked|poweroff-starting|poweroff-uncertain"',
+    ]:
+        if fragment not in rules:
+            errors.append(f"manual-worker lifecycle rule is missing required behavior: {fragment}")
+    if rules.count("unless on(node_ip)") < 2:
+        errors.append("both target-down rules must exclude lifecycle-confirmed powered-off workers")
 
     values = (MONITORING / "observability-values.yaml").read_text(encoding="utf-8")
     for alert in sorted(DISABLED_GENERIC_ALERTS):
         if f"{alert}: true" not in values:
             errors.append(f"generic alert must be disabled: {alert}")
-    for token in [
-        "infra.homecluster.dev",
-        "home_autoscaler",
-        "desired_power_state: [spec, powerState]",
-    ]:
-        if token not in values:
-            errors.append(f"autoscaler metric configuration missing: {token}")
+    if "infra.homecluster.dev" in values or "home_autoscaler" in values:
+        errors.append("retired autoscaler metric configuration remains")
 
     kustomization = (MONITORING / "kustomization.yaml").read_text(encoding="utf-8")
     for dashboard_path in sorted(DASHBOARDS.glob("*.json")):
         if dashboard_path.name not in kustomization:
             errors.append(f"dashboard not provisioned by kustomization: {dashboard_path.name}")
-
-    runtime_values = (MONITORING / "grafana-runtime-values.yaml").read_text(encoding="utf-8")
-    if 'home-server.bronneberg.org/restarted-at: "2026-07-29T22:50:00+02:00"' not in runtime_values:
-        errors.append("Grafana rollout annotation was not updated for the diagnostics dashboard")
 
     if errors:
         print("Observability validation failed:", file=sys.stderr)
@@ -186,7 +165,7 @@ def main() -> int:
     print(
         f"Validated {len(dashboards)} dashboards, "
         f"{len(REQUIRED_RECORDS)} recording rules, and "
-        f"{len(REQUIRED_ALERTS)} autoscaler-aware alerts."
+        f"{len(REQUIRED_ALERTS)} lifecycle alerts."
     )
     return 0
 

@@ -44,6 +44,10 @@ spec:
     matchExpressions:
       - key: node-role.kubernetes.io/control-plane
         operator: DoesNotExist
+      - key: home-server.dev/k3s-upgrade
+        operator: In
+        values:
+          - enabled
   prepare:
     args:
       - prepare

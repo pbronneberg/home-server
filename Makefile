@@ -26,7 +26,7 @@ HELM_REPOS := bitnami=https://charts.bitnami.com/bitnami minio=https://charts.mi
 HELM_WITH_REPOS = HELM_REPOSITORY_CONFIG="$(HELM_REPO_CONFIG)" HELM_REPOSITORY_CACHE="$(HELM_REPO_CACHE)"
 SOPS_WITH_AGE = SOPS_AGE_KEY_FILE="$(SOPS_AGE_KEY_FILE)"
 
-.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check upgrade-policy-check longhorn-backup-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check kairos-render-node kairos-render-hardware kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
+.PHONY: help ci lint lint-actions lint-yaml flux-cluster-domain-check flux-build helm-repos helm-deps helm-lint helm-template helm-clean auth-policy-check upgrade-policy-check manual-worker-lifecycle-policy-check longhorn-backup-policy-check security-audit sops-check-key sops-keygen sops-list sops-decrypt sops-decrypt-file sops-decrypt-dir sops-edit sops-encrypt sops-updatekeys sops-recovery-drill scan-secrets scan-history check-public-redactions check-history-redactions public-check worker-shutdown worker-cancel-shutdown worker-shutdown-status worker-upgrade worker-upgrade-status kairos-render-node kairos-render-hardware kairos-preflight kairos-install-server kairos-install-agent kairos-verify-server kairos-verify-agent kairos-verify staging-preflight staging-install-server staging-install-agent staging-verify-server staging-verify-agent staging-verify-flux staging-verify
 
 help:
 	@printf '%s\n' \
@@ -75,7 +75,7 @@ help:
 		'  staging-verify-flux Check Flux and platform smoke in the staging cluster.' \
 		'  staging-verify       Run staging VM and Flux acceptance checks.'
 
-ci: ai-harness-check lint auth-policy-check upgrade-policy-check longhorn-backup-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
+ci: ai-harness-check lint auth-policy-check upgrade-policy-check manual-worker-lifecycle-policy-check longhorn-backup-policy-check flux-cluster-domain-check helm-lint helm-template flux-build security-audit
 
 public-check: ci scan-secrets scan-history check-public-redactions check-history-redactions
 
@@ -159,6 +159,29 @@ auth-policy-check:
 
 upgrade-policy-check:
 	@bash scripts/check-system-upgrade-policy.sh
+
+manual-worker-lifecycle-policy-check:
+	@bash scripts/check-manual-worker-lifecycle-policy.sh
+
+worker-shutdown:
+	@test -n "$(NODE)" || { printf '%s\n' 'Set NODE, for example: make worker-shutdown NODE=milliard' >&2; exit 2; }
+	@bash scripts/worker-shutdown.sh "$(NODE)"
+
+worker-cancel-shutdown:
+	@test -n "$(NODE)" || { printf '%s\n' 'Set NODE, for example: make worker-cancel-shutdown NODE=milliard' >&2; exit 2; }
+	@bash scripts/worker-cancel-shutdown.sh "$(NODE)"
+
+worker-shutdown-status:
+	@test -n "$(NODE)" || { printf '%s\n' 'Set NODE, for example: make worker-shutdown-status NODE=milliard' >&2; exit 2; }
+	@kubectl get node "$(NODE)" -o jsonpath='{.metadata.annotations.home-server\.dev/shutdown-request}{"\n"}{.metadata.annotations.home-server\.dev/shutdown-phase}{"\n"}{.metadata.annotations.home-server\.dev/shutdown-reason}{"\n"}'
+
+worker-upgrade:
+	@test -n "$(NODE)" || { printf '%s\n' 'Set NODE, for example: make worker-upgrade NODE=milliard' >&2; exit 2; }
+	@bash scripts/worker-upgrade.sh "$(NODE)"
+
+worker-upgrade-status:
+	@test -n "$(NODE)" || { printf '%s\n' 'Set NODE, for example: make worker-upgrade-status NODE=milliard' >&2; exit 2; }
+	@kubectl -n system-upgrade get plan agent-plan -o wide
 
 longhorn-backup-policy-check:
 	@bash scripts/check-longhorn-backup-policy.sh

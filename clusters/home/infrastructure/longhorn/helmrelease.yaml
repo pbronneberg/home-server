@@ -33,7 +33,7 @@ spec:
       createDefaultDiskLabeledNodes: true
       defaultDataPath: /data/longhorn
       guaranteedInstanceManagerCPU: '{"v1":"6","v2":"10"}'
-      kubernetesClusterAutoscalerEnabled: true
+      kubernetesClusterAutoscalerEnabled: false
       restoreVolumeRecurringJobs: true
     metrics:
       serviceMonitor:

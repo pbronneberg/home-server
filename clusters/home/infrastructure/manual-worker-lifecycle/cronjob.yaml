@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: manual-worker-lifecycle
+  namespace: manual-worker-lifecycle-system
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 7500
+      template:
+        spec:
+          serviceAccountName: manual-worker-lifecycle
+          restartPolicy: Never
+          containers:
+            - name: reconcile
+              image: alpine/k8s:1.36.4
+              command: ["/bin/sh", "/opt/manual-worker-lifecycle/reconcile.sh"]
+              volumeMounts:
+                - name: script
+                  mountPath: /opt/manual-worker-lifecycle
+                  readOnly: true
+                - name: power-config
+                  mountPath: /etc/manual-worker-power
+                  readOnly: true
+          volumes:
+            - name: script
+              configMap:
+                name: manual-worker-lifecycle
+                defaultMode: 0555
+            - name: power-config
+              secret:
+                secretName: manual-worker-power
